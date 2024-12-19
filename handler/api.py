@@ -1,9 +1,10 @@
 import json
 from typing import Final, Tuple
 
-from flask import Flask, Response
+from flask import Flask, Response, g
 from flask_cors import CORS
 
+from middleware.auth import auth_middleware
 from middleware.log import log_middleware
 
 app: Final[Flask] = Flask(__name__)
@@ -17,6 +18,9 @@ def start() -> None:
 
 @app.route("/hello", methods=["POST"])
 @log_middleware
+@auth_middleware
 def hello() -> Tuple[Response, int]:
+    uid = g.uid
+
     json_data = json.dumps({"message": "hello world"}, ensure_ascii=False, indent=4)
     return Response(json_data, mimetype="application/json"), 200

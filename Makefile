@@ -46,3 +46,6 @@ terraform-plan:
 terraform-apply:
 	gcloud config set project $(PROJECT_ID)
 	cd terraform && terraform apply
+
+clean-docker:
+	docker system prune -a -f

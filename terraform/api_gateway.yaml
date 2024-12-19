@@ -3,6 +3,16 @@ info:
   title: PDF Assistant API
   version: "1.0.0"
 host: "api-gateway-a55kw77s.an.gateway.dev"
+securityDefinitions:
+  auth0_jwk:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "https://dev-im6sd3gmyj703h6n.us.auth0.com/"
+    x-google-jwks_uri: "https://dev-im6sd3gmyj703h6n.us.auth0.com/.well-known/jwks.json"
+    x-google-audiences: "https://api-gateway-a55kw77s.an.gateway.dev"
+security:
+  - auth0_jwk: []
 schemes:
   - "https"
 basePath: "/"

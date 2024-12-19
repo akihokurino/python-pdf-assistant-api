@@ -1,1 +1,1 @@
-https://dev.classmethod.jp/articles/google-cloud-api-gateway-handson/
+https://qiita.com/zumax/items/dd271e76b4ffd84f236e
