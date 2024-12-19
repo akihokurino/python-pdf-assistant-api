@@ -3,10 +3,10 @@ info:
   title: Hello World API
   description: This API returns a simple "hello, world" message.
   version: "1.0.0"
-host: "api-gateway-app-pdf-assistant.run.app"
+host: "api-gateway-a55kw77s.an.gateway.dev"
 schemes:
   - "https"
-basePath: "/hello"
+basePath: "/"
 paths:
   /hello:
     post:
@@ -14,8 +14,8 @@ paths:
       description: Returns a simple hello world message in JSON format.
       operationId: postHello
       x-google-backend:
-        address: { https://pdf-assistant-445201-794862978184.asia-northeast1.run.app }
-        path_translation: { APPEND_PATH_TO_ADDRESS }
+        address: https://pdf-assistant-445201-794862978184.asia-northeast1.run.app
+        path_translation: APPEND_PATH_TO_ADDRESS
       produces:
         - "application/json"
       responses:
@@ -28,6 +28,3 @@ paths:
                 type: string
             required:
               - hello
-          examples:
-            application/json:
-              hello: "world"

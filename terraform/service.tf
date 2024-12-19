@@ -22,3 +22,13 @@ resource "google_project_service" "service_control" {
   project = var.project_id
   service = "servicecontrol.googleapis.com"
 }
+
+resource "google_project_service" "cloud_dns" {
+  project = var.project_id
+  service = "dns.googleapis.com"
+}
+
+resource "google_project_service" "certificate_manager" {
+  project = var.project_id
+  service = "certificatemanager.googleapis.com"
+}
