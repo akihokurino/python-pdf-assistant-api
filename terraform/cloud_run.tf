@@ -35,9 +35,11 @@ resource "google_cloud_run_service" "api" {
     }
   }
 }
-resource "google_cloud_run_service_iam_member" "allow_unauthenticated" {
-  service = google_cloud_run_service.api.name
+resource "google_cloud_run_service_iam_binding" "restrict_unauthenticated_access" {
+  service  = google_cloud_run_service.api.name
   location = google_cloud_run_service.api.location
-  role = "roles/run.invoker"
-  member = "allUsers"
+  role     = "roles/run.invoker"
+  members = [
+    "serviceAccount:${google_service_account.api_gateway_service_account.email}"
+  ]
 }
