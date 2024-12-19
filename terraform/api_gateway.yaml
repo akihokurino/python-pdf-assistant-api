@@ -1,7 +1,6 @@
 swagger: "2.0"
 info:
-  title: Hello World API
-  description: This API returns a simple "hello, world" message.
+  title: PDF Assistant API
   version: "1.0.0"
 host: "api-gateway-a55kw77s.an.gateway.dev"
 schemes:
@@ -10,21 +9,19 @@ basePath: "/"
 paths:
   /hello:
     post:
-      summary: Get a hello message
-      description: Returns a simple hello world message in JSON format.
       operationId: postHello
       x-google-backend:
-        address: https://pdf-assistant-445201-794862978184.asia-northeast1.run.app
+        address: https://pdf-assistant-api-794862978184.asia-northeast1.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       produces:
         - "application/json"
       responses:
         200:
-          description: A JSON object containing a hello world message.
+          description: Response...
           schema:
             type: object
             properties:
-              hello:
+              message:
                 type: string
             required:
-              - hello
+              - message

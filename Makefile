@@ -26,6 +26,19 @@ push-pdf-assistant-api:
 	docker build --platform linux/amd64 -t gcr.io/$(PROJECT_ID)/pdf-assistant-api:latest .
 	docker push gcr.io/$(PROJECT_ID)/pdf-assistant-api:latest
 
+deploy-api: push-pdf-assistant-api
+	gcloud run deploy pdf-assistant-api \
+      --image gcr.io/$(PROJECT_ID)/pdf-assistant-api:latest \
+      --region asia-northeast1 \
+      --port 8080 \
+      --platform managed \
+      --no-allow-unauthenticated \
+      --service-account cloud-run-sa@pdf-assistant-445201.iam.gserviceaccount.com \
+      --update-env-vars PROJECT_ID=$(PROJECT_ID) \
+      --ingress all \
+      --command "sh" \
+      --args "-c,python api.py"
+
 terraform-plan:
 	gcloud config set project $(PROJECT_ID)
 	cd terraform && terraform plan

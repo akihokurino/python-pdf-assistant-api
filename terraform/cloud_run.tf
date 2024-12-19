@@ -1,5 +1,5 @@
 resource "google_cloud_run_service" "api" {
-  name                       = var.project_id
+  name                       = "pdf-assistant-api"
   location                   = var.region
   autogenerate_revision_name = true
 

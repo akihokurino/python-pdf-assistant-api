@@ -18,5 +18,5 @@ def start() -> None:
 @app.route("/hello", methods=["POST"])
 @log_middleware
 def hello() -> Tuple[Response, int]:
-    json_data = json.dumps({"hello": "world"}, ensure_ascii=False, indent=4)
+    json_data = json.dumps({"message": "hello world"}, ensure_ascii=False, indent=4)
     return Response(json_data, mimetype="application/json"), 200
