@@ -32,3 +32,8 @@ resource "google_project_service" "certificate_manager" {
   project = var.project_id
   service = "certificatemanager.googleapis.com"
 }
+
+resource "google_project_service" "cloud_scheduler" {
+  project = var.project_id
+  service = "cloudscheduler.googleapis.com"
+}
