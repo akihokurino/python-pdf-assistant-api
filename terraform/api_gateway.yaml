@@ -3,6 +3,16 @@ info:
   title: PDF Assistant API
   version: "1.0.0"
 host: "api-gateway-a55kw77s.an.gateway.dev"
+schemes:
+  - "https"
+produces:
+  - "application/json"
+basePath: "/"
+
+x-google-backend:
+  address: https://pdf-assistant-api-794862978184.asia-northeast1.run.app
+  path_translation: APPEND_PATH_TO_ADDRESS
+
 securityDefinitions:
   auth0_jwk:
     authorizationUrl: ""
@@ -13,18 +23,11 @@ securityDefinitions:
     x-google-audiences: "https://api-gateway-a55kw77s.an.gateway.dev"
 security:
   - auth0_jwk: []
-schemes:
-  - "https"
-basePath: "/"
+
 paths:
   /hello:
     post:
       operationId: postHello
-      x-google-backend:
-        address: https://pdf-assistant-api-794862978184.asia-northeast1.run.app
-        path_translation: APPEND_PATH_TO_ADDRESS
-      produces:
-        - "application/json"
       responses:
         200:
           description: Response...

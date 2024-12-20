@@ -15,6 +15,9 @@ def log_middleware(f: LogMiddleware) -> LogMiddleware:
     def decorated(*args: Any, **kwargs: Any) -> Any:
         log_info("------------------------------------------------------")
         log_info(f"Request Endpoint: {request.path}")
+        for k, v in dict(request.headers).items():
+            log_info(f"Request Header: {k}={v}")
+
         if request.is_json:
             log_info(f"Request Body: {request.get_json()}")
 
