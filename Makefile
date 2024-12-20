@@ -14,45 +14,49 @@ update-modules:
 
 types:
 	source venv/bin/activate && mypy api.py
+	source venv/bin/activate && mypy entrypoint/clean_openai_assistant.py
 
-run-local:
-	source venv/bin/activate && python api.py
+run-api:
+	source venv/bin/activate && python -m entrypoint.api
+
+run-batch:
+	source venv/bin/activate && python -m entrypoint.clean_openai_assistant
 
 gcloud-login:
 	gcloud auth application-default login
 
-push-pdf-assistant-api:
+push-pdf-assistant:
 	gcloud --quiet config set project $(PROJECT_ID)
-	docker build --platform linux/amd64 -t gcr.io/$(PROJECT_ID)/pdf-assistant-api:latest .
-	docker push gcr.io/$(PROJECT_ID)/pdf-assistant-api:latest
+	docker build --platform linux/amd64 -t gcr.io/$(PROJECT_ID)/pdf-assistant:latest .
+	docker push gcr.io/$(PROJECT_ID)/pdf-assistant:latest
 
-deploy: push-pdf-assistant-api
+deploy: push-pdf-assistant
 	gcloud run deploy pdf-assistant-api \
-      	--image gcr.io/$(PROJECT_ID)/pdf-assistant-api:latest \
+      	--image gcr.io/$(PROJECT_ID)/pdf-assistant:latest \
       	--region asia-northeast1 \
-      	--port 8080 \
+      	--cpu 1000m \
+        --memory 512Mi \
+        --port 8080 \
       	--platform managed \
       	--no-allow-unauthenticated \
       	--service-account cloud-run-sa@pdf-assistant-445201.iam.gserviceaccount.com \
-      	--update-env-vars PROJECT_ID=$(PROJECT_ID) \
+      	--set-env-vars PROJECT_ID=$(PROJECT_ID) \
       	--ingress all \
-      	--cpu 1 \
-      	--memory 512Mi \
       	--command "sh" \
-      	--args "-c,python api.py"
+      	--args "-c,python -m entrypoint.api"
 
-	gcloud run jobs deploy pdf-assistant-batch \
-        --image gcr.io/$(PROJECT_ID)/pdf-assistant-api:latest \
+	gcloud run jobs deploy clean-openai-assistant \
+        --image gcr.io/$(PROJECT_ID)/pdf-assistant:latest \
         --region asia-northeast1 \
-        --command "sh" \
-        --args "-c,python batch.py" \
-        --cpu 1 \
+        --cpu 1000m \
         --memory 512Mi \
         --service-account cloud-run-sa@pdf-assistant-445201.iam.gserviceaccount.com \
         --set-env-vars PROJECT_ID=$(PROJECT_ID) \
         --max-retries 0 \
         --parallelism 1 \
-        --tasks 1
+        --tasks 1 \
+        --command "sh" \
+        --args "-c,python -m entrypoint.clean_openai_assistant"
 
 terraform-plan:
 	gcloud config set project $(PROJECT_ID)

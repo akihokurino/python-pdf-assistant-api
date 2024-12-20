@@ -10,7 +10,7 @@ produces:
 basePath: "/"
 
 x-google-backend:
-  address: https://pdf-assistant-api-794862978184.asia-northeast1.run.app
+  address: https://api-794862978184.asia-northeast1.run.app
   path_translation: APPEND_PATH_TO_ADDRESS
 
 securityDefinitions:

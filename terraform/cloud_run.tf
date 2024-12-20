@@ -1,15 +1,14 @@
 resource "google_cloud_run_service" "api" {
-  name                       = "pdf-assistant-api"
+  name                       = "api"
   location                   = var.region
   autogenerate_revision_name = true
 
   template {
     spec {
       containers {
-        name    = "main"
-        image   = "gcr.io/${var.project_id}/pdf-assistant-api:latest"
+        image   = "gcr.io/${var.project_id}/pdf-assistant:latest"
         command = ["sh"]
-        args    = ["-c", "python api.py"]
+        args    = ["-c", "python -m entrypoint.api"]
 
         ports {
           container_port = 8080
@@ -52,18 +51,17 @@ resource "google_cloud_run_service_iam_binding" "restrict_unauthenticated_access
   ]
 }
 
-resource "google_cloud_run_v2_job" "batch" {
+resource "google_cloud_run_v2_job" "clean_openai_assistant" {
   provider = google-beta
-  name     = "pdf-assistant-batch"
+  name     = "clean-openai-assistant"
   location = var.region
 
   template {
     template {
       containers {
-        name    = "main"
-        image   = "gcr.io/${var.project_id}/pdf-assistant-api:latest"
+        image   = "gcr.io/${var.project_id}/pdf-assistant:latest"
         command = ["sh"]
-        args    = ["-c", "python batch.py"]
+        args    = ["-c", "python -m entrypoint.clean_openai_assistant"]
 
         env {
           name  = "PROJECT_ID"
@@ -86,8 +84,8 @@ resource "google_cloud_run_v2_job" "batch" {
   }
 }
 resource "google_cloud_run_v2_job_iam_binding" "restrict_unauthenticated_access" {
-  name     = google_cloud_run_v2_job.batch.name
-  location = google_cloud_run_v2_job.batch.location
+  name     = google_cloud_run_v2_job.clean_openai_assistant.name
+  location = google_cloud_run_v2_job.clean_openai_assistant.location
   role     = "roles/run.invoker"
   members = [
     "serviceAccount:${google_service_account.cloud_scheduler_sa.email}"
