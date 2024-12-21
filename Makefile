@@ -17,10 +17,10 @@ types:
 	source venv/bin/activate && mypy entrypoint/clean_openai_assistant.py
 
 run-api:
-	source venv/bin/activate && python -m entrypoint.api
+	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) python -m entrypoint.api
 
-run-batch:
-	source venv/bin/activate && python -m entrypoint.clean_openai_assistant
+run-clean-openai-assistant:
+	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) python -m entrypoint.clean_openai_assistant
 
 gcloud-login:
 	gcloud auth application-default login

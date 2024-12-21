@@ -10,3 +10,7 @@ variable "region" {
 variable "db_password" {
   type = string
 }
+
+variable "cloud_sql_connection" {
+  type = string
+}

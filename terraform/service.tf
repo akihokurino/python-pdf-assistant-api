@@ -42,3 +42,8 @@ resource "google_project_service" "compute_engine" {
   project = var.project_id
   service = "compute.googleapis.com"
 }
+
+resource "google_project_service" "secret_manager" {
+  project = var.project_id
+  service = "secretmanager.googleapis.com"
+}

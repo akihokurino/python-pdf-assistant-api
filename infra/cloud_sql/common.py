@@ -1,8 +1,15 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = "mysql+pymysql://root:root@localhost/app"
+from infra import secret_manager
+
+DATABASE_URL = secret_manager.get_secret(
+    os.getenv("PROJECT_ID", ""), "cloud-sql-connection", "latest"
+)
+
 Base = declarative_base()
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
