@@ -1,2 +1,4 @@
 .idea
 venv
+cloud_sql
+terraform
