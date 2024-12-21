@@ -6,9 +6,12 @@ from sqlalchemy.orm import sessionmaker
 
 from infra import secret_manager
 
-DATABASE_URL = secret_manager.get_secret(
-    os.getenv("PROJECT_ID", ""), "cloud-sql-connection", "latest"
-)
+if os.getenv("IS_LOCAL", "") == "true":
+    DATABASE_URL = "mysql+pymysql://root:root@localhost/app"
+else:
+    DATABASE_URL = secret_manager.get_secret(
+        os.getenv("PROJECT_ID", ""), "cloud-sql-connection", "latest"
+    )
 
 Base = declarative_base()
 engine = create_engine(DATABASE_URL)

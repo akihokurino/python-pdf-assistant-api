@@ -17,10 +17,10 @@ types:
 	source venv/bin/activate && mypy entrypoint/clean_openai_assistant.py
 
 run-api:
-	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) python -m entrypoint.api
+	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) IS_LOCAL=true python -m entrypoint.api
 
 run-clean-openai-assistant:
-	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) python -m entrypoint.clean_openai_assistant
+	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) IS_LOCAL=true python -m entrypoint.clean_openai_assistant
 
 gcloud-login:
 	gcloud auth application-default login
@@ -31,8 +31,9 @@ push-pdf-assistant:
 	docker push gcr.io/$(PROJECT_ID)/pdf-assistant:latest
 
 deploy: push-pdf-assistant
-	gcloud run deploy pdf-assistant-api \
+	gcloud run deploy api \
       	--image gcr.io/$(PROJECT_ID)/pdf-assistant:latest \
+      	--add-cloudsql-instances $(PROJECT_ID):asia-northeast1:app \
       	--region asia-northeast1 \
       	--cpu 1000m \
         --memory 512Mi \
@@ -47,6 +48,7 @@ deploy: push-pdf-assistant
 
 	gcloud run jobs deploy clean-openai-assistant \
         --image gcr.io/$(PROJECT_ID)/pdf-assistant:latest \
+        --set-cloudsql-instances $(PROJECT_ID):asia-northeast1:app \
         --region asia-northeast1 \
         --cpu 1000m \
         --memory 512Mi \

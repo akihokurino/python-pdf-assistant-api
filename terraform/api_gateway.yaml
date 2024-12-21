@@ -25,16 +25,22 @@ security:
   - auth0_jwk: []
 
 paths:
-  /hello:
+  /users:
     post:
-      operationId: postHello
+      operationId: createUser
       responses:
         200:
-          description: Response...
+          description: return created user or exist user
           schema:
             type: object
             properties:
-              message:
+              id:
+                type: string
+              name:
+                type: string
+              created_at:
                 type: string
             required:
-              - message
+              - id
+              - name
+              - created_at

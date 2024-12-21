@@ -29,6 +29,12 @@ resource "google_cloud_run_service" "api" {
 
       service_account_name = google_service_account.cloud_run_sa.email
     }
+
+    metadata {
+      annotations = {
+        "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.cloudsql_instance.connection_name
+      }
+    }
   }
 
   traffic {
@@ -73,6 +79,18 @@ resource "google_cloud_run_v2_job" "clean_openai_assistant" {
             cpu    = "1000m"
             memory = "512Mi"
           }
+        }
+
+        volume_mounts {
+          name = "cloudsql"
+          mount_path = "/cloudsql"
+        }
+      }
+
+      volumes {
+        name = "cloudsql"
+        cloud_sql_instance {
+          instances = [google_sql_database_instance.cloudsql_instance.connection_name]
         }
       }
 
