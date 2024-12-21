@@ -9,8 +9,6 @@ LogMiddleware = TypeVar("LogMiddleware", bound=Callable[..., Any])
 
 
 def log_middleware(f: LogMiddleware) -> LogMiddleware:
-    """ログ用ミドルウェア"""
-
     @wraps(f)
     def decorated(*args: Any, **kwargs: Any) -> Any:
         log_info("------------------------------------------------------")

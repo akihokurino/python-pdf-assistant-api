@@ -20,8 +20,6 @@ AuthMiddleware = TypeVar("AuthMiddleware", bound=Callable[..., Any])
 
 
 def auth_middleware(f: AuthMiddleware) -> AuthMiddleware:
-    """認証用ミドルウェア"""
-
     @wraps(f)
     def decorated(*args: Any, **kwargs: Any) -> Any:
         user_info_encoded: Optional[str] = request.headers.get(
