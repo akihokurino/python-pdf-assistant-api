@@ -32,3 +32,13 @@ resource "google_project_iam_member" "cloud_scheduler_run_invoker" {
   role    = "roles/run.invoker"
   member  = "serviceAccount:${google_service_account.cloud_scheduler_sa.email}"
 }
+
+resource "google_service_account" "cloud_build_sa" {
+  account_id   = "cloud-build-sa"
+  display_name = "Cloud Build Trigger Service Account"
+}
+resource "google_project_iam_member" "cloud_build_editor" {
+  project = var.project_id
+  role    = "roles/editor"
+  member  = "serviceAccount:${google_service_account.cloud_build_sa.email}"
+}

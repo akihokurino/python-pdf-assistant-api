@@ -33,6 +33,8 @@ resource "google_cloud_run_service" "api" {
     metadata {
       annotations = {
         "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.cloudsql_instance.connection_name
+        "run.googleapis.com/client-name"        = "gcloud"
+        "run.googleapis.com/client-version"     = "504.0.1"
       }
     }
   }
