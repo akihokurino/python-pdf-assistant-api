@@ -1,4 +1,4 @@
-from typing import Callable, Any
+from typing import Callable, Awaitable, final
 
 from fastapi import Request, Response, status
 from fastapi.responses import JSONResponse
@@ -7,9 +7,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from model.error import AppError
 
 
+@final
 class ErrorMiddleware(BaseHTTPMiddleware):
     async def dispatch(
-        self, request: Request, call_next: Callable[..., Any]
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         try:
             response: Response = await call_next(request)

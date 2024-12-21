@@ -34,6 +34,7 @@ httpcore==1.0.7
 httptools==0.6.4
 httpx==0.28.1
 idna==3.10
+iniconfig==2.0.0
 itsdangerous==2.2.0
 Jinja2==3.1.4
 jiter==0.8.2
@@ -45,6 +46,8 @@ mypy==1.13.0
 mypy-extensions==1.0.0
 openai==1.58.1
 orjson==3.10.12
+packaging==24.2
+pluggy==1.5.0
 propcache==0.2.1
 proto-plus==1.25.0
 protobuf==5.29.2
@@ -58,6 +61,7 @@ pydantic_core==2.27.1
 Pygments==2.18.0
 PyJWT==2.10.1
 PyMySQL==1.1.1
+pytest==8.3.4
 python-dotenv==1.0.1
 python-multipart==0.0.20
 PyYAML==6.0.2

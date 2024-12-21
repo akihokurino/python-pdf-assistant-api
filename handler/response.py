@@ -1,9 +1,7 @@
-from typing import Any
-
 from model.user import User
 
 
-def user_response(user: User) -> dict[str, Any]:
+def user_resp(user: User) -> dict[str, str | int]:
     return {
         "id": user.id,
         "name": user.name,

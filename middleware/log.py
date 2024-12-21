@@ -1,5 +1,5 @@
 import json
-from typing import Callable, Any
+from typing import Callable, Awaitable, final
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -7,9 +7,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from infra.logger import log_info
 
 
+@final
 class LogMiddleware(BaseHTTPMiddleware):
     async def dispatch(
-        self, request: Request, call_next: Callable[..., Any]
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         log_info("------------------------------------------------------")
         log_info(f"Request Endpoint: {request.url.path}")

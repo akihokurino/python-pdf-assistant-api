@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, final
 
 from sqlalchemy import Column, String, DateTime
 
@@ -8,6 +8,7 @@ from model.error import AppError, ErrorKind
 from model.user import User
 
 
+@final
 class UserEntity(Base):
     __tablename__ = "users"
 

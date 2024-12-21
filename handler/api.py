@@ -1,3 +1,5 @@
+from typing import Final
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi import Request
@@ -10,7 +12,7 @@ from middleware.auth import AuthMiddleware
 from middleware.error import ErrorMiddleware
 from middleware.log import LogMiddleware
 
-app = FastAPI()
+app: Final[FastAPI] = FastAPI()
 app.add_middleware(AuthMiddleware)
 app.add_middleware(LogMiddleware)
 app.add_middleware(ErrorMiddleware)

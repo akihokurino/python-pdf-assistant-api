@@ -1,6 +1,6 @@
 import base64
 import json
-from typing import Callable, Optional, Any
+from typing import Callable, Optional, Awaitable, final
 
 from auth0.authentication.token_verifier import (
     TokenVerifier,
@@ -17,9 +17,10 @@ AUTH0_JWKS_URL = "https://dev-im6sd3gmyj703h6n.us.auth0.com/.well-known/jwks.jso
 AUTH0_AUDIENCE = "https://api-gateway-a55kw77s.an.gateway.dev"
 
 
+@final
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
-        self, request: Request, call_next: Callable[..., Any]
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         user_info_encoded: Optional[str] = request.headers.get(
             "X-Apigateway-Api-Userinfo"

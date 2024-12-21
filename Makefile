@@ -16,6 +16,9 @@ types:
 	source venv/bin/activate && mypy entrypoint/api.py
 	source venv/bin/activate && mypy entrypoint/clean_openai_assistant.py
 
+test:
+	source venv/bin/activate && pytest
+
 run-api:
 	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) IS_LOCAL=true python -m entrypoint.api
 

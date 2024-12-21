@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import final
 
 
+@final
 class User:
     def __init__(
         self, _id: str, name: str, created_at: datetime, updated_at: datetime

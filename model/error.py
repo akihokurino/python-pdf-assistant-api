@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import final, Any
+from typing import final
 
 
 @final
@@ -11,7 +11,7 @@ class AppError(Exception):
         self.message = message
         super().__init__(message)
 
-    def error_dict(self) -> dict[str, Any]:
+    def dict(self) -> dict[str, str | int]:
         return {"message": self.message, "code": self.kind.value}
 
 
