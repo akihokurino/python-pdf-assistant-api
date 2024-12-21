@@ -68,3 +68,6 @@ terraform-apply:
 
 clean-docker:
 	docker system prune -a -f
+
+connect-cloud-sql:
+	./cloud_sql/proxy $(PROJECT_ID):asia-northeast1:app

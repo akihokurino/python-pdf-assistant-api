@@ -6,3 +6,7 @@ variable "region" {
   type    = string
   default = "asia-northeast1"
 }
+
+variable "db_password" {
+  type = string
+}

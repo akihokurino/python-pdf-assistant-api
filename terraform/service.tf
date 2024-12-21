@@ -37,3 +37,8 @@ resource "google_project_service" "cloud_scheduler" {
   project = var.project_id
   service = "cloudscheduler.googleapis.com"
 }
+
+resource "google_project_service" "compute_engine" {
+  project = var.project_id
+  service = "compute.googleapis.com"
+}
