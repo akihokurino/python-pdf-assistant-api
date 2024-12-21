@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy import Column, String, DateTime
 
@@ -14,6 +14,17 @@ class UserEntity(Base):
     id: str = Column(String(255), primary_key=True)
     name: str = Column(String(255), nullable=False)
     created_at: datetime = Column(DateTime, nullable=False)
+
+
+def find_users() -> List[User]:
+    session = Session()
+    try:
+        entities = session.query(UserEntity).all()
+        return [User(entity.id, entity.name, entity.created_at) for entity in entities]
+    except Exception as e:
+        raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
+    finally:
+        session.close()
 
 
 def get_user(_id: str) -> Optional[User]:
