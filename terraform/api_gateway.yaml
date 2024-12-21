@@ -25,6 +25,14 @@ security:
   - auth0_jwk: []
 
 paths:
+  /me:
+    get:
+      operationId: me
+      responses:
+        200:
+          description: return login user
+          schema:
+            $ref: "#/definitions/User"
   /users:
     post:
       operationId: createUser
@@ -32,15 +40,27 @@ paths:
         200:
           description: return created user or exist user
           schema:
-            type: object
-            properties:
-              id:
-                type: string
-              name:
-                type: string
-              created_at:
-                type: string
-            required:
-              - id
-              - name
-              - created_at
+            $ref: "#/definitions/User"
+    put:
+      operationId: updateUser
+      responses:
+        200:
+          description: return updated user
+          schema:
+            $ref: "#/definitions/User"
+
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      created_at:
+        type: string
+    required:
+      - id
+      - name
+      - created_at
+      - updated_at
