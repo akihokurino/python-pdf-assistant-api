@@ -1,41 +1,55 @@
 from datetime import datetime
-from typing import Final, Tuple
 
-from flask import Flask, Response, g
-from flask_cors import CORS
+import uvicorn
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
-from handler.response import user_response, ok
+from handler.response import user_response
 from infra.cloud_sql.user import get_user, insert_user
-from middleware.auth import auth_middleware
-from middleware.log import log_middleware
-from model.error import AppError, ErrorKind
+from middleware.auth import AuthMiddleware
+from middleware.error import ErrorMiddleware
+from middleware.log import LogMiddleware
 from model.user import User
 
-app: Final[Flask] = Flask(__name__)
-app.config["JSON_AS_ASCII"] = False
-CORS(app)
+app = FastAPI()
+app.add_middleware(AuthMiddleware)
+app.add_middleware(LogMiddleware)
+app.add_middleware(ErrorMiddleware)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={
+            "message": "不正なリクエストです",
+            "detail": exc.errors(),
+        },
+    )
 
 
 def start() -> None:
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    uvicorn.run(app, host="0.0.0.0", port=8080, log_level="debug")
 
 
-@app.route("/users", methods=["POST"])
-@log_middleware
-@auth_middleware
-def create_user() -> Tuple[Response, int]:
-    uid = g.uid
+class CreateUserPayload(BaseModel):
+    name: str
+
+
+@app.post("/users")
+def create_user(
+    request: Request,
+    payload: CreateUserPayload,
+) -> JSONResponse:
+    uid = request.state.uid
     now = datetime.utcnow()
-    try:
-        user = get_user(uid)
-        if user:
-            return ok(user_response(user))
-        new_user = User(uid, "user", now)
-        insert_user(new_user)
-        return ok(user_response(new_user))
-    except AppError as e:
-        return e.error_response()
-    except Exception as e:
-        return AppError(
-            ErrorKind.INTERNAL, f"エラーが発生しました: {e}"
-        ).error_response()
+    user = get_user(uid)
+    if user:
+        return JSONResponse(content=user_response(user), status_code=200)
+    new_user = User(uid, payload.name, now)
+    insert_user(new_user)
+    return JSONResponse(content=user_response(new_user), status_code=200)

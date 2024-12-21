@@ -1,33 +1,32 @@
-from functools import wraps
-from typing import Callable, TypeVar, Any, cast
+import json
+from typing import Callable, Any
 
-from flask import request, Response
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from infra.logger import log_info
 
-LogMiddleware = TypeVar("LogMiddleware", bound=Callable[..., Any])
 
-
-def log_middleware(f: LogMiddleware) -> LogMiddleware:
-    @wraps(f)
-    def decorated(*args: Any, **kwargs: Any) -> Any:
+class LogMiddleware(BaseHTTPMiddleware):
+    async def dispatch(
+        self, request: Request, call_next: Callable[..., Any]
+    ) -> Response:
         log_info("------------------------------------------------------")
-        log_info(f"Request Endpoint: {request.path}")
-        for k, v in dict(request.headers).items():
+        log_info(f"Request Endpoint: {request.url.path}")
+        for k, v in request.headers.items():
             log_info(f"Request Header: {k}={v}")
 
-        if request.is_json:
-            log_info(f"Request Body: {request.get_json()}")
+        try:
+            body = await request.json()
+            log_info(f"Request Body: {body}")
+        except json.JSONDecodeError:
+            log_info("Request Body is not valid JSON or is empty.")
+        except Exception as e:
+            log_info(f"Error reading request body: {e}")
 
-        response = f(*args, **kwargs)
+        response: Response = await call_next(request)
 
-        if isinstance(response, tuple) and len(response) == 2:
-            body, status = response
-            if isinstance(body, Response) and body.mimetype == "application/json":
-                log_info(f"Response Body: {body.get_data(as_text=True)}")
-            log_info(f"Response Status: {status}")
+        log_info(f"Response Status: {response.status_code}")
         log_info("------------------------------------------------------")
 
         return response
-
-    return cast(LogMiddleware, decorated)

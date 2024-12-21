@@ -1,14 +1,6 @@
-import json
-from typing import Any, Tuple
-
-from flask import Response
+from typing import Any
 
 from model.user import User
-
-
-def ok(data: dict[str, Any]) -> Tuple[Response, int]:
-    json_data = json.dumps(data, ensure_ascii=False, indent=4)
-    return Response(json_data, mimetype="application/json"), 200
 
 
 def user_response(user: User) -> dict[str, Any]:

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import Column, String, DateTime
@@ -10,9 +11,9 @@ from model.user import User
 class UserEntity(Base):
     __tablename__ = "users"
 
-    id = Column(String(255), primary_key=True)
-    name = Column(String(255), nullable=False)
-    created_at = Column(DateTime, nullable=False)
+    id: str = Column(String(255), primary_key=True)
+    name: str = Column(String(255), nullable=False)
+    created_at: datetime = Column(DateTime, nullable=False)
 
 
 def get_user(_id: str) -> Optional[User]:
