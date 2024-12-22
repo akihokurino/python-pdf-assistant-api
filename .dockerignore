@@ -3,3 +3,4 @@ venv
 cloud_sql
 terraform
 sample_pdf
+signer-cred.json

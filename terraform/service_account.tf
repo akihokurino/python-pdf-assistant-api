@@ -12,6 +12,11 @@ resource "google_project_iam_member" "cloud_run_secret_access" {
   role    = "roles/secretmanager.secretAccessor"
   member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
 }
+resource "google_project_iam_member" "cloud_run_token_creator" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountTokenCreator"
+  member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
+}
 
 resource "google_service_account" "api_gateway_sa" {
   account_id   = "api-gateway-sa"
