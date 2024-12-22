@@ -36,6 +36,11 @@ paths:
   /users:
     post:
       operationId: createUser
+      parameters:
+        - name: name
+          in: formData
+          required: true
+          type: string
       responses:
         200:
           description: return created user or exist user
@@ -43,11 +48,109 @@ paths:
             $ref: "#/definitions/User"
     put:
       operationId: updateUser
+      parameters:
+        - name: name
+          in: formData
+          required: true
+          type: string
       responses:
         200:
           description: return updated user
           schema:
             $ref: "#/definitions/User"
+  /documents:
+    post:
+      operationId: createDocument
+      parameters:
+        - name: name
+          in: formData
+          required: true
+          type: string
+        - name: description
+          in: formData
+          required: true
+          type: string
+        - name: gs_key
+          in: formData
+          required: true
+          type: string
+      responses:
+        200:
+          description: return created document
+          schema:
+            $ref: "#/definitions/Document"
+  /documents/{id}:
+    get:
+      operationId: getDocument
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: return document
+          schema:
+            $ref: "#/definitions/Document"
+    put:
+      operationId: updateDocument
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+        - name: name
+          in: formData
+          required: true
+          type: string
+        - name: description
+          in: formData
+          required: true
+          type: string
+      responses:
+        200:
+          description: return updated document
+          schema:
+            $ref: "#/definitions/Document"
+    delete:
+      operationId: deleteDocument
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: empty
+  /documents/pre_signed_upload_url:
+    post:
+      operationId: documentPreSignedUploadUrl
+      responses:
+        200:
+          description: empty
+          schema:
+            type: object
+            properties:
+              url:
+                type: string
+              key:
+                type: string
+            required:
+              - url
+              - key
+  /documents/pre_signed_get_url:
+    post:
+      operationId: documentPreSignedGetUrl
+      responses:
+        200:
+          description: empty
+          schema:
+            type: object
+            properties:
+              url:
+                type: string
+            required:
+              - url
 
 definitions:
   User:
@@ -59,8 +162,38 @@ definitions:
         type: string
       created_at:
         type: string
+      updated_at:
+        type: string
     required:
       - id
       - name
+      - created_at
+      - updated_at
+  Document:
+    type: object
+    properties:
+      id:
+        type: string
+      user_id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      gs_file_url:
+        type: string
+      status:
+        type: string
+      created_at:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - user_id
+      - name
+      - description
+      - gs_file_url
+      - status
       - created_at
       - updated_at

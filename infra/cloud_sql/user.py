@@ -5,7 +5,7 @@ from sqlalchemy import Column, String, DateTime
 
 from infra.cloud_sql.common import Base, Session
 from model.error import AppError, ErrorKind
-from model.user import User
+from model.user import User, UserId
 
 
 @final
@@ -22,21 +22,21 @@ class UserEntity(Base):
         self.updated_at = user.updated_at
 
 
-def _entity_from(u: User) -> UserEntity:
+def _entity_from(d: User) -> UserEntity:
     return UserEntity(
-        id=u.id,
-        name=u.name,
-        created_at=u.created_at,
-        updated_at=u.updated_at,
+        id=d.id,
+        name=d.name,
+        created_at=d.created_at,
+        updated_at=d.updated_at,
     )
 
 
-def _user_from(u: UserEntity) -> User:
+def _domain_from(e: UserEntity) -> User:
     return User(
-        _id=u.id,
-        name=u.name,
-        created_at=u.created_at,
-        updated_at=u.updated_at,
+        _id=UserId(e.id),
+        name=e.name,
+        created_at=e.created_at,
+        updated_at=e.updated_at,
     )
 
 
@@ -44,30 +44,30 @@ def find_users() -> List[User]:
     session = Session()
     try:
         entities = session.query(UserEntity).all()
-        return [_user_from(e) for e in entities]
+        return [_domain_from(e) for e in entities]
     except Exception as e:
         raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
     finally:
         session.close()
 
 
-def get_user(_id: str) -> Optional[User]:
+def get_user(_id: UserId) -> Optional[User]:
     session = Session()
     try:
-        entity = session.query(UserEntity).filter_by(id=_id).first()
+        entity = session.query(UserEntity).filter_by(id=_id).one_or_none()
         if not entity:
             return None
-        return _user_from(entity)
+        return _domain_from(entity)
     except Exception as e:
         raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
     finally:
         session.close()
 
 
-def insert_user(user: User) -> None:
+def insert_user(item: User) -> None:
     session = Session()
     try:
-        entity = _entity_from(user)
+        entity = _entity_from(item)
         session.add(entity)
         session.commit()
     except Exception as e:
@@ -77,13 +77,13 @@ def insert_user(user: User) -> None:
         session.close()
 
 
-def update_user(user: User) -> None:
+def update_user(item: User) -> None:
     session = Session()
     try:
-        entity = session.query(UserEntity).filter_by(id=user.id).first()
+        entity = session.query(UserEntity).filter_by(id=item.id).first()
         if not entity:
-            raise AppError(ErrorKind.NOT_FOUND, f"ユーザーが見つかりません: {user.id}")
-        entity.update(user)
+            raise AppError(ErrorKind.NOT_FOUND, f"ユーザーが見つかりません: {item.id}")
+        entity.update(item)
         session.commit()
     except Exception as e:
         session.rollback()
@@ -92,7 +92,7 @@ def update_user(user: User) -> None:
         session.close()
 
 
-def delete_user(_id: str) -> None:
+def delete_user(_id: UserId) -> None:
     session = Session()
     try:
         entity = session.query(UserEntity).filter_by(id=_id).first()

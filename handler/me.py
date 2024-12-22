@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from handler.response import user_resp
 from infra.cloud_sql.user import get_user
 from model.error import AppError, ErrorKind
+from model.user import UserId
 
 router: Final[APIRouter] = APIRouter()
 
@@ -14,7 +15,7 @@ router: Final[APIRouter] = APIRouter()
 def _me(
     request: Request,
 ) -> JSONResponse:
-    uid: Final[str] = request.state.uid
+    uid: Final[UserId] = request.state.uid
 
     user = get_user(uid)
     if not user:

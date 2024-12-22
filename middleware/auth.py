@@ -11,6 +11,7 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from model.error import AppError, ErrorKind
+from model.user import UserId
 
 AUTH0_ISSUER = "https://dev-im6sd3gmyj703h6n.us.auth0.com/"
 AUTH0_JWKS_URL = "https://dev-im6sd3gmyj703h6n.us.auth0.com/.well-known/jwks.json"
@@ -51,7 +52,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             except Exception as e:
                 raise e
 
-            user_id: Optional[str] = decoded_token.get("sub")
+            user_id: Optional[UserId] = decoded_token.get("sub")
             if not user_id:
                 raise AppError(ErrorKind.UNAUTHORIZED, "認証エラーです")
 

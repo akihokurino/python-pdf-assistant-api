@@ -12,7 +12,7 @@ from infra.cloud_sql.user import (
     update_user,
 )
 from model.error import AppError, ErrorKind
-from model.user import User
+from model.user import User, UserId
 
 router: Final[APIRouter] = APIRouter()
 
@@ -27,7 +27,7 @@ def _create_user(
     request: Request,
     payload: _CreateUserPayload,
 ) -> JSONResponse:
-    uid: Final[str] = request.state.uid
+    uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
     user = get_user(uid)
@@ -50,7 +50,7 @@ def _update_user(
     request: Request,
     payload: _UpdateUserPayload,
 ) -> JSONResponse:
-    uid: Final[str] = request.state.uid
+    uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
     user = get_user(uid)

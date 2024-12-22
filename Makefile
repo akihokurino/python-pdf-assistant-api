@@ -13,8 +13,7 @@ update-modules:
 	source venv/bin/activate && pip list --outdated --format=json | python -c "import sys, json; [print(pkg['name']) for pkg in json.load(sys.stdin)]" | xargs -n1 pip install -U
 
 types:
-	source venv/bin/activate && mypy entrypoint/api.py
-	source venv/bin/activate && mypy entrypoint/clean_openai_assistant.py
+	source venv/bin/activate && mypy .
 
 test:
 	source venv/bin/activate && pytest

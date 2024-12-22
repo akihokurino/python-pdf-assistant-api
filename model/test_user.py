@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
 
-from model.user import User
+from model.user import User, UserId
 
 
-def test_user_initialization():
+def test_user_initialization() -> None:
     now = datetime.now(timezone.utc)
-    user = User(_id="123", name="Alice", created_at=now, updated_at=now)
+    user = User(_id=UserId("123"), name="Alice", created_at=now, updated_at=now)
 
     assert user.id == "123"
     assert user.name == "Alice"
@@ -13,9 +13,9 @@ def test_user_initialization():
     assert user.updated_at == now
 
 
-def test_user_new():
+def test_user_new() -> None:
     now = datetime.now(timezone.utc)
-    user = User.new(_id="456", name="Bob", now=now)
+    user = User.new(_id=UserId("456"), name="Bob", now=now)
 
     assert user.id == "456"
     assert user.name == "Bob"
@@ -23,9 +23,9 @@ def test_user_new():
     assert user.updated_at == now
 
 
-def test_user_update():
+def test_user_update() -> None:
     now = datetime.now(timezone.utc)
-    user = User.new(_id="789", name="Charlie", now=now)
+    user = User.new(_id=UserId("789"), name="Charlie", now=now)
 
     assert user.name == "Charlie"
     assert user.updated_at == now
