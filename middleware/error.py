@@ -4,6 +4,7 @@ from fastapi import Request, Response, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from infra.logger import log_error
 from model.error import AppError
 
 
@@ -25,6 +26,7 @@ class ErrorMiddleware(BaseHTTPMiddleware):
                 status.HTTP_408_REQUEST_TIMEOUT,
             )
         except Exception as e:
+            log_error(e)
             response = JSONResponse(
                 {"message": "サーバーエラーが発生しました"},
                 status.HTTP_500_INTERNAL_SERVER_ERROR,

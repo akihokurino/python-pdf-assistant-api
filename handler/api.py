@@ -6,6 +6,7 @@ from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from handler.document import router as document_router
 from handler.me import router as me_router
 from handler.user import router as user_router
 from middleware.auth import AuthMiddleware
@@ -18,6 +19,7 @@ app.add_middleware(LogMiddleware)
 app.add_middleware(ErrorMiddleware)
 app.include_router(me_router)
 app.include_router(user_router)
+app.include_router(document_router)
 
 
 @app.exception_handler(RequestValidationError)

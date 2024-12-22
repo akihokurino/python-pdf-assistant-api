@@ -57,3 +57,8 @@ resource "google_project_service" "cloud_build" {
   project = var.project_id
   service = "cloudbuild.googleapis.com"
 }
+
+resource "google_project_service" "storage_api" {
+  project = var.project_id
+  service = "storage.googleapis.com"
+}

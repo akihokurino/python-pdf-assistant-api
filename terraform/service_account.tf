@@ -42,3 +42,13 @@ resource "google_project_iam_member" "cloud_build_editor" {
   role    = "roles/editor"
   member  = "serviceAccount:${google_service_account.cloud_build_sa.email}"
 }
+
+resource "google_service_account" "cloud_storage_signer_sa" {
+  account_id   = "cloud-storage-signer-sa"
+  display_name = "Service Account for Signed URLs"
+}
+resource "google_project_iam_member" "storage_admin_role" {
+  project = var.project_id
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:${google_service_account.cloud_storage_signer_sa.email}"
+}
