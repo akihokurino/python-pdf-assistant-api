@@ -2,18 +2,23 @@ import os
 from datetime import timedelta
 from typing import Final
 
+from google.auth import default
 from google.cloud.storage import Client, Bucket, Blob
 from google.oauth2.service_account import Credentials
 
 from model.error import AppError, ErrorKind
 
-_key_path: Final[str] = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "../signer-cred.json"
-)
-_credentials: Final[Credentials] = Credentials.from_service_account_file(  # type: ignore
-    _key_path,
-    scopes=["https://www.googleapis.com/auth/cloud-platform"],
-)
+if os.getenv("IS_LOCAL", "") == "true":
+    _key_path: Final[str] = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "../signer-cred.json"
+    )
+    _credentials = Credentials.from_service_account_file(  # type: ignore
+        _key_path,
+        scopes=["https://www.googleapis.com/auth/cloud-platform"],
+    )
+else:
+    _credentials, _ = default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+
 _project_id: Final[str] = os.getenv("PROJECT_ID", "")
 bucket_name: Final[str] = f"{_project_id}-userdata"
 
