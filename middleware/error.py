@@ -16,6 +16,7 @@ class ErrorMiddleware(BaseHTTPMiddleware):
         try:
             response: Response = await call_next(request)
         except AppError as e:
+            log_error(e)
             response = JSONResponse(
                 {"message": e.message},
                 e.kind.value,

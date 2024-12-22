@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from handler.response import user_resp
-from infra.cloud_sql.user import (
+from infra.cloud_sql.user_repo import (
     get_user,
     insert_user,
     update_user,

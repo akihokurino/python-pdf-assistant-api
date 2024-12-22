@@ -1,50 +1,24 @@
-from datetime import datetime
-from typing import Optional, List, final
+from typing import Optional, List, Tuple
 
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy.orm import joinedload
 
-from infra.cloud_sql.common import Base, Session
+from infra.cloud_sql.common import Session
+from infra.cloud_sql.entity import (
+    UserEntity,
+    user_from,
+    user_entity_from,
+    document_from,
+)
+from model.document import Document
 from model.error import AppError, ErrorKind
 from model.user import User, UserId
-
-
-@final
-class UserEntity(Base):
-    __tablename__ = "users"
-
-    id: str = Column(String(255), primary_key=True)
-    name: str = Column(String(255), nullable=False)
-    created_at: datetime = Column(DateTime, nullable=False)
-    updated_at: datetime = Column(DateTime, nullable=False)
-
-    def update(self, user: User) -> None:
-        self.name = user.name
-        self.updated_at = user.updated_at
-
-
-def _entity_from(d: User) -> UserEntity:
-    return UserEntity(
-        id=d.id,
-        name=d.name,
-        created_at=d.created_at,
-        updated_at=d.updated_at,
-    )
-
-
-def _domain_from(e: UserEntity) -> User:
-    return User(
-        _id=UserId(e.id),
-        name=e.name,
-        created_at=e.created_at,
-        updated_at=e.updated_at,
-    )
 
 
 def find_users() -> List[User]:
     session = Session()
     try:
         entities = session.query(UserEntity).all()
-        return [_domain_from(e) for e in entities]
+        return [user_from(e) for e in entities]
     except Exception as e:
         raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
     finally:
@@ -57,7 +31,25 @@ def get_user(_id: UserId) -> Optional[User]:
         entity = session.query(UserEntity).filter_by(id=_id).one_or_none()
         if not entity:
             return None
-        return _domain_from(entity)
+        return user_from(entity)
+    except Exception as e:
+        raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
+    finally:
+        session.close()
+
+
+def get_user_with_documents(_id: UserId) -> Optional[Tuple[User, List[Document]]]:
+    session = Session()
+    try:
+        entity = (
+            session.query(UserEntity)
+            .filter_by(id=_id)
+            .options(joinedload(UserEntity.documents))
+            .one_or_none()
+        )
+        if not entity:
+            return None
+        return user_from(entity), [document_from(e) for e in entity.documents]
     except Exception as e:
         raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
     finally:
@@ -67,7 +59,7 @@ def get_user(_id: UserId) -> Optional[User]:
 def insert_user(item: User) -> None:
     session = Session()
     try:
-        entity = _entity_from(item)
+        entity = user_entity_from(item)
         session.add(entity)
         session.commit()
     except Exception as e:

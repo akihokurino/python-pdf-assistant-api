@@ -8,12 +8,13 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from handler.response import document_resp
-from infra.cloud_sql.document import (
+from handler.response import document_resp, user_resp
+from infra.cloud_sql.document_repo import (
     insert_document,
     get_document,
     update_document,
     delete_document,
+    get_document_with_user,
 )
 from infra.cloud_storage import (
     gen_pre_signed_upload_url,
@@ -31,13 +32,19 @@ _project_id: Final[str] = os.getenv("PROJECT_ID", "")
 
 @router.get("/documents/{document_id}")
 def _get_document(document_id: DocumentId, request: Request) -> JSONResponse:
-    document = get_document(document_id)
-    if not document:
+    result = get_document_with_user(document_id)
+    if not result:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
         )
 
-    return JSONResponse(content=document_resp(document), status_code=200)
+    return JSONResponse(
+        content={
+            "document": document_resp(result[0]),
+            "user": user_resp(result[1]),
+        },
+        status_code=200,
+    )
 
 
 @router.post("/documents/pre_signed_upload_url")

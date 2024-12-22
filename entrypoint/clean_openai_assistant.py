@@ -1,4 +1,4 @@
-from infra.cloud_sql.user import find_users
+from infra.cloud_sql.user_repo import find_users
 from infra.logger import log_info
 
 if __name__ == "__main__":
