@@ -10,6 +10,7 @@ from auth0.authentication.token_verifier import (
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from config.envs import TASK_QUEUE_TOKEN
 from model.error import AppError, ErrorKind
 from model.user import UserId
 
@@ -23,6 +24,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
+        task_queue_token: Optional[str] = request.headers.get("x-queue-token")
+        if task_queue_token and task_queue_token == TASK_QUEUE_TOKEN:
+            response: Response = await call_next(request)
+            return response
+
         user_info_encoded: Optional[str] = request.headers.get(
             "X-Apigateway-Api-Userinfo"
         )
@@ -58,5 +64,5 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
             request.state.uid = user_id
 
-        response: Response = await call_next(request)
+        response = await call_next(request)
         return response

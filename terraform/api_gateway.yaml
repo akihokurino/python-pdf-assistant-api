@@ -122,6 +122,20 @@ paths:
       responses:
         200:
           description: empty
+  /documents/{id}/openai_assistants:
+    post:
+      operationId: createOpenaiAssistant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      responses:
+        201:
+          description: return created document
+          schema:
+            type: object
+            additionalProperties: false
   /documents/pre_signed_upload_url:
     post:
       operationId: documentPreSignedUploadUrl

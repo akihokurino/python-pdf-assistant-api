@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from handler.document import router as document_router
 from handler.me import router as me_router
+from handler.subscriber import router as subscriber_router
 from handler.user import router as user_router
 from middleware.auth import AuthMiddleware
 from middleware.error import ErrorMiddleware
@@ -20,6 +21,7 @@ app.add_middleware(ErrorMiddleware)
 app.include_router(me_router)
 app.include_router(user_router)
 app.include_router(document_router)
+app.include_router(subscriber_router)
 
 
 @app.exception_handler(RequestValidationError)

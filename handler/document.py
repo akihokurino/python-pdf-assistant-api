@@ -1,4 +1,3 @@
-import os
 import re
 import uuid
 from datetime import datetime, timezone
@@ -8,6 +7,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from config.envs import DEFAULT_BUCKET_NAME
 from handler.response import document_resp, user_resp
 from infra.cloud_sql.document_repo import (
     insert_document,
@@ -18,16 +18,15 @@ from infra.cloud_sql.document_repo import (
 )
 from infra.cloud_storage import (
     gen_pre_signed_upload_url,
-    bucket_name,
     gen_pre_signed_get_url,
     delete_object,
 )
+from infra.cloud_task import send_queue
 from model.document import Document, DocumentId
 from model.error import AppError, ErrorKind
 from model.user import UserId
 
 router: Final[APIRouter] = APIRouter()
-_project_id: Final[str] = os.getenv("PROJECT_ID", "")
 
 
 @router.get("/documents/{document_id}")
@@ -110,13 +109,37 @@ def _create_documents(
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
-    gs_file_url = f"gs://{bucket_name}/{payload.gs_key}"
+    gs_file_url = f"gs://{DEFAULT_BUCKET_NAME}/{payload.gs_key}"
     new_document = Document.new(
         uid, payload.name, payload.description, gs_file_url, now
     )
     insert_document(new_document)
 
     return JSONResponse(content=document_resp(new_document), status_code=200)
+
+
+@router.post("/documents/{document_id}/openai_assistants")
+def _create_openai_assistant(
+    document_id: DocumentId,
+    request: Request,
+) -> JSONResponse:
+    uid: Final[UserId] = request.state.uid
+
+    document = get_document(document_id)
+    if not document:
+        raise AppError(
+            ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
+        )
+    if document.user_id != uid:
+        raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
+
+    send_queue(
+        "create-openai-assistant",
+        "/subscriber/create_openai_assistant",
+        {"document_id": document.id},
+    )
+
+    return JSONResponse(content={}, status_code=201)
 
 
 @final
@@ -139,7 +162,6 @@ def _update_documents(
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
         )
-
     if document.user_id != uid:
         raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
 
@@ -161,7 +183,6 @@ def _delete_documents(
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
         )
-
     if document.user_id != uid:
         raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
 

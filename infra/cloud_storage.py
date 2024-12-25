@@ -7,10 +7,8 @@ from google.auth.transport import requests
 from google.cloud.storage import Client, Bucket, Blob
 from google.oauth2.service_account import Credentials
 
+from config.envs import DEFAULT_BUCKET_NAME
 from model.error import AppError, ErrorKind
-
-_project_id: Final[str] = os.getenv("PROJECT_ID", "")
-bucket_name: Final[str] = f"{_project_id}-userdata"
 
 
 def _local_credentials() -> Credentials:
@@ -35,19 +33,19 @@ def _credential() -> Credentials:
 def download_object(
     key: str,
     destination_file_name: str,
-    use_bucket_name: str = bucket_name,
+    bucket_name: str = DEFAULT_BUCKET_NAME,
 ) -> None:
     client: Final[Client] = Client()
-    bucket: Final[Bucket] = client.bucket(use_bucket_name)
+    bucket: Final[Bucket] = client.bucket(bucket_name)
     blob: Final[Blob] = bucket.blob(key)
     blob.download_to_filename(destination_file_name)
 
 
 def gen_pre_signed_upload_url(
-    key: str, use_bucket_name: str = bucket_name, expiration_minutes: int = 15
+    key: str, bucket_name: str = DEFAULT_BUCKET_NAME, expiration_minutes: int = 15
 ) -> str:
     client: Final[Client] = Client()
-    bucket: Final[Bucket] = client.bucket(use_bucket_name)
+    bucket: Final[Bucket] = client.bucket(bucket_name)
     blob: Final[Blob] = bucket.blob(key)
 
     if os.getenv("IS_LOCAL", "") == "true":
@@ -73,10 +71,10 @@ def gen_pre_signed_upload_url(
 
 
 def gen_pre_signed_get_url(
-    key: str, use_bucket_name: str = bucket_name, expiration_minutes: int = 15
+    key: str, bucket_name: str = DEFAULT_BUCKET_NAME, expiration_minutes: int = 15
 ) -> str:
     client: Final[Client] = Client()
-    bucket: Final[Bucket] = client.bucket(use_bucket_name)
+    bucket: Final[Bucket] = client.bucket(bucket_name)
     blob: Final[Blob] = bucket.blob(key)
     if os.getenv("IS_LOCAL", "") == "true":
         url: str = blob.generate_signed_url(
@@ -98,9 +96,9 @@ def gen_pre_signed_get_url(
     return url
 
 
-def delete_object(key: str, use_bucket_name: str = bucket_name) -> None:
+def delete_object(key: str, bucket_name: str = DEFAULT_BUCKET_NAME) -> None:
     client: Final[Client] = Client()
-    bucket: Final[Bucket] = client.bucket(use_bucket_name)
+    bucket: Final[Bucket] = client.bucket(bucket_name)
     blob: Final[Blob] = bucket.blob(key)
 
     if blob.exists():

@@ -14,3 +14,11 @@ variable "db_password" {
 variable "cloud_sql_connection" {
   type = string
 }
+
+variable "task_queue_token" {
+  type = string
+}
+
+variable "api_base_url" {
+  type = string
+}

@@ -50,7 +50,7 @@ resource "google_cloud_run_service" "api" {
     }
   }
 }
-resource "google_cloud_run_service_iam_binding" "restrict_unauthenticated_access" {
+resource "google_cloud_run_service_iam_binding" "api_access" {
   service  = google_cloud_run_service.api.name
   location = google_cloud_run_service.api.location
   role     = "roles/run.invoker"
@@ -103,7 +103,7 @@ resource "google_cloud_run_v2_job" "clean_openai_assistant" {
     parallelism  = 1
   }
 }
-resource "google_cloud_run_v2_job_iam_binding" "restrict_unauthenticated_access" {
+resource "google_cloud_run_v2_job_iam_binding" "clean_openai_assistant_access" {
   name     = google_cloud_run_v2_job.clean_openai_assistant.name
   location = google_cloud_run_v2_job.clean_openai_assistant.location
   role     = "roles/run.invoker"
