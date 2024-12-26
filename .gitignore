@@ -5,3 +5,6 @@ __pycache__
 .terraform
 terraform.tfvars
 signer-cred.json
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
