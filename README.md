@@ -12,6 +12,7 @@
 - cloud storage
 - cloud sql（mysql 8.0）
 - cloud scheduler
+- cloud tasks
 - secret manager
 - auth0
 

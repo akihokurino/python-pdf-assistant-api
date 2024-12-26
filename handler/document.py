@@ -21,7 +21,7 @@ from infra.cloud_storage import (
     gen_pre_signed_get_url,
     delete_object,
 )
-from infra.cloud_task import send_queue
+from infra.cloud_tasks import send_queue
 from infra.openai import get_answer
 from model.document import Document, DocumentId, Status
 from model.error import AppError, ErrorKind
