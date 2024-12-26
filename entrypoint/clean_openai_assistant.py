@@ -1,8 +1,24 @@
-from infra.cloud_sql.user_repo import find_users
-from infra.logger import log_info
+from datetime import datetime, timezone, timedelta
+from typing import Final
+
+from infra.cloud_sql.document_repo import update_document
+from infra.cloud_sql.openai_assistant_repo import (
+    find_past_openai_assistants,
+    delete_assistant,
+)
+from infra.openai import delete_assistant as delete_openai_assistant
+from model.document import Status
 
 if __name__ == "__main__":
-    log_info("hello world")
-    users = find_users()
-    for user in users:
-        log_info(f"user: {user.id}, {user.name}, {user.created_at}")
+    now: Final[datetime] = datetime.now(timezone.utc)
+    target: Final[datetime] = now - timedelta(hours=3)
+
+    results = find_past_openai_assistants(target)
+    for result in results:
+        assistant = result[0]
+        document = result[1]
+
+        document.update_status(Status.PREPARE_ASSISTANT, now)
+        delete_openai_assistant(assistant.id)
+        update_document(document)
+        delete_assistant(document.id)

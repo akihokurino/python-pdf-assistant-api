@@ -98,3 +98,7 @@ def create_assistant(
     )
 
     return OpenaiAssistantId(assistant.id), OpenaiThreadId(thread.id)
+
+
+def delete_assistant(assistant_id: OpenaiAssistantId) -> None:
+    client.beta.assistants.delete(assistant_id=assistant_id)

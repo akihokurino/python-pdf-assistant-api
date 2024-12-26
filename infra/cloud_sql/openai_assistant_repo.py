@@ -1,13 +1,35 @@
-from typing import Optional
+from datetime import datetime
+from typing import Optional, List, Tuple
+
+from sqlalchemy.orm import joinedload
 
 from infra.cloud_sql.common import Session
 from infra.cloud_sql.entity import (
     openai_assistant_entity_from,
     openai_assistant_from,
     OpenaiAssistantEntity,
+    document_from,
 )
-from model.document import OpenaiAssistant, DocumentId
+from model.document import OpenaiAssistant, DocumentId, Document
 from model.error import AppError, ErrorKind
+
+
+def find_past_openai_assistants(
+    date: datetime,
+) -> List[Tuple[OpenaiAssistant, Document]]:
+    session = Session()
+    try:
+        entities = (
+            session.query(OpenaiAssistantEntity)
+            .filter(OpenaiAssistantEntity.used_at < date)
+            .options(joinedload(OpenaiAssistantEntity.document))
+            .all()
+        )
+        return [(openai_assistant_from(e), document_from(e.document)) for e in entities]
+    except Exception as e:
+        raise AppError(ErrorKind.INTERNAL, f"データの取得に失敗しました。") from e
+    finally:
+        session.close()
 
 
 def get_assistant(_id: DocumentId) -> Optional[OpenaiAssistant]:
