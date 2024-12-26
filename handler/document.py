@@ -1,7 +1,6 @@
-import re
 import uuid
 from datetime import datetime, timezone
-from typing import Final, final, Optional
+from typing import Final, final
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
@@ -25,6 +24,7 @@ from infra.cloud_task import send_queue
 from model.document import Document, DocumentId
 from model.error import AppError, ErrorKind
 from model.user import UserId
+from util.gs_url import gs_url_to_key
 
 router: Final[APIRouter] = APIRouter()
 
@@ -68,19 +68,12 @@ class _PreSignedGetUrlPayload(BaseModel):
     gs_url: str
 
 
-def _gs_url_to_key(gs_url: str) -> Optional[str]:
-    match = re.match(r"gs://[^/]+/(.+)", gs_url)
-    if match:
-        return match.group(1)
-    return None
-
-
 @router.post("/documents/pre_signed_get_url")
 def _pre_signed_get_url(
     request: Request,
     payload: _PreSignedGetUrlPayload,
 ) -> JSONResponse:
-    key = _gs_url_to_key(payload.gs_url)
+    key = gs_url_to_key(payload.gs_url)
     if not key:
         raise AppError(ErrorKind.BAD_REQUEST, "gs_urlが不正です")
     print(key)
@@ -186,7 +179,7 @@ def _delete_documents(
     if document.user_id != uid:
         raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
 
-    key = _gs_url_to_key(document.gs_file_url)
+    key = gs_url_to_key(document.gs_file_url)
     if not key:
         raise AppError(ErrorKind.INTERNAL, "gs_urlが不正です")
 

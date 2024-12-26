@@ -25,3 +25,4 @@ TASK_QUEUE_TOKEN: Final[str] = get_secret(PROJECT_ID, "task-queue-token", "lates
 CLOUD_RUN_SA: Final[str] = f"cloud-run-sa@{PROJECT_ID}.iam.gserviceaccount.com"
 DEFAULT_BUCKET_NAME: Final[str] = f"{PROJECT_ID}-userdata"
 API_BASE_URL: Final[str] = get_secret(PROJECT_ID, "api-base-url", "latest")
+OPENAI_API_KEY: Final[str] = get_secret(PROJECT_ID, "openai-api-key", "latest")

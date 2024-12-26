@@ -28,3 +28,19 @@ CREATE TABLE IF NOT EXISTS `documents` (
         ON UPDATE NO ACTION
 )
 ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `openai_assistants` (
+    `document_id` VARCHAR(255) NOT NULL,
+    `assistant_id` VARCHAR(255) NOT NULL,
+    `thread_id` VARCHAR(255) NOT NULL,
+    `used_at` DATETIME NOT NULL,
+    `created_at` DATETIME NOT NULL,
+    `updated_at` DATETIME NOT NULL,
+    PRIMARY KEY (`document_id`),
+    CONSTRAINT `fk_openai_assistants_documents`
+        FOREIGN KEY (`document_id`)
+        REFERENCES `documents` (`id`)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+)
+ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;

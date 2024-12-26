@@ -22,3 +22,7 @@ variable "task_queue_token" {
 variable "api_base_url" {
   type = string
 }
+
+variable "openai_api_key" {
+  type = string
+}

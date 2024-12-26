@@ -7,7 +7,14 @@ from sqlalchemy import Column, String, DateTime, Integer, ForeignKey
 from sqlalchemy.orm import relationship, Mapped
 
 from infra.cloud_sql.common import Base
-from model.document import Document, DocumentId, Status
+from model.document import (
+    Document,
+    DocumentId,
+    Status,
+    OpenaiAssistant,
+    OpenaiAssistantId,
+    OpenaiThreadId,
+)
 from model.user import User, UserId
 
 
@@ -61,6 +68,9 @@ class DocumentEntity(Base):
     updated_at: datetime = Column(DateTime, nullable=False)
 
     user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="documents")
+    openai_assistant: Mapped["OpenaiAssistantEntity"] = relationship(
+        "OpenaiAssistantEntity", back_populates="document"
+    )
 
     def update(self, document: Document) -> None:
         self.name = document.name
@@ -91,6 +101,48 @@ def document_from(e: DocumentEntity) -> Document:
         description=e.description,
         gs_file_url=e.gs_file_url,
         status=Status(e.status),
+        created_at=e.created_at,
+        updated_at=e.updated_at,
+    )
+
+
+@final
+class OpenaiAssistantEntity(Base):
+    __tablename__ = "openai_assistants"
+
+    document_id: str = Column(String(255), ForeignKey("documents.id"), primary_key=True)
+    assistant_id: str = Column(String(255), nullable=False)
+    thread_id: str = Column(String(255), nullable=False)
+    used_at: datetime = Column(DateTime, nullable=False)
+    created_at: datetime = Column(DateTime, nullable=False)
+    updated_at: datetime = Column(DateTime, nullable=False)
+
+    document: Mapped["DocumentEntity"] = relationship(
+        "DocumentEntity", back_populates="openai_assistant"
+    )
+
+    def update(self, assistant: OpenaiAssistant) -> None:
+        self.used_at = assistant.used_at
+        self.updated_at = assistant.updated_at
+
+
+def openai_assistant_entity_from(d: OpenaiAssistant) -> OpenaiAssistantEntity:
+    return OpenaiAssistantEntity(
+        document_id=d.document_id,
+        assistant_id=d.id,
+        thread_id=d.thread_id,
+        used_at=d.used_at,
+        created_at=d.created_at,
+        updated_at=d.updated_at,
+    )
+
+
+def openai_assistant_from(e: OpenaiAssistantEntity) -> OpenaiAssistant:
+    return OpenaiAssistant(
+        _id=OpenaiAssistantId(e.assistant_id),
+        document_id=DocumentId(e.document_id),
+        thread_id=OpenaiThreadId(e.thread_id),
+        used_at=e.used_at,
         created_at=e.created_at,
         updated_at=e.updated_at,
     )
