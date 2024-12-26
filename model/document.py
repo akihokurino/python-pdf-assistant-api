@@ -59,10 +59,15 @@ class Document:
         self.description = description
         self.updated_at = now
 
+    def update_status(self, status: Status, now: datetime) -> None:
+        self.status = status
+        self.updated_at = now
+
 
 @final
 class Status(Enum):
     PREPARE_ASSISTANT = 1
+    READY_ASSISTANT = 2
 
 
 @final

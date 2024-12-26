@@ -6,7 +6,7 @@ from infra.cloud_sql.entity import (
     openai_assistant_from,
     OpenaiAssistantEntity,
 )
-from model.document import OpenaiAssistant, OpenaiAssistantId, DocumentId
+from model.document import OpenaiAssistant, DocumentId
 from model.error import AppError, ErrorKind
 
 
@@ -43,7 +43,10 @@ def insert_assistant(item: OpenaiAssistant) -> None:
 def update_assistant(item: OpenaiAssistant) -> None:
     session = Session()
     try:
-        entity = session.query(OpenaiAssistantEntity).filter_by(id=item.id).first()
+        entity = (
+            session.query(OpenaiAssistantEntity).filter_by(document_id=item.document_id)
+        ).one_or_none()
+
         if not entity:
             raise AppError(
                 ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {item.id}"
@@ -57,10 +60,14 @@ def update_assistant(item: OpenaiAssistant) -> None:
         session.close()
 
 
-def delete_assistant(_id: OpenaiAssistantId) -> None:
+def delete_assistant(_id: DocumentId) -> None:
     session = Session()
     try:
-        entity = session.query(OpenaiAssistantEntity).filter_by(id=_id).first()
+        entity = (
+            session.query(OpenaiAssistantEntity)
+            .filter_by(document_id=_id)
+            .one_or_none()
+        )
         if not entity:
             raise AppError(ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {_id}")
         session.delete(entity)

@@ -38,7 +38,7 @@ deploy: push-pdf-assistant
       	--add-cloudsql-instances $(PROJECT_ID):asia-northeast1:app \
       	--region asia-northeast1 \
       	--cpu 1000m \
-        --memory 512Mi \
+        --memory 1Gi \
         --port 8080 \
       	--platform managed \
       	--no-allow-unauthenticated \

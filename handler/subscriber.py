@@ -5,11 +5,11 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from infra.cloud_sql.document_repo import get_document
+from infra.cloud_sql.document_repo import get_document, update_document
 from infra.cloud_sql.openai_assistant_repo import get_assistant, insert_assistant
 from infra.cloud_storage import download_object
 from infra.openai import create_assistant
-from model.document import DocumentId, OpenaiAssistant
+from model.document import DocumentId, OpenaiAssistant, Status
 from model.error import AppError, ErrorKind
 from util.gs_url import gs_url_to_key
 
@@ -38,6 +38,8 @@ def _create_openai_assistant(
     if not document:
         raise AppError(ErrorKind.NOT_FOUND, "ドキュメントが見つかりません")
 
+    document.update_status(Status.READY_ASSISTANT, now)
+
     key = gs_url_to_key(document.gs_file_url)
     if not key:
         raise AppError(ErrorKind.INTERNAL, "ファイルのURLが不正です")
@@ -52,6 +54,7 @@ def _create_openai_assistant(
         new_assistant[0], document.id, new_assistant[1], now
     )
     insert_assistant(openai_assistant)
+    update_document(document)
 
     return JSONResponse(
         content={},

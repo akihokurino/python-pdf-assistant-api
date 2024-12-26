@@ -72,7 +72,7 @@ def insert_user(item: User) -> None:
 def update_user(item: User) -> None:
     session = Session()
     try:
-        entity = session.query(UserEntity).filter_by(id=item.id).first()
+        entity = session.query(UserEntity).filter_by(id=item.id).one_or_none()
         if not entity:
             raise AppError(ErrorKind.NOT_FOUND, f"ユーザーが見つかりません: {item.id}")
         entity.update(item)
@@ -87,7 +87,7 @@ def update_user(item: User) -> None:
 def delete_user(_id: UserId) -> None:
     session = Session()
     try:
-        entity = session.query(UserEntity).filter_by(id=_id).first()
+        entity = session.query(UserEntity).filter_by(id=_id).one_or_none()
         if not entity:
             raise AppError(ErrorKind.NOT_FOUND, f"ユーザーが見つかりません: {_id}")
         session.delete(entity)

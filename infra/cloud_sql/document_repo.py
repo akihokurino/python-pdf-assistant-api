@@ -73,7 +73,7 @@ def insert_document(item: Document) -> None:
 def update_document(item: Document) -> None:
     session = Session()
     try:
-        entity = session.query(DocumentEntity).filter_by(id=item.id).first()
+        entity = session.query(DocumentEntity).filter_by(id=item.id).one_or_none()
         if not entity:
             raise AppError(
                 ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {item.id}"
@@ -90,7 +90,7 @@ def update_document(item: Document) -> None:
 def delete_document(_id: DocumentId) -> None:
     session = Session()
     try:
-        entity = session.query(DocumentEntity).filter_by(id=_id).first()
+        entity = session.query(DocumentEntity).filter_by(id=_id).one_or_none()
         if not entity:
             raise AppError(ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {_id}")
         session.delete(entity)

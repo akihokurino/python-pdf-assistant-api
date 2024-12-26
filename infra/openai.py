@@ -8,7 +8,12 @@ from openai.types.beta.thread import Thread
 from openai.types.beta.threads import MessageContent, TextContentBlock, Run, Message
 
 from config.envs import OPENAI_API_KEY
-from model.document import OpenaiAssistantId, OpenaiThreadId, DocumentId
+from model.document import (
+    OpenaiAssistantId,
+    OpenaiThreadId,
+    DocumentId,
+    OpenaiAssistant,
+)
 from model.error import AppError, ErrorKind
 
 client: Final[OpenAI] = OpenAI(
@@ -26,7 +31,12 @@ def _wait_on_run(run: Run, thread: Thread) -> Run:
     return run
 
 
-def get_answer(assistant: Assistant, thread: Thread, question: str) -> str:
+def get_answer(_assistant: OpenaiAssistant, question: str) -> str:
+    assistant: Final[Assistant] = client.beta.assistants.retrieve(
+        assistant_id=_assistant.id
+    )
+    thread: Final[Thread] = client.beta.threads.retrieve(thread_id=_assistant.thread_id)
+
     new_message: Final[Message] = client.beta.threads.messages.create(
         thread_id=thread.id,
         role="user",

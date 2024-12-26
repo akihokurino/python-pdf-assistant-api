@@ -15,13 +15,15 @@ from infra.cloud_sql.document_repo import (
     delete_document,
     get_document_with_user,
 )
+from infra.cloud_sql.openai_assistant_repo import get_assistant, update_assistant
 from infra.cloud_storage import (
     gen_pre_signed_upload_url,
     gen_pre_signed_get_url,
     delete_object,
 )
 from infra.cloud_task import send_queue
-from model.document import Document, DocumentId
+from infra.openai import get_answer
+from model.document import Document, DocumentId, Status
 from model.error import AppError, ErrorKind
 from model.user import UserId
 from util.gs_url import gs_url_to_key
@@ -133,6 +135,49 @@ def _create_openai_assistant(
     )
 
     return JSONResponse(content={}, status_code=201)
+
+
+@final
+class _CreateOpenaiMessagePayload(BaseModel):
+    question: str
+
+
+@router.post("/documents/{document_id}/openai_messages")
+def _create_openai_message(
+    document_id: DocumentId,
+    request: Request,
+    payload: _CreateOpenaiMessagePayload,
+) -> JSONResponse:
+    uid: Final[UserId] = request.state.uid
+    now: Final[datetime] = datetime.now(timezone.utc)
+
+    document = get_document(document_id)
+    if not document:
+        raise AppError(
+            ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
+        )
+    if document.user_id != uid:
+        raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
+    if document.status != Status.READY_ASSISTANT:
+        raise AppError(ErrorKind.BAD_REQUEST, "アシスタントが準備できていません")
+
+    openai_assistant = get_assistant(document.id)
+    if not openai_assistant:
+        raise AppError(
+            ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {document_id}"
+        )
+
+    openai_assistant.use(now)
+    update_assistant(openai_assistant)
+
+    answer = get_answer(openai_assistant, payload.question)
+
+    return JSONResponse(
+        content={
+            "answer": answer,
+        },
+        status_code=200,
+    )
 
 
 @final
