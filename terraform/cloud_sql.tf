@@ -1,10 +1,11 @@
-resource "google_sql_database_instance" "cloudsql_instance" {
-  name             = "app"
-  database_version = "MYSQL_8_0_31"
+resource "google_sql_database_instance" "cloud_sql_instance" {
+  name             = "pdf-assistant"
+  database_version = "POSTGRES_17"
   instance_type    = "CLOUD_SQL_INSTANCE"
 
   settings {
     tier                        = "db-f1-micro"
+    edition                     = "ENTERPRISE"
     disk_autoresize             = "true"
     disk_autoresize_limit       = "0"
     disk_size                   = "10"
@@ -22,17 +23,15 @@ resource "google_sql_database_instance" "cloudsql_instance" {
   }
 }
 
-resource "google_sql_user" "root" {
-  name     = "root"
-  instance = google_sql_database_instance.cloudsql_instance.name
-  host     = "%"
+resource "google_sql_user" "postgres" {
+  name     = "postgres"
+  instance = google_sql_database_instance.cloud_sql_instance.name
   password = var.db_password
 }
 
-resource "google_sql_database" "app" {
-  name            = "app"
-  instance        = google_sql_database_instance.cloudsql_instance.name
-  charset         = "utf8mb4"
-  collation       = "utf8mb4_0900_ai_ci"
+resource "google_sql_database" "main" {
+  name            = "main"
+  instance        = google_sql_database_instance.cloud_sql_instance.name
+  charset         = "UTF8"
   deletion_policy = "DELETE"
 }

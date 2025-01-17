@@ -8,7 +8,7 @@ resource "google_cloud_tasks_queue" "create_openai_assistant" {
   }
 
   retry_config {
-    max_attempts = 0
+    max_attempts = 1
     min_backoff  = "0.1s"
     max_backoff  = "3600s"
   }

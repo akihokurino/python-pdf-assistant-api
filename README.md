@@ -10,7 +10,7 @@
 - cloud run jobs
 - cloud build
 - cloud storage
-- cloud sql（mysql 8.0）
+- cloud sql（postgres sql 17.0）
 - cloud scheduler
 - cloud tasks
 - secret manager

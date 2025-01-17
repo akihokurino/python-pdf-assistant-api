@@ -52,7 +52,7 @@ resource "google_service_account" "cloud_storage_signer_sa" {
   account_id   = "cloud-storage-signer-sa"
   display_name = "Service Account for Signed URLs"
 }
-resource "google_project_iam_member" "storage_admin_role" {
+resource "google_project_iam_member" "cloud_storage_admin_role" {
   project = var.project_id
   role    = "roles/storage.admin"
   member  = "serviceAccount:${google_service_account.cloud_storage_signer_sa.email}"

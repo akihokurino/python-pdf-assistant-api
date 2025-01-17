@@ -16,13 +16,13 @@ from model.user import UserId
 
 AUTH0_ISSUER = "https://dev-im6sd3gmyj703h6n.us.auth0.com/"
 AUTH0_JWKS_URL = "https://dev-im6sd3gmyj703h6n.us.auth0.com/.well-known/jwks.json"
-AUTH0_AUDIENCE = "https://api-gateway-a55kw77s.an.gateway.dev"
+AUTH0_AUDIENCE = "https://api-gateway-7nwm7l18.an.gateway.dev"
 
 
 @final
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
-        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+            self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         task_queue_token: Optional[str] = request.headers.get("x-queue-token")
         if task_queue_token and task_queue_token == TASK_QUEUE_TOKEN:

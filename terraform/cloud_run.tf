@@ -1,14 +1,14 @@
 resource "google_cloud_run_service" "api" {
-  name                       = "api"
+  name                       = "pdf-assistant-api"
   location                   = var.region
   autogenerate_revision_name = true
 
   template {
     spec {
       containers {
-        image   = "gcr.io/${var.project_id}/pdf-assistant:latest"
+        image = "asia-northeast1-docker.pkg.dev/${var.project_id}/app/pdf-assistant:latest"
         command = ["sh"]
-        args    = ["-c", "python -m entrypoint.api"]
+        args = ["-c", "python -m entrypoint.api"]
 
         ports {
           container_port = 8080
@@ -32,7 +32,7 @@ resource "google_cloud_run_service" "api" {
 
     metadata {
       annotations = {
-        "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.cloudsql_instance.connection_name
+        "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.cloud_sql_instance.connection_name
         "run.googleapis.com/client-name"        = "gcloud"
         "run.googleapis.com/client-version"     = "504.0.1"
       }
@@ -67,9 +67,9 @@ resource "google_cloud_run_v2_job" "clean_openai_assistant" {
   template {
     template {
       containers {
-        image   = "gcr.io/${var.project_id}/pdf-assistant:latest"
+        image = "asia-northeast1-docker.pkg.dev/${var.project_id}/app/pdf-assistant:latest"
         command = ["sh"]
-        args    = ["-c", "python -m entrypoint.clean_openai_assistant"]
+        args = ["-c", "python -m entrypoint.clean_openai_assistant"]
 
         env {
           name  = "PROJECT_ID"
@@ -84,7 +84,7 @@ resource "google_cloud_run_v2_job" "clean_openai_assistant" {
         }
 
         volume_mounts {
-          name = "cloudsql"
+          name       = "cloudsql"
           mount_path = "/cloudsql"
         }
       }
@@ -92,15 +92,15 @@ resource "google_cloud_run_v2_job" "clean_openai_assistant" {
       volumes {
         name = "cloudsql"
         cloud_sql_instance {
-          instances = [google_sql_database_instance.cloudsql_instance.connection_name]
+          instances = [google_sql_database_instance.cloud_sql_instance.connection_name]
         }
       }
 
       service_account = google_service_account.cloud_run_sa.email
     }
 
-    task_count   = 1
-    parallelism  = 1
+    task_count  = 1
+    parallelism = 1
   }
 }
 resource "google_cloud_run_v2_job_iam_binding" "clean_openai_assistant_access" {

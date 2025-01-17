@@ -18,7 +18,7 @@ def get_secret(pid: str, secret_id: str, version_id: str) -> str:
 
 PROJECT_ID: Final[str] = os.getenv("PROJECT_ID", "")
 if os.getenv("IS_LOCAL", "") == "true":
-    DATABASE_URL = "mysql+pymysql://root:root@localhost/app"
+    DATABASE_URL = "postgresql+psycopg2://postgres:pass@localhost/main"
 else:
     DATABASE_URL = get_secret(PROJECT_ID, "cloud-sql-connection", "latest")
 TASK_QUEUE_TOKEN: Final[str] = get_secret(PROJECT_ID, "task-queue-token", "latest")

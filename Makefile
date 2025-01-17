@@ -1,7 +1,7 @@
 MAKEFLAGS=--no-builtin-rules --no-builtin-variables --always-make
 ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 SHELL := /bin/bash
-PROJECT_ID := pdf-assistant-445201
+PROJECT_ID := my-python-448116
 
 vendor:
 	source venv/bin/activate && pip install -r requirements.txt
@@ -25,36 +25,38 @@ run-clean-openai-assistant:
 	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) IS_LOCAL=true python -m entrypoint.clean_openai_assistant
 
 gcloud-login:
+	gcloud --quiet config set project $(PROJECT_ID)
 	gcloud auth application-default login
 
 push-pdf-assistant:
 	gcloud --quiet config set project $(PROJECT_ID)
-	docker build --platform linux/amd64 -t gcr.io/$(PROJECT_ID)/pdf-assistant:latest .
-	docker push gcr.io/$(PROJECT_ID)/pdf-assistant:latest
+	docker build --platform linux/amd64 -t asia-northeast1-docker.pkg.dev/$(PROJECT_ID)/app/pdf-assistant:latest .
+	gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+	docker push asia-northeast1-docker.pkg.dev/$(PROJECT_ID)/app/pdf-assistant:latest
 
-deploy: push-pdf-assistant
-	gcloud run deploy api \
-      	--image gcr.io/$(PROJECT_ID)/pdf-assistant:latest \
-      	--add-cloudsql-instances $(PROJECT_ID):asia-northeast1:app \
+deploy:
+	gcloud run deploy pdf-assistant-api \
+      	--image asia-northeast1-docker.pkg.dev/$(PROJECT_ID)/app/pdf-assistant:latest \
+      	--add-cloudsql-instances $(PROJECT_ID):asia-northeast1:pdf-assistant \
       	--region asia-northeast1 \
       	--cpu 1000m \
         --memory 1Gi \
         --port 8080 \
       	--platform managed \
       	--no-allow-unauthenticated \
-      	--service-account cloud-run-sa@pdf-assistant-445201.iam.gserviceaccount.com \
+      	--service-account cloud-run-sa@$(PROJECT_ID).iam.gserviceaccount.com \
       	--set-env-vars PROJECT_ID=$(PROJECT_ID) \
       	--ingress all \
       	--command "sh" \
       	--args "-c,python -m entrypoint.api"
 
 	gcloud run jobs deploy clean-openai-assistant \
-        --image gcr.io/$(PROJECT_ID)/pdf-assistant:latest \
-        --set-cloudsql-instances $(PROJECT_ID):asia-northeast1:app \
+        --image asia-northeast1-docker.pkg.dev/$(PROJECT_ID)/app/pdf-assistant:latest \
+        --set-cloudsql-instances $(PROJECT_ID):asia-northeast1:pdf-assistant \
         --region asia-northeast1 \
         --cpu 1000m \
         --memory 512Mi \
-        --service-account cloud-run-sa@pdf-assistant-445201.iam.gserviceaccount.com \
+        --service-account cloud-run-sa@$(PROJECT_ID).iam.gserviceaccount.com \
         --set-env-vars PROJECT_ID=$(PROJECT_ID) \
         --max-retries 0 \
         --parallelism 1 \
@@ -74,4 +76,4 @@ clean-docker:
 	docker system prune -a -f
 
 connect-cloud-sql:
-	./cloud_sql/proxy $(PROJECT_ID):asia-northeast1:app
+	./cloud_sql/proxy $(PROJECT_ID):asia-northeast1:pdf-assistant
