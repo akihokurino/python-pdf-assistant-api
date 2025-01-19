@@ -9,12 +9,10 @@ from openai.types.beta.threads import MessageContent, TextContentBlock, Run, Mes
 
 from config.envs import OPENAI_API_KEY
 from model.document import (
-    OpenaiAssistantId,
-    OpenaiThreadId,
     DocumentId,
-    OpenaiAssistant,
 )
 from model.error import AppError, ErrorKind
+from model.openai_assistant import OpenaiAssistant, OpenaiAssistantId, OpenaiThreadId
 
 client: Final[OpenAI] = OpenAI(
     api_key=OPENAI_API_KEY,
@@ -62,7 +60,7 @@ def get_answer(_assistant: OpenaiAssistant, question: str) -> str:
 
 
 def create_assistant(
-    document_id: DocumentId, document_path: str
+        document_id: DocumentId, document_path: str
 ) -> Tuple[OpenaiAssistantId, OpenaiThreadId]:
     assistant = client.beta.assistants.create(
         name=document_id,

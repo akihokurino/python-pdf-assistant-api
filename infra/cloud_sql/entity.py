@@ -11,10 +11,8 @@ from model.document import (
     Document,
     DocumentId,
     Status,
-    OpenaiAssistant,
-    OpenaiAssistantId,
-    OpenaiThreadId,
 )
+from model.openai_assistant import OpenaiAssistant, OpenaiThreadId, OpenaiAssistantId
 from model.user import User, UserId
 
 

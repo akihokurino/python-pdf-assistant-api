@@ -1,4 +1,13 @@
 steps:
+  - name: 'python:3.13'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+        pytest
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - build

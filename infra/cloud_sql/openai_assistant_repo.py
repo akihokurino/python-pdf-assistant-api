@@ -10,12 +10,13 @@ from infra.cloud_sql.entity import (
     OpenaiAssistantEntity,
     document_from,
 )
-from model.document import OpenaiAssistant, DocumentId, Document
+from model.document import DocumentId, Document
 from model.error import AppError, ErrorKind
+from model.openai_assistant import OpenaiAssistant
 
 
 def find_past_openai_assistants(
-    date: datetime,
+        date: datetime,
 ) -> List[Tuple[OpenaiAssistant, Document]]:
     session = Session()
     try:

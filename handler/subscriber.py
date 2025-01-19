@@ -9,8 +9,9 @@ from infra.cloud_sql.document_repo import get_document, update_document
 from infra.cloud_sql.openai_assistant_repo import get_assistant, insert_assistant
 from infra.cloud_storage import download_object
 from infra.openai import create_assistant
-from model.document import DocumentId, OpenaiAssistant, Status
+from model.document import DocumentId, Status
 from model.error import AppError, ErrorKind
+from model.openai_assistant import OpenaiAssistant
 from util.gs_url import gs_url_to_key
 
 router: Final[APIRouter] = APIRouter()
@@ -23,8 +24,8 @@ class _CreateOpenaiAssistantPayload(BaseModel):
 
 @router.post("/subscriber/create_openai_assistant")
 def _create_openai_assistant(
-    request: Request,
-    payload: _CreateOpenaiAssistantPayload,
+        request: Request,
+        payload: _CreateOpenaiAssistantPayload,
 ) -> JSONResponse:
     now: Final[datetime] = datetime.now(timezone.utc)
     assistant = get_assistant(payload.document_id)
