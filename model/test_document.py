@@ -84,12 +84,12 @@ def test_document_update_status() -> None:
         updated_at=now,
     )
 
-    assert document.status is Status(Status.PREPARE_ASSISTANT)
+    assert document.status == Status.PREPARE_ASSISTANT
     assert document.updated_at == now
 
     updated_time = now + timedelta(days=1)
     document.update_status(status=Status.READY_ASSISTANT, now=updated_time)
 
-    assert document.status is Status(Status.READY_ASSISTANT)
+    assert document.status == Status.READY_ASSISTANT
     assert document.created_at == now
     assert document.updated_at == updated_time
