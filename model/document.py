@@ -13,15 +13,15 @@ DocumentId = NewType("DocumentId", str)
 @final
 class Document:
     def __init__(
-            self,
-            _id: DocumentId,
-            user_id: UserId,
-            name: str,
-            description: str,
-            gs_file_url: str,
-            status: Status,
-            created_at: datetime,
-            updated_at: datetime,
+        self,
+        _id: DocumentId,
+        user_id: UserId,
+        name: str,
+        description: str,
+        gs_file_url: str,
+        status: Status,
+        created_at: datetime,
+        updated_at: datetime,
     ) -> None:
         self.id = _id
         self.user_id = user_id
@@ -34,12 +34,12 @@ class Document:
 
     @classmethod
     def new(
-            cls,
-            user_id: UserId,
-            name: str,
-            description: str,
-            gs_file_url: str,
-            now: datetime,
+        cls,
+        user_id: UserId,
+        name: str,
+        description: str,
+        gs_file_url: str,
+        now: datetime,
     ) -> Document:
         return cls(
             DocumentId(str(uuid.uuid4())),

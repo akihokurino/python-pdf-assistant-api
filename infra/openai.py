@@ -60,7 +60,7 @@ def get_answer(_assistant: OpenaiAssistant, question: str) -> str:
 
 
 def create_assistant(
-        document_id: DocumentId, document_path: str
+    document_id: DocumentId, document_path: str
 ) -> Tuple[OpenaiAssistantId, OpenaiThreadId]:
     assistant = client.beta.assistants.create(
         name=document_id,

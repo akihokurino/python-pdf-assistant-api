@@ -12,13 +12,13 @@ OpenaiThreadId = NewType("OpenaiThreadId", str)
 @final
 class OpenaiAssistant:
     def __init__(
-            self,
-            _id: OpenaiAssistantId,
-            document_id: DocumentId,
-            thread_id: OpenaiThreadId,
-            used_at: datetime,
-            created_at: datetime,
-            updated_at: datetime,
+        self,
+        _id: OpenaiAssistantId,
+        document_id: DocumentId,
+        thread_id: OpenaiThreadId,
+        used_at: datetime,
+        created_at: datetime,
+        updated_at: datetime,
     ) -> None:
         self.id = _id
         self.document_id = document_id
@@ -29,11 +29,11 @@ class OpenaiAssistant:
 
     @classmethod
     def new(
-            cls,
-            _id: OpenaiAssistantId,
-            document_id: DocumentId,
-            thread_id: OpenaiThreadId,
-            now: datetime,
+        cls,
+        _id: OpenaiAssistantId,
+        document_id: DocumentId,
+        thread_id: OpenaiThreadId,
+        now: datetime,
     ) -> OpenaiAssistant:
         return cls(
             _id,

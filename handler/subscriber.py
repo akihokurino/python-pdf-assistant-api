@@ -24,8 +24,8 @@ class _CreateOpenaiAssistantPayload(BaseModel):
 
 @router.post("/subscriber/create_openai_assistant")
 def _create_openai_assistant(
-        request: Request,
-        payload: _CreateOpenaiAssistantPayload,
+    request: Request,
+    payload: _CreateOpenaiAssistantPayload,
 ) -> JSONResponse:
     now: Final[datetime] = datetime.now(timezone.utc)
     assistant = get_assistant(payload.document_id)

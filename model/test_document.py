@@ -59,7 +59,7 @@ def test_document_update() -> None:
         updated_at=now,
     )
 
-    assert document.name == "SamplePDF"
+    assert document.name == "SamplePDF__"
     assert document.updated_at == now
 
     updated_time = now + timedelta(days=1)

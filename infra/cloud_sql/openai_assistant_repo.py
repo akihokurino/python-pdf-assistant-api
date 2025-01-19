@@ -16,7 +16,7 @@ from model.openai_assistant import OpenaiAssistant
 
 
 def find_past_openai_assistants(
-        date: datetime,
+    date: datetime,
 ) -> List[Tuple[OpenaiAssistant, Document]]:
     session = Session()
     try:
