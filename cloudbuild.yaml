@@ -5,21 +5,21 @@ steps:
       - -f
       - Dockerfile
       - -t
-      - gcr.io/$PROJECT_ID/pdf-assistant:$BUILD_ID
+      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/app/pdf-assistant:$BUILD_ID
       - .
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - push
-      - gcr.io/$PROJECT_ID/pdf-assistant:$BUILD_ID
+      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/app/pdf-assistant:$BUILD_ID
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - run
       - deploy
       - api
       - --image
-      - gcr.io/$PROJECT_ID/pdf-assistant:$BUILD_ID
+      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/app/pdf-assistant:$BUILD_ID
       - --add-cloudsql-instances
-      - $PROJECT_ID:asia-northeast1:app
+      - $PROJECT_ID:asia-northeast1:pdf-assistant
       - --region
       - asia-northeast1
       - --cpu
@@ -48,9 +48,9 @@ steps:
       - deploy
       - clean-openai-assistant
       - --image
-      - gcr.io/$PROJECT_ID/pdf-assistant:$BUILD_ID
+      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/app/pdf-assistant:$BUILD_ID
       - --set-cloudsql-instances
-      - $PROJECT_ID:asia-northeast1:app
+      - $PROJECT_ID:asia-northeast1:pdf-assistant
       - --region
       - asia-northeast1
       - --cpu
