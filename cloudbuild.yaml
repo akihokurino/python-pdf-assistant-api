@@ -24,7 +24,7 @@ steps:
     args:
       - run
       - deploy
-      - api
+      - pdf-assistant-api
       - --image
       - asia-northeast1-docker.pkg.dev/$PROJECT_ID/app/pdf-assistant:$BUILD_ID
       - --add-cloudsql-instances
