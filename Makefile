@@ -4,13 +4,10 @@ SHELL := /bin/bash
 PROJECT_ID := my-python-448116
 
 vendor:
-	source venv/bin/activate && pip install -r requirements.txt
-
-freeze:
-	source venv/bin/activate && pip freeze > requirements.txt
+	source venv/bin/activate && poetry install
 
 update-modules:
-	source venv/bin/activate && pip list --outdated --format=json | python -c "import sys, json; [print(pkg['name']) for pkg in json.load(sys.stdin)]" | xargs -n1 pip install -U
+	source venv/bin/activate && poetry update
 
 types:
 	source venv/bin/activate && mypy .

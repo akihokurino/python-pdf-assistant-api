@@ -1,6 +1,7 @@
 ## Used, Dependency
 
 - python3
+- poetry
 - fastapi（ https://fastapi.tiangolo.com/ja/ ）
 - mypy
 - terraform
