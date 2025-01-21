@@ -32,3 +32,9 @@ class StorageAdapter(Protocol):
 
 class TaskQueueAdapter(Protocol):
     def send_queue(self, name: str, path: str, payload: dict[str, Any]) -> None: ...
+
+
+class LogAdapter(Protocol):
+    def log_info(self, message: str) -> None: ...
+
+    def log_error(self, e: Exception) -> None: ...
