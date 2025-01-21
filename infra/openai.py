@@ -7,7 +7,7 @@ from openai.types.beta.assistant import Assistant
 from openai.types.beta.thread import Thread
 from openai.types.beta.threads import MessageContent, TextContentBlock, Run, Message
 
-from adapter.adapter import OpenAIAdapter
+from adapter.adapter import OpenaiAdapter
 from model.document import (
     DocumentId,
 )
@@ -15,7 +15,7 @@ from model.error import AppError, ErrorKind
 from model.openai_assistant import OpenaiAssistant, OpenaiAssistantId, OpenaiThreadId
 
 
-class OpenAIImpl(OpenAIAdapter):
+class OpenaiImpl(OpenaiAdapter):
     def __init__(
             self,
             cli: OpenAI,
@@ -26,7 +26,7 @@ class OpenAIImpl(OpenAIAdapter):
     def new(
             cls,
             cli: OpenAI,
-    ) -> OpenAIAdapter:
+    ) -> OpenaiAdapter:
         return cls(cli)
 
     def _wait_on_run(self, run: Run, thread: Thread) -> Run:

@@ -51,8 +51,7 @@ def _create_openai_assistant(
     openai_assistant = OpenaiAssistant.new(
         new_assistant[0], document.id, new_assistant[1], now
     )
-    openai_assistant_repository.insert_assistant(openai_assistant)
-    document_repository.update_document(document)
+    openai_assistant_repository.insert_assistant_and_update_document(openai_assistant, document)
 
     return JSONResponse(
         content={},

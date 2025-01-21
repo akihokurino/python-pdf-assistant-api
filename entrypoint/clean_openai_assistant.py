@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from typing import Final
 
-from di.di import openai_adapter, document_repository, openai_assistant_repository
+from di.di import openai_adapter, openai_assistant_repository
 from model.document import Status
 
 if __name__ == "__main__":
@@ -15,5 +15,4 @@ if __name__ == "__main__":
 
         document.update_status(Status.PREPARE_ASSISTANT, now)
         openai_adapter.delete_assistant(assistant.id)
-        document_repository.update_document(document)
-        openai_assistant_repository.delete_assistant(document.id)
+        openai_assistant_repository.delete_assistant_and_update_document(document.id, document)
