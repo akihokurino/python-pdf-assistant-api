@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from config.envs import DEFAULT_BUCKET_NAME
+from di.di import storage_adapter
 from handler.response import document_resp, user_resp
 from infra.cloud_sql.document_repo import (
     insert_document,
@@ -16,11 +17,6 @@ from infra.cloud_sql.document_repo import (
     get_document_with_user,
 )
 from infra.cloud_sql.openai_assistant_repo import get_assistant, update_assistant
-from infra.cloud_storage import (
-    gen_pre_signed_upload_url,
-    gen_pre_signed_get_url,
-    delete_object,
-)
 from infra.cloud_tasks import send_queue
 from infra.openai import get_answer
 from model.document import Document, DocumentId, Status
@@ -50,11 +46,11 @@ def _get_document(document_id: DocumentId, request: Request) -> JSONResponse:
 
 @router.post("/documents/pre_signed_upload_url")
 def _pre_signed_upload_url(
-    request: Request,
+        request: Request,
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
     key = f"documents/{uid}/{uuid.uuid4()}.pdf"
-    url = gen_pre_signed_upload_url(key)
+    url = storage_adapter.gen_pre_signed_upload_url(key)
 
     return JSONResponse(
         content={
@@ -72,14 +68,14 @@ class _PreSignedGetUrlPayload(BaseModel):
 
 @router.post("/documents/pre_signed_get_url")
 def _pre_signed_get_url(
-    request: Request,
-    payload: _PreSignedGetUrlPayload,
+        request: Request,
+        payload: _PreSignedGetUrlPayload,
 ) -> JSONResponse:
     key = gs_url_to_key(payload.gs_url)
     if not key:
         raise AppError(ErrorKind.BAD_REQUEST, "gs_urlが不正です")
     print(key)
-    url = gen_pre_signed_get_url(key)
+    url = storage_adapter.gen_pre_signed_get_url(key)
 
     return JSONResponse(
         content={
@@ -98,8 +94,8 @@ class _CreateDocumentPayload(BaseModel):
 
 @router.post("/documents")
 def _create_documents(
-    request: Request,
-    payload: _CreateDocumentPayload,
+        request: Request,
+        payload: _CreateDocumentPayload,
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
@@ -115,8 +111,8 @@ def _create_documents(
 
 @router.post("/documents/{document_id}/openai_assistants")
 def _create_openai_assistant(
-    document_id: DocumentId,
-    request: Request,
+        document_id: DocumentId,
+        request: Request,
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
@@ -144,9 +140,9 @@ class _CreateOpenaiMessagePayload(BaseModel):
 
 @router.post("/documents/{document_id}/openai_messages")
 def _create_openai_message(
-    document_id: DocumentId,
-    request: Request,
-    payload: _CreateOpenaiMessagePayload,
+        document_id: DocumentId,
+        request: Request,
+        payload: _CreateOpenaiMessagePayload,
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
@@ -188,9 +184,9 @@ class _UpdateDocumentPayload(BaseModel):
 
 @router.put("/documents/{document_id}")
 def _update_documents(
-    document_id: DocumentId,
-    request: Request,
-    payload: _UpdateDocumentPayload,
+        document_id: DocumentId,
+        request: Request,
+        payload: _UpdateDocumentPayload,
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
@@ -211,8 +207,8 @@ def _update_documents(
 
 @router.delete("/documents/{document_id}")
 def _delete_documents(
-    document_id: DocumentId,
-    request: Request,
+        document_id: DocumentId,
+        request: Request,
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
@@ -228,7 +224,7 @@ def _delete_documents(
     if not key:
         raise AppError(ErrorKind.INTERNAL, "gs_urlが不正です")
 
-    delete_object(key)
+    storage_adapter.delete_object(key)
     delete_document(document_id)
 
     return JSONResponse(content={}, status_code=200)

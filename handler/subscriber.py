@@ -5,9 +5,9 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from di.di import storage_adapter
 from infra.cloud_sql.document_repo import get_document, update_document
 from infra.cloud_sql.openai_assistant_repo import get_assistant, insert_assistant
-from infra.cloud_storage import download_object
 from infra.openai import create_assistant
 from model.document import DocumentId, Status
 from model.error import AppError, ErrorKind
@@ -24,8 +24,8 @@ class _CreateOpenaiAssistantPayload(BaseModel):
 
 @router.post("/subscriber/create_openai_assistant")
 def _create_openai_assistant(
-    request: Request,
-    payload: _CreateOpenaiAssistantPayload,
+        request: Request,
+        payload: _CreateOpenaiAssistantPayload,
 ) -> JSONResponse:
     now: Final[datetime] = datetime.now(timezone.utc)
     assistant = get_assistant(payload.document_id)
@@ -45,7 +45,7 @@ def _create_openai_assistant(
     if not key:
         raise AppError(ErrorKind.INTERNAL, "ファイルのURLが不正です")
     destination_file_name: Final[str] = f"/tmp/{document.id}_downloaded.pdf"
-    download_object(key, destination_file_name)
+    storage_adapter.download_object(key, destination_file_name)
 
     new_assistant = create_assistant(
         document.id,

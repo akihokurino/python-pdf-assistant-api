@@ -7,6 +7,7 @@ from google.auth.transport import requests
 from google.cloud.storage import Client, Bucket, Blob
 from google.oauth2.service_account import Credentials
 
+from adapter.adapter import StorageAdapter
 from config.envs import DEFAULT_BUCKET_NAME
 from model.error import AppError, ErrorKind
 
@@ -30,78 +31,92 @@ def _credential() -> Credentials:
     return cred
 
 
-def download_object(
-    key: str,
-    destination_file_name: str,
-    bucket_name: str = DEFAULT_BUCKET_NAME,
-) -> None:
-    client: Final[Client] = Client()
-    bucket: Final[Bucket] = client.bucket(bucket_name)
-    blob: Final[Blob] = bucket.blob(key)
-    blob.download_to_filename(destination_file_name)
+class CloudStorageAdapter(StorageAdapter):
+    def __init__(
+            self,
+            cli: Client,
+    ) -> None:
+        self.cli: Final[Client] = cli
 
+    @classmethod
+    def new(
+            cls,
+            cli: Client,
+    ) -> StorageAdapter:
+        return cls(cli)
 
-def gen_pre_signed_upload_url(
-    key: str, bucket_name: str = DEFAULT_BUCKET_NAME, expiration_minutes: int = 15
-) -> str:
-    client: Final[Client] = Client()
-    bucket: Final[Bucket] = client.bucket(bucket_name)
-    blob: Final[Blob] = bucket.blob(key)
+    def download_object(
+            self,
+            key: str,
+            destination_file_name: str,
+            bucket_name: str = DEFAULT_BUCKET_NAME,
+    ) -> None:
+        bucket: Final[Bucket] = self.cli.bucket(bucket_name)
+        blob: Final[Blob] = bucket.blob(key)
+        blob.download_to_filename(destination_file_name)
 
-    if os.getenv("IS_LOCAL", "") == "true":
-        url: str = blob.generate_signed_url(
-            credentials=_local_credentials(),
-            version="v4",
-            expiration=timedelta(minutes=expiration_minutes),
-            method="PUT",
-            content_type="application/pdf",
-        )
-    else:
-        credentials = _credential()
-        url = blob.generate_signed_url(
-            access_token=credentials.token,
-            service_account_email=credentials.service_account_email,
-            version="v4",
-            expiration=timedelta(minutes=expiration_minutes),
-            method="PUT",
-            content_type="application/pdf",
-        )
+    def gen_pre_signed_upload_url(
+            self,
+            key: str,
+            bucket_name: str = DEFAULT_BUCKET_NAME,
+            expiration_minutes: int = 15,
+    ) -> str:
+        bucket: Final[Bucket] = self.cli.bucket(bucket_name)
+        blob: Final[Blob] = bucket.blob(key)
 
-    return url
+        if os.getenv("IS_LOCAL", "") == "true":
+            url: str = blob.generate_signed_url(
+                credentials=_local_credentials(),
+                version="v4",
+                expiration=timedelta(minutes=expiration_minutes),
+                method="PUT",
+                content_type="application/pdf",
+            )
+        else:
+            credentials = _credential()
+            url = blob.generate_signed_url(
+                access_token=credentials.token,
+                service_account_email=credentials.service_account_email,
+                version="v4",
+                expiration=timedelta(minutes=expiration_minutes),
+                method="PUT",
+                content_type="application/pdf",
+            )
 
+        return url
 
-def gen_pre_signed_get_url(
-    key: str, bucket_name: str = DEFAULT_BUCKET_NAME, expiration_minutes: int = 15
-) -> str:
-    client: Final[Client] = Client()
-    bucket: Final[Bucket] = client.bucket(bucket_name)
-    blob: Final[Blob] = bucket.blob(key)
-    if os.getenv("IS_LOCAL", "") == "true":
-        url: str = blob.generate_signed_url(
-            credentials=_local_credentials(),
-            version="v4",
-            expiration=timedelta(minutes=expiration_minutes),
-            method="GET",
-        )
-    else:
-        credentials = _credential()
-        url = blob.generate_signed_url(
-            access_token=credentials.token,
-            service_account_email=credentials.service_account_email,
-            version="v4",
-            expiration=timedelta(minutes=expiration_minutes),
-            method="GET",
-        )
+    def gen_pre_signed_get_url(
+            self,
+            key: str,
+            bucket_name: str = DEFAULT_BUCKET_NAME,
+            expiration_minutes: int = 15,
+    ) -> str:
+        bucket: Final[Bucket] = self.cli.bucket(bucket_name)
+        blob: Final[Blob] = bucket.blob(key)
+        if os.getenv("IS_LOCAL", "") == "true":
+            url: str = blob.generate_signed_url(
+                credentials=_local_credentials(),
+                version="v4",
+                expiration=timedelta(minutes=expiration_minutes),
+                method="GET",
+            )
+        else:
+            credentials = _credential()
+            url = blob.generate_signed_url(
+                access_token=credentials.token,
+                service_account_email=credentials.service_account_email,
+                version="v4",
+                expiration=timedelta(minutes=expiration_minutes),
+                method="GET",
+            )
 
-    return url
+        return url
 
+    def delete_object(self, key: str, bucket_name: str = DEFAULT_BUCKET_NAME) -> None:
+        bucket: Final[Bucket] = self.cli.bucket(bucket_name)
+        blob: Final[Blob] = bucket.blob(key)
 
-def delete_object(key: str, bucket_name: str = DEFAULT_BUCKET_NAME) -> None:
-    client: Final[Client] = Client()
-    bucket: Final[Bucket] = client.bucket(bucket_name)
-    blob: Final[Blob] = bucket.blob(key)
-
-    if blob.exists():
-        blob.delete()
-    else:
-        raise AppError(ErrorKind.NOT_FOUND, f"指定されたキーが存在しません: {key}")
+        if blob.exists():
+            blob.delete()
+        else:
+            raise AppError(ErrorKind.NOT_FOUND, f"指定されたキーが存在しません: {key}")
