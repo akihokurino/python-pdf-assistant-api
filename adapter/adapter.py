@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Protocol, Any
 
 from config.envs import DEFAULT_BUCKET_NAME
 
@@ -28,3 +28,7 @@ class StorageAdapter(Protocol):
     def delete_object(
             self, key: str, bucket_name: str = DEFAULT_BUCKET_NAME
     ) -> None: ...
+
+
+class TaskQueueAdapter(Protocol):
+    def send_queue(self, name: str, path: str, payload: dict[str, Any]) -> None: ...

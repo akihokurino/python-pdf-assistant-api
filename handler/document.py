@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from config.envs import DEFAULT_BUCKET_NAME
-from di.di import storage_adapter
+from di.di import storage_adapter, task_queue_adapter
 from handler.response import document_resp, user_resp
 from infra.cloud_sql.document_repo import (
     insert_document,
@@ -17,7 +17,6 @@ from infra.cloud_sql.document_repo import (
     get_document_with_user,
 )
 from infra.cloud_sql.openai_assistant_repo import get_assistant, update_assistant
-from infra.cloud_tasks import send_queue
 from infra.openai import get_answer
 from model.document import Document, DocumentId, Status
 from model.error import AppError, ErrorKind
@@ -124,7 +123,7 @@ def _create_openai_assistant(
     if document.user_id != uid:
         raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
 
-    send_queue(
+    task_queue_adapter.send_queue(
         "create-openai-assistant",
         "/subscriber/create_openai_assistant",
         {"document_id": document.id},

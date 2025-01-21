@@ -31,7 +31,7 @@ def _credential() -> Credentials:
     return cred
 
 
-class CloudStorageAdapter(StorageAdapter):
+class CloudStorage(StorageAdapter):
     def __init__(
             self,
             cli: Client,
