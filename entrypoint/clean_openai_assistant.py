@@ -1,12 +1,12 @@
 from datetime import datetime, timezone, timedelta
 from typing import Final
 
+from di.di import openai_adapter
 from infra.cloud_sql.document_repo import update_document
 from infra.cloud_sql.openai_assistant_repo import (
     find_past_openai_assistants,
     delete_assistant,
 )
-from infra.openai import delete_assistant as delete_openai_assistant
 from model.document import Status
 
 if __name__ == "__main__":
@@ -19,6 +19,6 @@ if __name__ == "__main__":
         document = result[1]
 
         document.update_status(Status.PREPARE_ASSISTANT, now)
-        delete_openai_assistant(assistant.id)
+        openai_adapter.delete_assistant(assistant.id)
         update_document(document)
         delete_assistant(document.id)

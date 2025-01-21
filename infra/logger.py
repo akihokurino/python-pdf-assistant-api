@@ -3,7 +3,7 @@ import logging
 from adapter.adapter import LogAdapter
 
 
-class Logger(LogAdapter):
+class LoggerImpl(LogAdapter):
     def __init__(
             self,
     ) -> None:

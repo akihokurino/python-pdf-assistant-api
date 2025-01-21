@@ -1,6 +1,8 @@
-from typing import Protocol, Any
+from typing import Protocol, Any, Tuple
 
 from config.envs import DEFAULT_BUCKET_NAME
+from model.document import DocumentId
+from model.openai_assistant import OpenaiAssistant, OpenaiAssistantId, OpenaiThreadId
 
 
 class StorageAdapter(Protocol):
@@ -38,3 +40,13 @@ class LogAdapter(Protocol):
     def log_info(self, message: str) -> None: ...
 
     def log_error(self, e: Exception) -> None: ...
+
+
+class OpenAIAdapter(Protocol):
+    def get_answer(self, _assistant: OpenaiAssistant, question: str) -> str: ...
+
+    def create_assistant(
+            self, document_id: DocumentId, document_path: str
+    ) -> Tuple[OpenaiAssistantId, OpenaiThreadId]: ...
+
+    def delete_assistant(self, assistant_id: OpenaiAssistantId) -> None: ...
