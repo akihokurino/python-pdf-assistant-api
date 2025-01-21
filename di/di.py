@@ -6,9 +6,12 @@ from openai import OpenAI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from adapter.adapter import StorageAdapter, TaskQueueAdapter, LogAdapter, OpenAIAdapter, UserRepository
+from adapter.adapter import StorageAdapter, TaskQueueAdapter, LogAdapter, OpenAIAdapter, UserRepository, \
+    DocumentRepository, OpenAIAssistantRepository
 from config.envs import DATABASE_URL
 from config.envs import OPENAI_API_KEY
+from infra.cloud_sql.document_repo import DocumentRepoImpl
+from infra.cloud_sql.openai_assistant_repo import OpenAIAssistantRepoImpl
 from infra.cloud_sql.user_repo import UserRepoImpl
 from infra.cloud_storage import CloudStorageImpl
 from infra.cloud_tasks import CloudTasksImpl
@@ -29,3 +32,5 @@ openai_adapter: Final[OpenAIAdapter] = OpenAIImpl.new(
     )
 )
 user_repository: Final[UserRepository] = UserRepoImpl.new(Session)
+document_repository: Final[DocumentRepository] = DocumentRepoImpl.new(Session)
+openai_assistant_repository: Final[OpenAIAssistantRepository] = OpenAIAssistantRepoImpl.new(Session)

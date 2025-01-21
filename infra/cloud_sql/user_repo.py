@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple, Final
+from typing import Optional, List, Tuple, Any
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker, Session as OrmSession
@@ -18,9 +18,9 @@ from model.user import User, UserId
 class UserRepoImpl(UserRepository):
     def __init__(
             self,
-            session: sessionmaker[OrmSession],
+            session: Any,
     ) -> None:
-        self.session: Final[sessionmaker[OrmSession]] = session
+        self.session = session
 
     @classmethod
     def new(

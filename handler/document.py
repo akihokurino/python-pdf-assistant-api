@@ -7,16 +7,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from config.envs import DEFAULT_BUCKET_NAME
-from di.di import storage_adapter, task_queue_adapter, openai_adapter
+from di.di import storage_adapter, task_queue_adapter, openai_adapter, document_repository, openai_assistant_repository
 from handler.response import document_resp, user_resp
-from infra.cloud_sql.document_repo import (
-    insert_document,
-    get_document,
-    update_document,
-    delete_document,
-    get_document_with_user,
-)
-from infra.cloud_sql.openai_assistant_repo import get_assistant, update_assistant
 from model.document import Document, DocumentId, Status
 from model.error import AppError, ErrorKind
 from model.user import UserId
@@ -27,7 +19,7 @@ router: Final[APIRouter] = APIRouter()
 
 @router.get("/documents/{document_id}")
 def _get_document(document_id: DocumentId, request: Request) -> JSONResponse:
-    result = get_document_with_user(document_id)
+    result = document_repository.get_document_with_user(document_id)
     if not result:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -102,7 +94,7 @@ def _create_documents(
     new_document = Document.new(
         uid, payload.name, payload.description, gs_file_url, now
     )
-    insert_document(new_document)
+    document_repository.insert_document(new_document)
 
     return JSONResponse(content=document_resp(new_document), status_code=200)
 
@@ -114,7 +106,7 @@ def _create_openai_assistant(
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
-    document = get_document(document_id)
+    document = document_repository.get_document(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -145,7 +137,7 @@ def _create_openai_message(
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
-    document = get_document(document_id)
+    document = document_repository.get_document(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -155,14 +147,14 @@ def _create_openai_message(
     if document.status != Status.READY_ASSISTANT:
         raise AppError(ErrorKind.BAD_REQUEST, "アシスタントが準備できていません")
 
-    openai_assistant = get_assistant(document.id)
+    openai_assistant = openai_assistant_repository.get_assistant(document.id)
     if not openai_assistant:
         raise AppError(
             ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {document_id}"
         )
 
     openai_assistant.use(now)
-    update_assistant(openai_assistant)
+    openai_assistant_repository.update_assistant(openai_assistant)
 
     answer = openai_adapter.get_answer(openai_assistant, payload.question)
 
@@ -189,7 +181,7 @@ def _update_documents(
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
-    document = get_document(document_id)
+    document = document_repository.get_document(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -198,7 +190,7 @@ def _update_documents(
         raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
 
     document.update(payload.name, payload.description, now)
-    update_document(document)
+    document_repository.update_document(document)
 
     return JSONResponse(content=document_resp(document), status_code=200)
 
@@ -210,7 +202,7 @@ def _delete_documents(
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
-    document = get_document(document_id)
+    document = document_repository.get_document(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -223,6 +215,6 @@ def _delete_documents(
         raise AppError(ErrorKind.INTERNAL, "gs_urlが不正です")
 
     storage_adapter.delete_object(key)
-    delete_document(document_id)
+    document_repository.delete_document(document_id)
 
     return JSONResponse(content={}, status_code=200)

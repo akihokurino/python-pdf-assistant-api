@@ -5,9 +5,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from di.di import storage_adapter, openai_adapter
-from infra.cloud_sql.document_repo import get_document, update_document
-from infra.cloud_sql.openai_assistant_repo import get_assistant, insert_assistant
+from di.di import storage_adapter, openai_adapter, document_repository, openai_assistant_repository
 from model.document import DocumentId, Status
 from model.error import AppError, ErrorKind
 from model.openai_assistant import OpenaiAssistant
@@ -27,14 +25,14 @@ def _create_openai_assistant(
         payload: _CreateOpenaiAssistantPayload,
 ) -> JSONResponse:
     now: Final[datetime] = datetime.now(timezone.utc)
-    assistant = get_assistant(payload.document_id)
+    assistant = openai_assistant_repository.get_assistant(payload.document_id)
     if assistant:
         return JSONResponse(
             content={},
             status_code=200,
         )
 
-    document = get_document(payload.document_id)
+    document = document_repository.get_document(payload.document_id)
     if not document:
         raise AppError(ErrorKind.NOT_FOUND, "ドキュメントが見つかりません")
 
@@ -53,8 +51,8 @@ def _create_openai_assistant(
     openai_assistant = OpenaiAssistant.new(
         new_assistant[0], document.id, new_assistant[1], now
     )
-    insert_assistant(openai_assistant)
-    update_document(document)
+    openai_assistant_repository.insert_assistant(openai_assistant)
+    document_repository.update_document(document)
 
     return JSONResponse(
         content={},
