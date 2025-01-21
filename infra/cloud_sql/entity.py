@@ -4,9 +4,9 @@ from datetime import datetime
 from typing import final, List
 
 from sqlalchemy import Column, String, DateTime, Integer, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Mapped
 
-from infra.cloud_sql.common import Base
 from model.document import (
     Document,
     DocumentId,
@@ -14,6 +14,8 @@ from model.document import (
 )
 from model.openai_assistant import OpenaiAssistant, OpenaiThreadId, OpenaiAssistantId
 from model.user import User, UserId
+
+Base = declarative_base()
 
 
 @final

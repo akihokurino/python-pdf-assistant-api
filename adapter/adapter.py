@@ -1,8 +1,9 @@
-from typing import Protocol, Any, Tuple
+from typing import Protocol, Any, Tuple, List, Optional
 
 from config.envs import DEFAULT_BUCKET_NAME
-from model.document import DocumentId
+from model.document import DocumentId, Document
 from model.openai_assistant import OpenaiAssistant, OpenaiAssistantId, OpenaiThreadId
+from model.user import User, UserId
 
 
 class StorageAdapter(Protocol):
@@ -50,3 +51,17 @@ class OpenAIAdapter(Protocol):
     ) -> Tuple[OpenaiAssistantId, OpenaiThreadId]: ...
 
     def delete_assistant(self, assistant_id: OpenaiAssistantId) -> None: ...
+
+
+class UserRepository(Protocol):
+    def find_users(self) -> List[User]: ...
+
+    def get_user(self, _id: UserId) -> Optional[User]: ...
+
+    def get_user_with_documents(self, _id: UserId) -> Optional[Tuple[User, List[Document]]]: ...
+
+    def insert_user(self, item: User) -> None: ...
+
+    def update_user(self, item: User) -> None: ...
+
+    def delete_user(self, _id: UserId) -> None: ...

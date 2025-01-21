@@ -3,8 +3,8 @@ from typing import Final
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
+from di.di import user_repository
 from handler.response import user_resp, document_resp
-from infra.cloud_sql.user_repo import get_user_with_documents
 from model.error import AppError, ErrorKind
 from model.user import UserId
 
@@ -13,11 +13,11 @@ router: Final[APIRouter] = APIRouter()
 
 @router.get("/me")
 def _me(
-    request: Request,
+        request: Request,
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
-    result = get_user_with_documents(uid)
+    result = user_repository.get_user_with_documents(uid)
     if not result:
         raise AppError(ErrorKind.NOT_FOUND, f"ユーザーが見つかりません: {uid}")
 
