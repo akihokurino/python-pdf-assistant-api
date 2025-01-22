@@ -18,7 +18,7 @@ class _CreateUserPayload(BaseModel):
 
 
 @router.post("/users")
-def _create_user(
+async def _create_user(
         request: Request,
         payload: _CreateUserPayload,
         user_repository: UserRepository = Depends(),
@@ -42,7 +42,7 @@ class _UpdateUserPayload(BaseModel):
 
 
 @router.put("/users")
-def _update_user(
+async def _update_user(
         request: Request,
         payload: _UpdateUserPayload,
         user_repository: UserRepository = Depends(),

@@ -25,7 +25,7 @@ class _CreateOpenaiAssistantPayload(BaseModel):
 
 
 @router.post("/subscriber/create_openai_assistant")
-def _create_openai_assistant(
+async def _create_openai_assistant(
         request: Request,
         payload: _CreateOpenaiAssistantPayload,
         openai_adapter: OpenaiAdapter = Depends(),

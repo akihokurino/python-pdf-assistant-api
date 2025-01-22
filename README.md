@@ -1,10 +1,12 @@
 ## Used, Dependency
 
 - python3
-- poetry
+- poetry ( https://github.com/python-poetry/poetry )
 - fastapi（ https://fastapi.tiangolo.com/ja/ ）
-- dependency-injector
-- mypy
+- dependency-injector ( https://github.com/ets-labs/python-dependency-injector)
+- mypy ( https://github.com/python/mypy )
+- sqlalchemy ( https://www.sqlalchemy.org/ )
+- openai
 - terraform
 - google cloud
 - api gateway

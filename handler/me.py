@@ -11,7 +11,7 @@ router: Final[APIRouter] = APIRouter()
 
 
 @router.get("/me")
-def _me(
+async def _me(
         request: Request,
         user_repository: UserRepository = Depends(),
 ) -> MeResp:

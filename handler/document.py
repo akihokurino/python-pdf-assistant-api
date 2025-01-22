@@ -25,7 +25,7 @@ router: Final[APIRouter] = APIRouter()
 
 
 @router.get("/documents/{document_id}")
-def _get_document(
+async def _get_document(
         document_id: DocumentId,
         request: Request,
         document_repository: DocumentRepository = Depends(),
@@ -40,7 +40,7 @@ def _get_document(
 
 
 @router.post("/documents/pre_signed_upload_url")
-def _pre_signed_upload_url(
+async def _pre_signed_upload_url(
         request: Request,
         storage_adapter: StorageAdapter = Depends(),
 ) -> PreSignUploadResp:
@@ -57,7 +57,7 @@ class _PreSignedGetUrlPayload(BaseModel):
 
 
 @router.post("/documents/pre_signed_get_url")
-def _pre_signed_get_url(
+async def _pre_signed_get_url(
         request: Request,
         payload: _PreSignedGetUrlPayload,
         storage_adapter: StorageAdapter = Depends(),
@@ -78,7 +78,7 @@ class _CreateDocumentPayload(BaseModel):
 
 
 @router.post("/documents")
-def _create_documents(
+async def _create_documents(
         request: Request,
         payload: _CreateDocumentPayload,
         document_repository: DocumentRepository = Depends(),
@@ -96,7 +96,7 @@ def _create_documents(
 
 
 @router.post("/documents/{document_id}/openai_assistants")
-def _create_openai_assistant(
+async def _create_openai_assistant(
         document_id: DocumentId,
         request: Request,
         document_repository: DocumentRepository = Depends(),
@@ -127,7 +127,7 @@ class _CreateOpenaiMessagePayload(BaseModel):
 
 
 @router.post("/documents/{document_id}/openai_messages")
-def _create_openai_message(
+async def _create_openai_message(
         document_id: DocumentId,
         request: Request,
         payload: _CreateOpenaiMessagePayload,
@@ -169,7 +169,7 @@ class _UpdateDocumentPayload(BaseModel):
 
 
 @router.put("/documents/{document_id}")
-def _update_documents(
+async def _update_documents(
         document_id: DocumentId,
         request: Request,
         payload: _UpdateDocumentPayload,
@@ -193,7 +193,7 @@ def _update_documents(
 
 
 @router.delete("/documents/{document_id}")
-def _delete_documents(
+async def _delete_documents(
         document_id: DocumentId,
         request: Request,
         storage_adapter: StorageAdapter = Depends(),
