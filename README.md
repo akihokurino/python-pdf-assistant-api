@@ -3,6 +3,7 @@
 - python3
 - poetry
 - fastapi（ https://fastapi.tiangolo.com/ja/ ）
+- dependency-injector
 - mypy
 - terraform
 - google cloud
@@ -16,3 +17,5 @@
 - cloud tasks
 - secret manager
 - auth0
+
+https://qiita.com/nicco_mirai/items/5591c1c48b1422c324c9

@@ -1,5 +1,5 @@
 import time
-from typing import Final, Tuple
+from typing import Final, Tuple, final
 
 from openai import OpenAI
 from openai.pagination import SyncCursorPage
@@ -15,6 +15,7 @@ from model.error import AppError, ErrorKind
 from model.openai_assistant import OpenaiAssistant, OpenaiAssistantId, OpenaiThreadId
 
 
+@final
 class OpenaiImpl(OpenaiAdapter):
     def __init__(
             self,

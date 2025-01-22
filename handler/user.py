@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
 from typing import final, Final
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from di.di import user_repository
+from adapter.adapter import UserRepository
 from handler.response import user_resp
 from model.error import AppError, ErrorKind
 from model.user import User, UserId
@@ -22,6 +22,7 @@ class _CreateUserPayload(BaseModel):
 def _create_user(
         request: Request,
         payload: _CreateUserPayload,
+        user_repository: UserRepository = Depends(),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
@@ -45,6 +46,7 @@ class _UpdateUserPayload(BaseModel):
 def _update_user(
         request: Request,
         payload: _UpdateUserPayload,
+        user_repository: UserRepository = Depends(),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)

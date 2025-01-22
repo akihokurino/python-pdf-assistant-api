@@ -6,6 +6,10 @@ from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from adapter.adapter import UserRepository, DocumentRepository, OpenaiAssistantRepository, StorageAdapter, \
+    TaskQueueAdapter, LogAdapter, OpenaiAdapter
+from di.di import use_user_repo, use_document_repo, use_openai_assistant_repo, use_storage, use_task_queue, use_log, \
+    use_openai
 from handler.document import router as document_router
 from handler.me import router as me_router
 from handler.subscriber import router as subscriber_router
@@ -23,10 +27,18 @@ app.include_router(user_router)
 app.include_router(document_router)
 app.include_router(subscriber_router)
 
+app.dependency_overrides[StorageAdapter] = use_storage
+app.dependency_overrides[TaskQueueAdapter] = use_task_queue
+app.dependency_overrides[LogAdapter] = use_log
+app.dependency_overrides[OpenaiAdapter] = use_openai
+app.dependency_overrides[UserRepository] = use_user_repo
+app.dependency_overrides[DocumentRepository] = use_document_repo
+app.dependency_overrides[OpenaiAssistantRepository] = use_openai_assistant_repo
+
 
 @app.exception_handler(RequestValidationError)
 async def _validation_exception_handler(
-    request: Request, exc: RequestValidationError
+        request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     return JSONResponse(
         status_code=400,

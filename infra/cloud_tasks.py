@@ -1,5 +1,5 @@
 import json
-from typing import Any, Final
+from typing import Any, Final, final
 
 from google.cloud import tasks_v2
 
@@ -7,6 +7,7 @@ from adapter.adapter import TaskQueueAdapter
 from config.envs import PROJECT_ID, TASK_QUEUE_TOKEN, CLOUD_RUN_SA, API_BASE_URL
 
 
+@final
 class CloudTasksImpl(TaskQueueAdapter):
     def __init__(
             self,

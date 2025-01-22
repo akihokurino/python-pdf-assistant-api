@@ -1,8 +1,10 @@
 import logging
+from typing import final
 
 from adapter.adapter import LogAdapter
 
 
+@final
 class LoggerImpl(LogAdapter):
     def __init__(
             self,

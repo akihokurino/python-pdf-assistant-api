@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple, Any
+from typing import Optional, List, Tuple, Any, final
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker, Session as OrmSession
@@ -15,6 +15,7 @@ from model.error import AppError, ErrorKind
 from model.user import User, UserId
 
 
+@final
 class UserRepoImpl(UserRepository):
     def __init__(
             self,

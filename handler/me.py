@@ -1,9 +1,9 @@
 from typing import Final
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 
-from di.di import user_repository
+from adapter.adapter import UserRepository
 from handler.response import user_resp, document_resp
 from model.error import AppError, ErrorKind
 from model.user import UserId
@@ -14,6 +14,7 @@ router: Final[APIRouter] = APIRouter()
 @router.get("/me")
 def _me(
         request: Request,
+        user_repository: UserRepository = Depends(),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 

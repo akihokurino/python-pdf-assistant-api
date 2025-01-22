@@ -4,7 +4,8 @@ from fastapi import Request, Response, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from di.di import log_adapter
+from adapter.adapter import LogAdapter
+from di.di import container
 from model.error import AppError
 
 
@@ -13,6 +14,8 @@ class ErrorMiddleware(BaseHTTPMiddleware):
     async def dispatch(
             self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
+        log_adapter: LogAdapter = container.log_adapter()
+
         try:
             response: Response = await call_next(request)
         except AppError as e:

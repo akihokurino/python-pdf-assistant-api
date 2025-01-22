@@ -4,7 +4,8 @@ from typing import Callable, Awaitable, final
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from di.di import log_adapter
+from adapter.adapter import LogAdapter
+from di.di import container
 
 
 @final
@@ -12,6 +13,8 @@ class LogMiddleware(BaseHTTPMiddleware):
     async def dispatch(
             self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
+        log_adapter: LogAdapter = container.log_adapter()
+
         log_adapter.log_info("------------------------------------------------------")
         log_adapter.log_info(f"Request Endpoint: {request.url.path}")
         for k, v in request.headers.items():

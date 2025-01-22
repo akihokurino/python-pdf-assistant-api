@@ -1,6 +1,6 @@
 import os
 from datetime import timedelta
-from typing import Final
+from typing import Final, final
 
 import google.auth
 from google.auth.transport import requests
@@ -31,6 +31,7 @@ def _credential() -> Credentials:
     return cred
 
 
+@final
 class CloudStorageImpl(StorageAdapter):
     def __init__(
             self,

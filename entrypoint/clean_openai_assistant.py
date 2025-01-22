@@ -1,10 +1,14 @@
 from datetime import datetime, timezone, timedelta
 from typing import Final
 
-from di.di import openai_adapter, openai_assistant_repository
+from adapter.adapter import OpenaiAdapter, OpenaiAssistantRepository
+from di.di import container
 from model.document import Status
 
 if __name__ == "__main__":
+    openai_adapter: OpenaiAdapter = container.openai_adapter()
+    openai_assistant_repository: OpenaiAssistantRepository = container.openai_assistant_repository()
+
     now: Final[datetime] = datetime.now(timezone.utc)
     target: Final[datetime] = now - timedelta(hours=3)
 

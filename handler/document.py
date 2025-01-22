@@ -2,12 +2,18 @@ import uuid
 from datetime import datetime, timezone
 from typing import Final, final
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from adapter.adapter import (
+    StorageAdapter,
+    DocumentRepository,
+    TaskQueueAdapter,
+    OpenaiAssistantRepository,
+    OpenaiAdapter,
+)
 from config.envs import DEFAULT_BUCKET_NAME
-from di.di import storage_adapter, task_queue_adapter, openai_adapter, document_repository, openai_assistant_repository
 from handler.response import document_resp, user_resp
 from model.document import Document, DocumentId, Status
 from model.error import AppError, ErrorKind
@@ -18,7 +24,11 @@ router: Final[APIRouter] = APIRouter()
 
 
 @router.get("/documents/{document_id}")
-def _get_document(document_id: DocumentId, request: Request) -> JSONResponse:
+def _get_document(
+        document_id: DocumentId,
+        request: Request,
+        document_repository: DocumentRepository = Depends(),
+) -> JSONResponse:
     result = document_repository.get_document_with_user(document_id)
     if not result:
         raise AppError(
@@ -37,6 +47,7 @@ def _get_document(document_id: DocumentId, request: Request) -> JSONResponse:
 @router.post("/documents/pre_signed_upload_url")
 def _pre_signed_upload_url(
         request: Request,
+        storage_adapter: StorageAdapter = Depends(),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
     key = f"documents/{uid}/{uuid.uuid4()}.pdf"
@@ -60,11 +71,11 @@ class _PreSignedGetUrlPayload(BaseModel):
 def _pre_signed_get_url(
         request: Request,
         payload: _PreSignedGetUrlPayload,
+        storage_adapter: StorageAdapter = Depends(),
 ) -> JSONResponse:
     key = gs_url_to_key(payload.gs_url)
     if not key:
         raise AppError(ErrorKind.BAD_REQUEST, "gs_urlが不正です")
-    print(key)
     url = storage_adapter.gen_pre_signed_get_url(key)
 
     return JSONResponse(
@@ -86,6 +97,7 @@ class _CreateDocumentPayload(BaseModel):
 def _create_documents(
         request: Request,
         payload: _CreateDocumentPayload,
+        document_repository: DocumentRepository = Depends(),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
@@ -103,6 +115,8 @@ def _create_documents(
 def _create_openai_assistant(
         document_id: DocumentId,
         request: Request,
+        document_repository: DocumentRepository = Depends(),
+        task_queue_adapter: TaskQueueAdapter = Depends(),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
@@ -133,6 +147,9 @@ def _create_openai_message(
         document_id: DocumentId,
         request: Request,
         payload: _CreateOpenaiMessagePayload,
+        openai_adapter: OpenaiAdapter = Depends(),
+        document_repository: DocumentRepository = Depends(),
+        openai_assistant_repository: OpenaiAssistantRepository = Depends(),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
@@ -177,6 +194,7 @@ def _update_documents(
         document_id: DocumentId,
         request: Request,
         payload: _UpdateDocumentPayload,
+        document_repository: DocumentRepository = Depends(),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
@@ -199,6 +217,8 @@ def _update_documents(
 def _delete_documents(
         document_id: DocumentId,
         request: Request,
+        storage_adapter: StorageAdapter = Depends(),
+        document_repository: DocumentRepository = Depends(),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
