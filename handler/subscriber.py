@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 from typing import Final, final
 
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from adapter.adapter import (
@@ -11,7 +10,7 @@ from adapter.adapter import (
     DocumentRepository,
     StorageAdapter,
 )
-from di.di import container
+from handler.response import EmptyResp
 from model.document import DocumentId, Status
 from model.error import AppError, ErrorKind
 from model.openai_assistant import OpenaiAssistant
@@ -31,18 +30,13 @@ def _create_openai_assistant(
         payload: _CreateOpenaiAssistantPayload,
         openai_adapter: OpenaiAdapter = Depends(),
         storage_adapter: StorageAdapter = Depends(),
-        openai_assistant_repository: OpenaiAssistantRepository = Depends(
-            lambda: container.openai_assistant_repository()
-        ),
+        openai_assistant_repository: OpenaiAssistantRepository = Depends(),
         document_repository: DocumentRepository = Depends(),
-) -> JSONResponse:
+) -> EmptyResp:
     now: Final[datetime] = datetime.now(timezone.utc)
     assistant = openai_assistant_repository.get_assistant(payload.document_id)
     if assistant:
-        return JSONResponse(
-            content={},
-            status_code=200,
-        )
+        return EmptyResp()
 
     document = document_repository.get_document(payload.document_id)
     if not document:
@@ -67,7 +61,4 @@ def _create_openai_assistant(
         openai_assistant, document
     )
 
-    return JSONResponse(
-        content={},
-        status_code=200,
-    )
+    return EmptyResp()

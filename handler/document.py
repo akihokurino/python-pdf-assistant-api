@@ -14,7 +14,8 @@ from adapter.adapter import (
     OpenaiAdapter,
 )
 from config.envs import DEFAULT_BUCKET_NAME
-from handler.response import document_resp, user_resp
+from handler.response import DocumentWithUserResp, PreSignUploadResp, PreSignGetResp, DocumentResp, AnswerResp, \
+    EmptyResp
 from model.document import Document, DocumentId, Status
 from model.error import AppError, ErrorKind
 from model.user import UserId
@@ -28,38 +29,26 @@ def _get_document(
         document_id: DocumentId,
         request: Request,
         document_repository: DocumentRepository = Depends(),
-) -> JSONResponse:
+) -> DocumentWithUserResp:
     result = document_repository.get_document_with_user(document_id)
     if not result:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
         )
 
-    return JSONResponse(
-        content={
-            "document": document_resp(result[0]),
-            "user": user_resp(result[1]),
-        },
-        status_code=200,
-    )
+    return DocumentWithUserResp.from_model(result[1], result[0])
 
 
 @router.post("/documents/pre_signed_upload_url")
 def _pre_signed_upload_url(
         request: Request,
         storage_adapter: StorageAdapter = Depends(),
-) -> JSONResponse:
+) -> PreSignUploadResp:
     uid: Final[UserId] = request.state.uid
     key = f"documents/{uid}/{uuid.uuid4()}.pdf"
     url = storage_adapter.gen_pre_signed_upload_url(key)
 
-    return JSONResponse(
-        content={
-            "url": url,
-            "key": key,
-        },
-        status_code=200,
-    )
+    return PreSignUploadResp(url=url, key=key)
 
 
 @final
@@ -72,18 +61,13 @@ def _pre_signed_get_url(
         request: Request,
         payload: _PreSignedGetUrlPayload,
         storage_adapter: StorageAdapter = Depends(),
-) -> JSONResponse:
+) -> PreSignGetResp:
     key = gs_url_to_key(payload.gs_url)
     if not key:
         raise AppError(ErrorKind.BAD_REQUEST, "gs_urlが不正です")
     url = storage_adapter.gen_pre_signed_get_url(key)
 
-    return JSONResponse(
-        content={
-            "url": url,
-        },
-        status_code=200,
-    )
+    return PreSignGetResp(url=url)
 
 
 @final
@@ -98,7 +82,7 @@ def _create_documents(
         request: Request,
         payload: _CreateDocumentPayload,
         document_repository: DocumentRepository = Depends(),
-) -> JSONResponse:
+) -> DocumentResp:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
@@ -108,7 +92,7 @@ def _create_documents(
     )
     document_repository.insert_document(new_document)
 
-    return JSONResponse(content=document_resp(new_document), status_code=200)
+    return DocumentResp.from_model(new_document)
 
 
 @router.post("/documents/{document_id}/openai_assistants")
@@ -150,7 +134,7 @@ def _create_openai_message(
         openai_adapter: OpenaiAdapter = Depends(),
         document_repository: DocumentRepository = Depends(),
         openai_assistant_repository: OpenaiAssistantRepository = Depends(),
-) -> JSONResponse:
+) -> AnswerResp:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
@@ -175,12 +159,7 @@ def _create_openai_message(
 
     answer = openai_adapter.get_answer(openai_assistant, payload.question)
 
-    return JSONResponse(
-        content={
-            "answer": answer,
-        },
-        status_code=200,
-    )
+    return AnswerResp(answer=answer)
 
 
 @final
@@ -195,7 +174,7 @@ def _update_documents(
         request: Request,
         payload: _UpdateDocumentPayload,
         document_repository: DocumentRepository = Depends(),
-) -> JSONResponse:
+) -> DocumentResp:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
@@ -210,7 +189,7 @@ def _update_documents(
     document.update(payload.name, payload.description, now)
     document_repository.update_document(document)
 
-    return JSONResponse(content=document_resp(document), status_code=200)
+    return DocumentResp.from_model(document)
 
 
 @router.delete("/documents/{document_id}")
@@ -219,7 +198,7 @@ def _delete_documents(
         request: Request,
         storage_adapter: StorageAdapter = Depends(),
         document_repository: DocumentRepository = Depends(),
-) -> JSONResponse:
+) -> EmptyResp:
     uid: Final[UserId] = request.state.uid
 
     document = document_repository.get_document(document_id)
@@ -237,4 +216,4 @@ def _delete_documents(
     storage_adapter.delete_object(key)
     document_repository.delete_document(document_id)
 
-    return JSONResponse(content={}, status_code=200)
+    return EmptyResp()
