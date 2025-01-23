@@ -33,7 +33,7 @@ async def _create_openai_assistant(
         document_repository: DocumentRepository = Depends(),
 ) -> EmptyResp:
     now: Final[datetime] = datetime.now(timezone.utc)
-    assistant = openai_assistant_repository.get_assistant(payload.document_id)
+    assistant = await openai_assistant_repository.get_assistant(payload.document_id)
     if assistant:
         return EmptyResp()
 
