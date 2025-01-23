@@ -26,12 +26,12 @@ async def _create_user(
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
-    user = user_repository.get_user(uid)
+    user = await user_repository.get_user(uid)
     if user:
         return UserResp.from_model(user)
 
     new_user = User.new(uid, payload.name, now)
-    user_repository.insert_user(new_user)
+    await user_repository.insert_user(new_user)
 
     return UserResp.from_model(new_user)
 
@@ -50,11 +50,11 @@ async def _update_user(
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
-    user = user_repository.get_user(uid)
+    user = await user_repository.get_user(uid)
     if not user:
         raise AppError(ErrorKind.NOT_FOUND, f"ユーザーが見つかりません: {uid}")
 
     user.update(payload.name, now)
-    user_repository.update_user(user)
+    await user_repository.update_user(user)
 
     return UserResp.from_model(user)

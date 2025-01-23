@@ -1,15 +1,17 @@
 from datetime import datetime
-from typing import Optional, List, Tuple, Any, final
+from typing import Optional, List, Tuple, final
 
-from sqlalchemy.orm import joinedload
-from sqlalchemy.orm import sessionmaker, Session as OrmSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
 from adapter.adapter import OpenaiAssistantRepository
 from infra.cloud_sql.entity import (
     openai_assistant_entity_from,
     openai_assistant_from,
     OpenaiAssistantEntity,
-    document_from, DocumentEntity,
+    document_from,
+    DocumentEntity,
 )
 from model.document import DocumentId, Document
 from model.error import AppError, ErrorKind
@@ -20,123 +22,152 @@ from model.openai_assistant import OpenaiAssistant
 class OpenaiAssistantRepoImpl(OpenaiAssistantRepository):
     def __init__(
             self,
-            session: Any,
+            session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session = session
 
     @classmethod
     def new(
             cls,
-            session: sessionmaker[OrmSession],
+            session: async_sessionmaker[AsyncSession],
     ) -> OpenaiAssistantRepository:
         return cls(session)
 
-    def find_past_openai_assistants(
+    async def find_past_openai_assistants(
             self,
             date: datetime,
     ) -> List[Tuple[OpenaiAssistant, Document]]:
         try:
-            with self.session() as session:
-                entities = (
-                    session.query(OpenaiAssistantEntity)
+            async with self.session() as session:
+                entities = (await session.execute(
+                    select(OpenaiAssistantEntity)
                     .filter(OpenaiAssistantEntity.used_at < date)
-                    .options(joinedload(OpenaiAssistantEntity.document))
-                    .all()
-                )
-                return [(openai_assistant_from(e), document_from(e.document)) for e in entities]
+                    .options(selectinload(OpenaiAssistantEntity.document))
+                )).scalars().all()
+                return [
+                    (openai_assistant_from(e), document_from(e.document))
+                    for e in entities
+                ]
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"データの取得に失敗しました。") from e
 
-    def get_assistant(self, _id: DocumentId) -> Optional[OpenaiAssistant]:
+    async def get_assistant(self, _id: DocumentId) -> Optional[OpenaiAssistant]:
         try:
-            with self.session() as session:
-                entity = (
-                    session.query(OpenaiAssistantEntity)
-                    .filter_by(document_id=_id)
-                    .one_or_none()
-                )
+            async with self.session() as session:
+                entity = (await session.execute(
+                    select(OpenaiAssistantEntity).filter_by(document_id=_id)
+                )).scalars().one_or_none()
                 if not entity:
                     return None
                 return openai_assistant_from(entity)
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"アシスタントの取得に失敗しました。") from e
+            raise AppError(
+                ErrorKind.INTERNAL, f"アシスタントの取得に失敗しました。"
+            ) from e
 
-    def insert_assistant(self, item: OpenaiAssistant) -> None:
+    async def insert_assistant(self, item: OpenaiAssistant) -> None:
         try:
-            with self.session() as session:
+            async with self.session() as session:
                 entity = openai_assistant_entity_from(item)
                 session.add(entity)
-                session.commit()
+                await session.commit()
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"アシスタントの登録に失敗しました。") from e
+            raise AppError(
+                ErrorKind.INTERNAL, f"アシスタントの登録に失敗しました。"
+            ) from e
 
-    def insert_assistant_and_update_document(self, assistant: OpenaiAssistant, document: Document) -> None:
+    async def insert_assistant_and_update_document(
+            self, assistant: OpenaiAssistant, document: Document
+    ) -> None:
         try:
-            with self.session() as session:
+            async with self.session() as session:
                 entity1 = openai_assistant_entity_from(assistant)
                 session.add(entity1)
 
-                entity2 = session.query(DocumentEntity).filter_by(id=assistant.id).one_or_none()
+                entity2 = (await session.execute(
+                    select(DocumentEntity).filter_by(id=document.id)
+                )).scalars().one_or_none()
                 if not entity2:
                     raise AppError(
-                        ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {assistant.id}"
+                        ErrorKind.NOT_FOUND,
+                        f"ドキュメントが見つかりません: {document.id}",
                     )
-                entity2.update(assistant)
+                entity2.update(document)
 
-                session.commit()
+                await session.commit()
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"アシスタントの登録に失敗しました。") from e
+            raise AppError(
+                ErrorKind.INTERNAL, f"アシスタントの登録に失敗しました。"
+            ) from e
 
-    def update_assistant(self, item: OpenaiAssistant) -> None:
+    async def update_assistant(self, item: OpenaiAssistant) -> None:
         try:
-            with self.session() as session:
-                entity = (
-                    session.query(OpenaiAssistantEntity).filter_by(document_id=item.document_id)
-                ).one_or_none()
-
+            async with self.session() as session:
+                entity = (await session.execute(
+                    select(OpenaiAssistantEntity).filter_by(
+                        document_id=item.document_id
+                    )
+                )).scalars().one_or_none()
                 if not entity:
                     raise AppError(
                         ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {item.id}"
                     )
                 entity.update(item)
-                session.commit()
+                await session.commit()
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"アシスタントの更新に失敗しました。") from e
+            raise AppError(
+                ErrorKind.INTERNAL, f"アシスタントの更新に失敗しました。"
+            ) from e
 
-    def delete_assistant(self, _id: DocumentId) -> None:
+    async def delete_assistant(self, _id: DocumentId) -> None:
         try:
-            with self.session() as session:
-                entity = (
-                    session.query(OpenaiAssistantEntity)
-                    .filter_by(document_id=_id)
-                    .one_or_none()
-                )
+            async with self.session() as session:
+                entity = (await session.execute(
+                    select(OpenaiAssistantEntity).filter_by(
+                        document_id=_id
+                    )
+                )).scalars().one_or_none()
                 if not entity:
-                    raise AppError(ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {_id}")
-                session.delete(entity)
-                session.commit()
+                    raise AppError(
+                        ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {_id}"
+                    )
+                await session.delete(entity)
+                await session.commit()
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"アシスタントの削除に失敗しました。") from e
+            raise AppError(
+                ErrorKind.INTERNAL, f"アシスタントの削除に失敗しました。"
+            ) from e
 
-    def delete_assistant_and_update_document(self, _id: DocumentId, document: Document) -> None:
+    async def delete_assistant_and_update_document(
+            self, _id: DocumentId, document: Document
+    ) -> None:
         try:
-            with self.session() as session:
-                entity1 = (
-                    session.query(OpenaiAssistantEntity)
-                    .filter_by(document_id=_id)
-                    .one_or_none()
-                )
+            async with self.session() as session:
+                entity1 = (await session.execute(
+                    select(OpenaiAssistantEntity).filter_by(
+                        document_id=_id
+                    )
+                )).scalars().one_or_none()
                 if not entity1:
-                    raise AppError(ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {_id}")
-                session.delete(entity1)
+                    raise AppError(
+                        ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {_id}"
+                    )
+                await session.delete(entity1)
 
-                entity2 = session.query(DocumentEntity).filter_by(id=document.id).one_or_none()
+                entity2 = (await session.execute(
+                    select(DocumentEntity).filter_by(
+                        id=document.id
+                    )
+                )).scalars().one_or_none()
                 if not entity2:
                     raise AppError(
-                        ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document.id}"
+                        ErrorKind.NOT_FOUND,
+                        f"ドキュメントが見つかりません: {document.id}",
                     )
                 entity2.update(document)
 
-                session.commit()
+                await session.commit()
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"アシスタントの削除に失敗しました。") from e
+            raise AppError(
+                ErrorKind.INTERNAL, f"アシスタントの削除に失敗しました。"
+            ) from e

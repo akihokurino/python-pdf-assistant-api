@@ -2,7 +2,6 @@ from typing import Final
 
 import uvicorn
 from fastapi import FastAPI
-from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
@@ -37,9 +36,7 @@ app.dependency_overrides[OpenaiAssistantRepository] = use_openai_assistant_repo
 
 
 @app.exception_handler(RequestValidationError)
-async def _validation_exception_handler(
-        request: Request, exc: RequestValidationError
-) -> JSONResponse:
+async def _validation_exception_handler(exc: RequestValidationError) -> JSONResponse:
     return JSONResponse(
         status_code=400,
         content={

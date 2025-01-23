@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Final, final
 
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from adapter.adapter import (
@@ -26,7 +26,6 @@ class _CreateOpenaiAssistantPayload(BaseModel):
 
 @router.post("/subscriber/create_openai_assistant")
 async def _create_openai_assistant(
-        request: Request,
         payload: _CreateOpenaiAssistantPayload,
         openai_adapter: OpenaiAdapter = Depends(),
         storage_adapter: StorageAdapter = Depends(),
@@ -38,7 +37,7 @@ async def _create_openai_assistant(
     if assistant:
         return EmptyResp()
 
-    document = document_repository.get_document(payload.document_id)
+    document = await document_repository.get_document(payload.document_id)
     if not document:
         raise AppError(ErrorKind.NOT_FOUND, "ドキュメントが見つかりません")
 
@@ -57,7 +56,7 @@ async def _create_openai_assistant(
     openai_assistant = OpenaiAssistant.new(
         new_assistant[0], document.id, new_assistant[1], now
     )
-    openai_assistant_repository.insert_assistant_and_update_document(
+    await openai_assistant_repository.insert_assistant_and_update_document(
         openai_assistant, document
     )
 

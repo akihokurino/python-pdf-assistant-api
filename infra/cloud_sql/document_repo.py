@@ -1,7 +1,8 @@
-from typing import Optional, List, Tuple, Any, final
+from typing import Optional, List, Tuple, final
 
-from sqlalchemy.orm import joinedload
-from sqlalchemy.orm import sessionmaker, Session as OrmSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
 from adapter.adapter import DocumentRepository
 from infra.cloud_sql.entity import (
@@ -19,79 +20,86 @@ from model.user import UserId, User
 class DocumentRepoImpl(DocumentRepository):
     def __init__(
             self,
-            session: Any,
+            session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session = session
 
     @classmethod
     def new(
             cls,
-            session: sessionmaker[OrmSession],
+            session: async_sessionmaker[AsyncSession],
     ) -> DocumentRepository:
         return cls(session)
 
-    def find_documents_by_user(self, user_id: UserId) -> List[Document]:
+    async def find_documents_by_user(self, user_id: UserId) -> List[Document]:
         try:
-            with self.session() as session:
-                entities = session.query(DocumentEntity).filter_by(user_id=user_id).all()
+            async with self.session() as session:
+                entities = (await session.execute(
+                    select(DocumentEntity).filter_by(user_id=user_id)
+                )).scalars().all()
                 return [document_from(e) for e in entities]
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"ドキュメントの取得に失敗しました。") from e
 
-    def get_document(self, _id: DocumentId) -> Optional[Document]:
+    async def get_document(self, _id: DocumentId) -> Optional[Document]:
         try:
-            with self.session() as session:
-                entity = session.query(DocumentEntity).filter_by(id=_id).one_or_none()
+            async with self.session() as session:
+                entity = (await session.execute(
+                    select(DocumentEntity).filter_by(id=_id)
+                )).scalars().one_or_none()
                 if not entity:
                     return None
                 return document_from(entity)
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"ドキュメントの取得に失敗しました。") from e
 
-    def get_document_with_user(self, _id: DocumentId) -> Optional[Tuple[Document, User]]:
+    async def get_document_with_user(self, _id: DocumentId) -> Optional[Tuple[Document, User]]:
         try:
-            with self.session() as session:
-                entity = (
-                    session.query(DocumentEntity)
+            async with self.session() as session:
+                entity = (await session.execute(
+                    select(DocumentEntity)
                     .filter_by(id=_id)
-                    .options(joinedload(DocumentEntity.user))
-                    .one_or_none()
-                )
+                    .options(selectinload(DocumentEntity.user))
+                )).scalars().one_or_none()
                 if not entity:
                     return None
                 return document_from(entity), user_from(entity.user)
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"ドキュメントの取得に失敗しました。") from e
 
-    def insert_document(self, item: Document) -> None:
+    async def insert_document(self, item: Document) -> None:
         try:
-            with self.session() as session:
+            async with self.session() as session:
                 entity = document_entity_from(item)
                 session.add(entity)
-                session.commit()
+                await session.commit()
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"ドキュメントの登録に失敗しました。") from e
 
-    def update_document(self, item: Document) -> None:
+    async def update_document(self, item: Document) -> None:
         try:
-            with self.session() as session:
-                entity = session.query(DocumentEntity).filter_by(id=item.id).one_or_none()
+            async with self.session() as session:
+                entity = (await session.execute(
+                    select(DocumentEntity).filter_by(id=item.id)
+                )).scalars().one_or_none()
                 if not entity:
                     raise AppError(
                         ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {item.id}"
                     )
                 entity.update(item)
-                session.commit()
+                await session.commit()
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"ドキュメントの更新に失敗しました。") from e
 
-    def delete_document(self, _id: DocumentId) -> None:
+    async def delete_document(self, _id: DocumentId) -> None:
         try:
-            with self.session() as session:
-                entity = session.query(DocumentEntity).filter_by(id=_id).one_or_none()
+            async with self.session() as session:
+                entity = (await session.execute(
+                    select(DocumentEntity).filter_by(id=_id)
+                )).scalars().one_or_none()
                 if not entity:
                     raise AppError(ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {_id}")
-                session.delete(entity)
-                session.commit()
+                await session.delete(entity)
+                await session.commit()
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"ドキュメントの削除に失敗しました。") from e

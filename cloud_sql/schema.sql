@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS documents (
@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS documents (
     description VARCHAR(255) NOT NULL,
     gs_file_url VARCHAR(255) NOT NULL,
     status INTEGER NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 ALTER TABLE documents
     ADD CONSTRAINT fk_documents_users
@@ -27,9 +27,9 @@ CREATE TABLE IF NOT EXISTS openai_assistants (
     document_id VARCHAR(255) NOT NULL,
     assistant_id VARCHAR(255) NOT NULL,
     thread_id VARCHAR(255) NOT NULL,
-    used_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL,
+    used_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
     PRIMARY KEY (document_id)
 );
 ALTER TABLE openai_assistants

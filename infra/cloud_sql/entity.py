@@ -24,8 +24,8 @@ class UserEntity(Base):
 
     id: str = Column(String(255), primary_key=True)
     name: str = Column(String(255), nullable=False)
-    created_at: datetime = Column(DateTime, nullable=False)
-    updated_at: datetime = Column(DateTime, nullable=False)
+    created_at: datetime = Column(DateTime(timezone=True), nullable=False)
+    updated_at: datetime = Column(DateTime(timezone=True), nullable=False)
 
     documents: Mapped[List["DocumentEntity"]] = relationship(
         "DocumentEntity", back_populates="user"
@@ -64,8 +64,8 @@ class DocumentEntity(Base):
     description: str = Column(String(255), nullable=False)
     gs_file_url: str = Column(String(255), nullable=False)
     status: int = Column(Integer(), nullable=False)
-    created_at: datetime = Column(DateTime, nullable=False)
-    updated_at: datetime = Column(DateTime, nullable=False)
+    created_at: datetime = Column(DateTime(timezone=True), nullable=False)
+    updated_at: datetime = Column(DateTime(timezone=True), nullable=False)
 
     user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="documents")
     openai_assistant: Mapped["OpenaiAssistantEntity"] = relationship(
@@ -113,9 +113,9 @@ class OpenaiAssistantEntity(Base):
     document_id: str = Column(String(255), ForeignKey("documents.id"), primary_key=True)
     assistant_id: str = Column(String(255), nullable=False)
     thread_id: str = Column(String(255), nullable=False)
-    used_at: datetime = Column(DateTime, nullable=False)
-    created_at: datetime = Column(DateTime, nullable=False)
-    updated_at: datetime = Column(DateTime, nullable=False)
+    used_at: datetime = Column(DateTime(timezone=True), nullable=False)
+    created_at: datetime = Column(DateTime(timezone=True), nullable=False)
+    updated_at: datetime = Column(DateTime(timezone=True), nullable=False)
 
     document: Mapped["DocumentEntity"] = relationship(
         "DocumentEntity", back_populates="openai_assistant"
