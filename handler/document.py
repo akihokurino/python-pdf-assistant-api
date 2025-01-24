@@ -12,6 +12,7 @@ from adapter.adapter import (
     TaskQueueAdapter,
     OpenaiAssistantRepository,
     OpenaiAdapter,
+    OpenaiAssistantFSRepository,
 )
 from config.envs import DEFAULT_BUCKET_NAME
 from handler.response import (
@@ -35,7 +36,7 @@ async def _get_document(
         document_id: DocumentId,
         document_repository: DocumentRepository = Depends(),
 ) -> DocumentWithUserResp:
-    result = await document_repository.get_document_with_user(document_id)
+    result = await document_repository.get_with_user(document_id)
     if not result:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -94,7 +95,7 @@ async def _create_documents(
     new_document = Document.new(
         uid, payload.name, payload.description, gs_file_url, now
     )
-    await document_repository.insert_document(new_document)
+    await document_repository.insert(new_document)
 
     return DocumentResp.from_model(new_document)
 
@@ -108,7 +109,7 @@ async def _create_openai_assistant(
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
-    document = await document_repository.get_document(document_id)
+    document = await document_repository.get(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -142,7 +143,7 @@ async def _create_openai_message(
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
-    document = await document_repository.get_document(document_id)
+    document = await document_repository.get(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -152,14 +153,14 @@ async def _create_openai_message(
     if document.status != Status.READY_ASSISTANT:
         raise AppError(ErrorKind.BAD_REQUEST, "アシスタントが準備できていません")
 
-    openai_assistant = await openai_assistant_repository.get_assistant(document.id)
+    openai_assistant = await openai_assistant_repository.get(document.id)
     if not openai_assistant:
         raise AppError(
             ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {document_id}"
         )
 
     openai_assistant.use(now)
-    await openai_assistant_repository.update_assistant(openai_assistant)
+    await openai_assistant_repository.update(openai_assistant)
 
     answer = openai_adapter.get_answer(openai_assistant, payload.question)
 
@@ -182,7 +183,7 @@ async def _update_documents(
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
 
-    document = await document_repository.get_document(document_id)
+    document = await document_repository.get(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -191,7 +192,7 @@ async def _update_documents(
         raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
 
     document.update(payload.name, payload.description, now)
-    await document_repository.update_document(document)
+    await document_repository.update(document)
 
     return DocumentResp.from_model(document)
 
@@ -201,11 +202,14 @@ async def _delete_documents(
         document_id: DocumentId,
         request: Request,
         storage_adapter: StorageAdapter = Depends(),
+        openai_adapter: OpenaiAdapter = Depends(),
         document_repository: DocumentRepository = Depends(),
+        openai_assistant_repository: OpenaiAssistantRepository = Depends(),
+        openai_assistant_fs_repository: OpenaiAssistantFSRepository = Depends(),
 ) -> EmptyResp:
     uid: Final[UserId] = request.state.uid
 
-    document = await document_repository.get_document(document_id)
+    document = await document_repository.get(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -216,8 +220,12 @@ async def _delete_documents(
     key = gs_url_to_key(document.gs_file_url)
     if not key:
         raise AppError(ErrorKind.INTERNAL, "gs_urlが不正です")
-
     storage_adapter.delete_object(key)
-    await document_repository.delete_document(document_id)
+
+    assistant = await openai_assistant_repository.get(document.id)
+    if assistant is not None:
+        openai_adapter.delete(assistant.id)
+        await openai_assistant_fs_repository.delete(assistant.id)
+    await document_repository.delete_with_assistant(document_id)
 
     return EmptyResp()

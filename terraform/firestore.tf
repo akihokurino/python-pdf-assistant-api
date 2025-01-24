@@ -1,8 +1,8 @@
 resource "google_firestore_database" "firestore" {
-  name        = "(default)"
+  name        = "pdf-assistant"
   project     = var.project_id
   location_id = var.region
-  type        = "DATASTORE_MODE"
+  type        = "FIRESTORE_NATIVE"
 
   depends_on = [
     google_project_service.firestore

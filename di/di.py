@@ -2,6 +2,7 @@ from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton
 from google.cloud import storage
 from google.cloud import tasks_v2
+from google.cloud.firestore import AsyncClient
 from openai import OpenAI
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -13,6 +14,7 @@ from adapter.adapter import (
     OpenaiAdapter,
     LogAdapter,
     TaskQueueAdapter,
+    OpenaiAssistantFSRepository,
 )
 from config.envs import DATABASE_URL
 from config.envs import OPENAI_API_KEY
@@ -21,6 +23,7 @@ from infra.cloud_sql.openai_assistant_repo import OpenaiAssistantRepoImpl
 from infra.cloud_sql.user_repo import UserRepoImpl
 from infra.cloud_storage import CloudStorageImpl
 from infra.cloud_tasks import CloudTasksImpl
+from infra.datastore.openai_assistant_repo import OpenaiAssistantFSRepoImpl
 from infra.logger import LoggerImpl
 from infra.openai import OpenaiImpl
 
@@ -39,6 +42,7 @@ class AppContainer(containers.DeclarativeContainer):
     openai_client: Singleton[OpenAI] = providers.Singleton(
         OpenAI, api_key=openai_api_key
     )
+    firestore: Singleton[AsyncClient] = providers.Singleton(AsyncClient, database="pdf-assistant")
 
     storage_adapter: Singleton[StorageAdapter] = providers.Singleton(
         CloudStorageImpl.new, cloud_storage_client
@@ -59,6 +63,10 @@ class AppContainer(containers.DeclarativeContainer):
     )
     openai_assistant_repository: Singleton[OpenaiAssistantRepository] = (
         providers.Singleton(OpenaiAssistantRepoImpl.new, session)
+    )
+
+    openai_assistant_fs_repository: Singleton[OpenaiAssistantFSRepository] = (
+        providers.Singleton(OpenaiAssistantFSRepoImpl.new, firestore)
     )
 
 
@@ -92,3 +100,7 @@ def use_document_repo() -> DocumentRepository:
 
 def use_openai_assistant_repo() -> OpenaiAssistantRepository:
     return container.openai_assistant_repository()
+
+
+def use_openai_assistant_fs_repo() -> OpenaiAssistantFSRepository:
+    return container.openai_assistant_fs_repository()

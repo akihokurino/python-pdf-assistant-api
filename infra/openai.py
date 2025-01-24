@@ -74,7 +74,7 @@ class OpenaiImpl(OpenaiAdapter):
         else:
             raise AppError(ErrorKind.INTERNAL)
 
-    def create_assistant(
+    def create(
             self, document_id: DocumentId, document_path: str
     ) -> Tuple[OpenaiAssistantId, OpenaiThreadId]:
         assistant = self.cli.beta.assistants.create(
@@ -112,5 +112,5 @@ class OpenaiImpl(OpenaiAdapter):
 
         return OpenaiAssistantId(assistant.id), OpenaiThreadId(thread.id)
 
-    def delete_assistant(self, assistant_id: OpenaiAssistantId) -> None:
+    def delete(self, assistant_id: OpenaiAssistantId) -> None:
         self.cli.beta.assistants.delete(assistant_id=assistant_id)

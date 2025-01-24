@@ -950,26 +950,23 @@ google-auth = ">=1.25.0,<3.0dev"
 grpc = ["grpcio (>=1.38.0,<2.0dev)", "grpcio-status (>=1.38.0,<2.0.dev0)"]
 
 [[package]]
-name = "google-cloud-datastore"
-version = "2.20.2"
-description = "Google Cloud Datastore API client library"
+name = "google-cloud-firestore"
+version = "2.20.0"
+description = "Google Cloud Firestore API client library"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "google_cloud_datastore-2.20.2-py2.py3-none-any.whl", hash = "sha256:d2190180343b807d4aa3b0b3bb837606349b71e5e74e29aa9009c0ae38c0b6a0"},
-    {file = "google_cloud_datastore-2.20.2.tar.gz", hash = "sha256:9665d009729d9551329d9476f4d5bda9c11d3469243ea8a2c0d9490b65aa899f"},
+    {file = "google_cloud_firestore-2.20.0-py2.py3-none-any.whl", hash = "sha256:505ef6951b56ea91f6762d99b3429ca6def6dceb254b4ba1ffc85e69b71414d7"},
+    {file = "google_cloud_firestore-2.20.0.tar.gz", hash = "sha256:ad863be58667233921e02f0b81aa94a816f5e63a707cb33c97b1aa357a50566d"},
 ]
 
 [package.dependencies]
 google-api-core = {version = ">=1.34.0,<2.0.dev0 || >=2.11.dev0,<3.0.0dev", extras = ["grpc"]}
 google-auth = ">=2.14.1,<2.24.0 || >2.24.0,<2.25.0 || >2.25.0,<3.0.0dev"
-google-cloud-core = ">=1.4.0,<3.0.0dev"
+google-cloud-core = ">=1.4.1,<3.0.0dev"
 proto-plus = {version = ">=1.22.2,<2.0.0dev", markers = "python_version >= \"3.11\""}
 protobuf = ">=3.20.2,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<6.0.0dev"
-
-[package.extras]
-libcst = ["libcst (>=0.2.5)"]
 
 [[package]]
 name = "google-cloud-secret-manager"
@@ -3259,4 +3256,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<4"
-content-hash = "503a3351b5d4d5852b6fc14303e7964cc019a8bdee78dcef4902b65ccfd0d7a2"
+content-hash = "e9f6d284e4aaca8ffa8c3781b74ccca7c46ef1cdef891772b0b23f4ccbbfe50c"

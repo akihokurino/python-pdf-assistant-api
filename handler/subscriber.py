@@ -8,7 +8,7 @@ from adapter.adapter import (
     OpenaiAdapter,
     OpenaiAssistantRepository,
     DocumentRepository,
-    StorageAdapter,
+    StorageAdapter, OpenaiAssistantFSRepository,
 )
 from handler.response import EmptyResp
 from model.document import DocumentId, Status
@@ -31,13 +31,14 @@ async def _create_openai_assistant(
         storage_adapter: StorageAdapter = Depends(),
         openai_assistant_repository: OpenaiAssistantRepository = Depends(),
         document_repository: DocumentRepository = Depends(),
+        openai_assistant_fs_repository: OpenaiAssistantFSRepository = Depends(),
 ) -> EmptyResp:
     now: Final[datetime] = datetime.now(timezone.utc)
-    assistant = await openai_assistant_repository.get_assistant(payload.document_id)
+    assistant = await openai_assistant_repository.get(payload.document_id)
     if assistant:
         return EmptyResp()
 
-    document = await document_repository.get_document(payload.document_id)
+    document = await document_repository.get(payload.document_id)
     if not document:
         raise AppError(ErrorKind.NOT_FOUND, "ドキュメントが見つかりません")
 
@@ -49,15 +50,16 @@ async def _create_openai_assistant(
     destination_file_name: Final[str] = f"/tmp/{document.id}_downloaded.pdf"
     storage_adapter.download_object(key, destination_file_name)
 
-    new_assistant = openai_adapter.create_assistant(
+    new_assistant = openai_adapter.create(
         document.id,
         destination_file_name,
     )
     openai_assistant = OpenaiAssistant.new(
         new_assistant[0], document.id, new_assistant[1], now
     )
-    await openai_assistant_repository.insert_assistant_and_update_document(
+    await openai_assistant_repository.insert_with_update_document(
         openai_assistant, document
     )
+    await openai_assistant_fs_repository.put(openai_assistant)
 
     return EmptyResp()

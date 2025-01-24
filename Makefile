@@ -31,7 +31,7 @@ push-pdf-assistant:
 	gcloud auth configure-docker asia-northeast1-docker.pkg.dev
 	docker push asia-northeast1-docker.pkg.dev/$(PROJECT_ID)/app/pdf-assistant:latest
 
-deploy:
+deploy: push-pdf-assistant
 	gcloud run deploy pdf-assistant-api \
       	--image asia-northeast1-docker.pkg.dev/$(PROJECT_ID)/app/pdf-assistant:latest \
       	--add-cloudsql-instances $(PROJECT_ID):asia-northeast1:pdf-assistant \

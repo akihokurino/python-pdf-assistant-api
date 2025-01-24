@@ -31,7 +31,7 @@ class UserRepoImpl(UserRepository):
     ) -> UserRepository:
         return cls(session)
 
-    async def find_users(self) -> List[User]:
+    async def find(self) -> List[User]:
         try:
             async with self.session() as session:
                 result = await session.execute(select(UserEntity))
@@ -40,7 +40,7 @@ class UserRepoImpl(UserRepository):
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
 
-    async def get_user(self, _id: UserId) -> Optional[User]:
+    async def get(self, _id: UserId) -> Optional[User]:
         try:
             async with self.session() as session:
                 result = await session.execute(select(UserEntity).filter_by(id=_id))
@@ -51,7 +51,7 @@ class UserRepoImpl(UserRepository):
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
 
-    async def get_user_with_documents(
+    async def get_with_documents(
             self, _id: UserId
     ) -> Optional[Tuple[User, List[Document]]]:
         try:
@@ -68,7 +68,7 @@ class UserRepoImpl(UserRepository):
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
 
-    async def insert_user(self, item: User) -> None:
+    async def insert(self, item: User) -> None:
         try:
             async with self.session() as session:
                 entity = user_entity_from(item)
@@ -77,7 +77,7 @@ class UserRepoImpl(UserRepository):
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"ユーザーの登録に失敗しました。") from e
 
-    async def update_user(self, item: User) -> None:
+    async def update(self, item: User) -> None:
         try:
             async with self.session() as session:
                 result = await session.execute(select(UserEntity).filter_by(id=item.id))
@@ -91,7 +91,7 @@ class UserRepoImpl(UserRepository):
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"ユーザーの更新に失敗しました。") from e
 
-    async def delete_user(self, _id: UserId) -> None:
+    async def delete(self, _id: UserId) -> None:
         try:
             async with self.session() as session:
                 result = await session.execute(select(UserEntity).filter_by(id=_id))

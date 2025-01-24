@@ -5,10 +5,26 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from adapter.adapter import UserRepository, DocumentRepository, OpenaiAssistantRepository, StorageAdapter, \
-    TaskQueueAdapter, LogAdapter, OpenaiAdapter
-from di.di import use_user_repo, use_document_repo, use_openai_assistant_repo, use_storage, use_task_queue, use_log, \
-    use_openai
+from adapter.adapter import (
+    UserRepository,
+    DocumentRepository,
+    OpenaiAssistantRepository,
+    StorageAdapter,
+    TaskQueueAdapter,
+    LogAdapter,
+    OpenaiAdapter,
+    OpenaiAssistantFSRepository,
+)
+from di.di import (
+    use_user_repo,
+    use_document_repo,
+    use_openai_assistant_repo,
+    use_storage,
+    use_task_queue,
+    use_log,
+    use_openai,
+    use_openai_assistant_fs_repo,
+)
 from handler.document import router as document_router
 from handler.me import router as me_router
 from handler.subscriber import router as subscriber_router
@@ -33,6 +49,7 @@ app.dependency_overrides[OpenaiAdapter] = use_openai
 app.dependency_overrides[UserRepository] = use_user_repo
 app.dependency_overrides[DocumentRepository] = use_document_repo
 app.dependency_overrides[OpenaiAssistantRepository] = use_openai_assistant_repo
+app.dependency_overrides[OpenaiAssistantFSRepository] = use_openai_assistant_fs_repo
 
 
 @app.exception_handler(RequestValidationError)
