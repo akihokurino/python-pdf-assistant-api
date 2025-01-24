@@ -7,4 +7,8 @@ resource "google_storage_bucket" "google_storage_userdata" {
   versioning {
     enabled = false
   }
+
+  depends_on = [
+    google_project_service.cloud_storage
+  ]
 }

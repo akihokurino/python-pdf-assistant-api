@@ -4,6 +4,10 @@ resource "google_secret_manager_secret" "cloud_sql_connection" {
   replication {
     auto {}
   }
+
+  depends_on = [
+    google_project_service.secret_manager
+  ]
 }
 resource "google_secret_manager_secret_version" "cloud_sql_connection_version" {
   secret      = google_secret_manager_secret.cloud_sql_connection.id
@@ -16,6 +20,10 @@ resource "google_secret_manager_secret" "task_queue_token" {
   replication {
     auto {}
   }
+
+  depends_on = [
+    google_project_service.secret_manager
+  ]
 }
 resource "google_secret_manager_secret_version" "task_queue_token_version" {
   secret      = google_secret_manager_secret.task_queue_token.id
@@ -28,6 +36,10 @@ resource "google_secret_manager_secret" "api_base_url" {
   replication {
     auto {}
   }
+
+  depends_on = [
+    google_project_service.secret_manager
+  ]
 }
 resource "google_secret_manager_secret_version" "api_base_url_version" {
   secret      = google_secret_manager_secret.api_base_url.id
@@ -40,6 +52,10 @@ resource "google_secret_manager_secret" "openai_api_key" {
   replication {
     auto {}
   }
+
+  depends_on = [
+    google_project_service.secret_manager
+  ]
 }
 resource "google_secret_manager_secret_version" "openai_api_key_version" {
   secret      = google_secret_manager_secret.openai_api_key.id

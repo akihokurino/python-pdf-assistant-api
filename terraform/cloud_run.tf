@@ -49,6 +49,10 @@ resource "google_cloud_run_service" "api" {
       "run.googleapis.com/ingress" = "all"
     }
   }
+
+  depends_on = [
+    google_project_service.cloud_run
+  ]
 }
 resource "google_cloud_run_service_iam_binding" "api_access" {
   service  = google_cloud_run_service.api.name
@@ -102,6 +106,10 @@ resource "google_cloud_run_v2_job" "clean_openai_assistant" {
     task_count  = 1
     parallelism = 1
   }
+
+  depends_on = [
+    google_project_service.cloud_run
+  ]
 }
 resource "google_cloud_run_v2_job_iam_binding" "clean_openai_assistant_access" {
   name     = google_cloud_run_v2_job.clean_openai_assistant.name

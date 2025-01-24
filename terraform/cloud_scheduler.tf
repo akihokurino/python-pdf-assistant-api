@@ -12,4 +12,8 @@ resource "google_cloud_scheduler_job" "clean_openai_assistant" {
       service_account_email = google_service_account.cloud_scheduler_sa.email
     }
   }
+
+  depends_on = [
+    google_project_service.cloud_scheduler
+  ]
 }

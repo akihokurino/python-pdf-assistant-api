@@ -102,6 +102,7 @@ dependencies = [
     "dependency-injector (>=4.45.0,<5.0.0)",
     "asyncpg (>=0.30.0,<0.31.0)",
     "greenlet (>=3.1.1,<4.0.0)",
+    "google-cloud-datastore (>=2.20.2,<3.0.0)",
 ]
 
 

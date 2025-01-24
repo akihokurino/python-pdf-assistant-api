@@ -2,12 +2,16 @@ resource "google_api_gateway_api" "api_gateway" {
   provider = google-beta
   api_id   = "api-gateway"
   project  = var.project_id
+
+  depends_on = [
+    google_project_service.api_gateway
+  ]
 }
 
 resource "google_api_gateway_api_config" "api_gateway_config" {
-  provider = google-beta
-  project = var.project_id
-  api = google_api_gateway_api.api_gateway.api_id
+  provider     = google-beta
+  project      = var.project_id
+  api          = google_api_gateway_api.api_gateway.api_id
   display_name = "api-gateway-config"
   gateway_config {
     backend_config {
@@ -28,9 +32,9 @@ resource "google_api_gateway_api_config" "api_gateway_config" {
 }
 
 resource "google_api_gateway_gateway" "api_gateway_gateway" {
-  provider = google-beta
-  project = var.project_id
-  region = var.region
+  provider   = google-beta
+  project    = var.project_id
+  region     = var.region
   api_config = google_api_gateway_api_config.api_gateway_config.id
   gateway_id = "api-gateway"
 }

@@ -11,4 +11,8 @@ resource "google_cloudbuild_trigger" "deploy" {
       branch = "master"
     }
   }
+
+  depends_on = [
+    google_project_service.cloud_build
+  ]
 }

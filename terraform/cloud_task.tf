@@ -12,4 +12,8 @@ resource "google_cloud_tasks_queue" "create_openai_assistant" {
     min_backoff  = "0.1s"
     max_backoff  = "3600s"
   }
+
+  depends_on = [
+    google_project_service.cloud_tasks
+  ]
 }

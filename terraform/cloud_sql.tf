@@ -27,6 +27,10 @@ resource "google_sql_user" "postgres" {
   name     = "postgres"
   instance = google_sql_database_instance.cloud_sql_instance.name
   password = var.db_password
+
+  depends_on = [
+    google_sql_database_instance.cloud_sql_instance
+  ]
 }
 
 resource "google_sql_database" "main" {
@@ -34,4 +38,8 @@ resource "google_sql_database" "main" {
   instance        = google_sql_database_instance.cloud_sql_instance.name
   charset         = "UTF8"
   deletion_policy = "DELETE"
+
+  depends_on = [
+    google_sql_database_instance.cloud_sql_instance
+  ]
 }
