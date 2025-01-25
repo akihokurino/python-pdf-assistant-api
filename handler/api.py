@@ -1,30 +1,14 @@
-from typing import Final
+import pkgutil
+from contextlib import asynccontextmanager
+from typing import Final, Any, AsyncGenerator
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from adapter.adapter import (
-    UserRepository,
-    DocumentRepository,
-    OpenaiAssistantRepository,
-    StorageAdapter,
-    TaskQueueAdapter,
-    LogAdapter,
-    OpenaiAdapter,
-    OpenaiAssistantFSRepository,
-)
-from di.di import (
-    use_user_repo,
-    use_document_repo,
-    use_openai_assistant_repo,
-    use_storage,
-    use_task_queue,
-    use_log,
-    use_openai,
-    use_openai_assistant_fs_repo,
-)
+import handler
+from di.di import AppContainer
 from handler.document import router as document_router
 from handler.me import router as me_router
 from handler.subscriber import router as subscriber_router
@@ -33,7 +17,20 @@ from middleware.auth import AuthMiddleware
 from middleware.error import ErrorMiddleware
 from middleware.log import LogMiddleware
 
-app: Final[FastAPI] = FastAPI()
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
+    container = AppContainer()
+    modules = [
+        f"handler.{name}"
+        for _, name, _ in pkgutil.iter_modules(handler.__path__)
+    ]
+    container.wire(modules=modules)
+    _app.container = container  # type: ignore
+    yield
+
+
+app: Final[FastAPI] = FastAPI(lifespan=lifespan)
 app.add_middleware(AuthMiddleware)
 app.add_middleware(LogMiddleware)
 app.add_middleware(ErrorMiddleware)
@@ -41,15 +38,6 @@ app.include_router(me_router)
 app.include_router(user_router)
 app.include_router(document_router)
 app.include_router(subscriber_router)
-
-app.dependency_overrides[StorageAdapter] = use_storage
-app.dependency_overrides[TaskQueueAdapter] = use_task_queue
-app.dependency_overrides[LogAdapter] = use_log
-app.dependency_overrides[OpenaiAdapter] = use_openai
-app.dependency_overrides[UserRepository] = use_user_repo
-app.dependency_overrides[DocumentRepository] = use_document_repo
-app.dependency_overrides[OpenaiAssistantRepository] = use_openai_assistant_repo
-app.dependency_overrides[OpenaiAssistantFSRepository] = use_openai_assistant_fs_repo
 
 
 @app.exception_handler(RequestValidationError)

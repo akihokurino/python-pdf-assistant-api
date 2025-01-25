@@ -13,7 +13,7 @@ class CloudTasksImpl(TaskQueueAdapter):
             self,
             cli: tasks_v2.CloudTasksClient,
     ) -> None:
-        self.cli: Final[tasks_v2.CloudTasksClient] = cli
+        self.cli: Final = cli
 
     @classmethod
     def new(

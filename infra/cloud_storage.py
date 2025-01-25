@@ -37,7 +37,7 @@ class CloudStorageImpl(StorageAdapter):
             self,
             cli: Client,
     ) -> None:
-        self.cli: Final[Client] = cli
+        self.cli: Final = cli
 
     @classmethod
     def new(

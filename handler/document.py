@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Final, final
 
+from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -15,12 +16,12 @@ from adapter.adapter import (
     OpenaiAssistantFSRepository,
 )
 from config.envs import DEFAULT_BUCKET_NAME
+from di.di import AppContainer
 from handler.response import (
     DocumentWithUserResp,
     PreSignUploadResp,
     PreSignGetResp,
     DocumentResp,
-    AnswerResp,
     EmptyResp,
 )
 from model.document import Document, DocumentId, Status
@@ -32,9 +33,10 @@ router: Final[APIRouter] = APIRouter()
 
 
 @router.get("/documents/{document_id}")
+@inject
 async def _get_document(
         document_id: DocumentId,
-        document_repository: DocumentRepository = Depends(),
+        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
 ) -> DocumentWithUserResp:
     result = await document_repository.get_with_user(document_id)
     if not result:
@@ -46,9 +48,10 @@ async def _get_document(
 
 
 @router.post("/documents/pre_signed_upload_url")
+@inject
 async def _pre_signed_upload_url(
         request: Request,
-        storage_adapter: StorageAdapter = Depends(),
+        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
 ) -> PreSignUploadResp:
     uid: Final[UserId] = request.state.uid
     key = f"documents/{uid}/{uuid.uuid4()}.pdf"
@@ -63,9 +66,10 @@ class _PreSignedGetUrlPayload(BaseModel):
 
 
 @router.post("/documents/pre_signed_get_url")
+@inject
 async def _pre_signed_get_url(
         payload: _PreSignedGetUrlPayload,
-        storage_adapter: StorageAdapter = Depends(),
+        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
 ) -> PreSignGetResp:
     key = gs_url_to_key(payload.gs_url)
     if not key:
@@ -83,10 +87,11 @@ class _CreateDocumentPayload(BaseModel):
 
 
 @router.post("/documents")
+@inject
 async def _create_documents(
         request: Request,
         payload: _CreateDocumentPayload,
-        document_repository: DocumentRepository = Depends(),
+        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
 ) -> DocumentResp:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
@@ -101,11 +106,12 @@ async def _create_documents(
 
 
 @router.post("/documents/{document_id}/openai_assistants")
+@inject
 async def _create_openai_assistant(
         document_id: DocumentId,
         request: Request,
-        document_repository: DocumentRepository = Depends(),
-        task_queue_adapter: TaskQueueAdapter = Depends(),
+        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
+        task_queue_adapter: TaskQueueAdapter = Depends(Provide[AppContainer.task_queue_adapter]),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
@@ -128,20 +134,19 @@ async def _create_openai_assistant(
 
 @final
 class _CreateOpenaiMessagePayload(BaseModel):
-    question: str
+    message: str
 
 
 @router.post("/documents/{document_id}/openai_messages")
+@inject
 async def _create_openai_message(
         document_id: DocumentId,
         request: Request,
         payload: _CreateOpenaiMessagePayload,
-        openai_adapter: OpenaiAdapter = Depends(),
-        document_repository: DocumentRepository = Depends(),
-        openai_assistant_repository: OpenaiAssistantRepository = Depends(),
-) -> AnswerResp:
+        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
+        task_queue_adapter: TaskQueueAdapter = Depends(Provide[AppContainer.task_queue_adapter]),
+) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
-    now: Final[datetime] = datetime.now(timezone.utc)
 
     document = await document_repository.get(document_id)
     if not document:
@@ -153,18 +158,13 @@ async def _create_openai_message(
     if document.status != Status.READY_ASSISTANT:
         raise AppError(ErrorKind.BAD_REQUEST, "アシスタントが準備できていません")
 
-    openai_assistant = await openai_assistant_repository.get(document.id)
-    if not openai_assistant:
-        raise AppError(
-            ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {document_id}"
-        )
+    task_queue_adapter.send_queue(
+        "create-openai-message",
+        "/subscriber/create_openai_message",
+        {"document_id": document.id, "message": payload.message},
+    )
 
-    openai_assistant.use(now)
-    await openai_assistant_repository.update(openai_assistant)
-
-    answer = openai_adapter.get_answer(openai_assistant, payload.question)
-
-    return AnswerResp(answer=answer)
+    return JSONResponse(content={}, status_code=201)
 
 
 @final
@@ -174,11 +174,12 @@ class _UpdateDocumentPayload(BaseModel):
 
 
 @router.put("/documents/{document_id}")
+@inject
 async def _update_documents(
         document_id: DocumentId,
         request: Request,
         payload: _UpdateDocumentPayload,
-        document_repository: DocumentRepository = Depends(),
+        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
 ) -> DocumentResp:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
@@ -198,14 +199,17 @@ async def _update_documents(
 
 
 @router.delete("/documents/{document_id}")
+@inject
 async def _delete_documents(
         document_id: DocumentId,
         request: Request,
-        storage_adapter: StorageAdapter = Depends(),
-        openai_adapter: OpenaiAdapter = Depends(),
-        document_repository: DocumentRepository = Depends(),
-        openai_assistant_repository: OpenaiAssistantRepository = Depends(),
-        openai_assistant_fs_repository: OpenaiAssistantFSRepository = Depends(),
+        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+        openai_adapter: OpenaiAdapter = Depends(Provide[AppContainer.openai_adapter]),
+        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
+        openai_assistant_repository: OpenaiAssistantRepository = Depends(
+            Provide[AppContainer.openai_assistant_repository]),
+        openai_assistant_fs_repository: OpenaiAssistantFSRepository = Depends(
+            Provide[AppContainer.openai_assistant_fs_repository]),
 ) -> EmptyResp:
     uid: Final[UserId] = request.state.uid
 

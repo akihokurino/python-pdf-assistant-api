@@ -21,7 +21,7 @@ class OpenaiImpl(OpenaiAdapter):
             self,
             cli: OpenAI,
     ) -> None:
-        self.cli: Final[OpenAI] = cli
+        self.cli: Final = cli
 
     @classmethod
     def new(
@@ -30,7 +30,7 @@ class OpenaiImpl(OpenaiAdapter):
     ) -> OpenaiAdapter:
         return cls(cli)
 
-    def _wait_on_run(self, run: Run, thread: Thread) -> Run:
+    def __wait_on_run(self, run: Run, thread: Thread) -> Run:
         while run.status == "queued" or run.status == "in_progress":
             run = self.cli.beta.threads.runs.retrieve(
                 thread_id=thread.id,
@@ -56,7 +56,7 @@ class OpenaiImpl(OpenaiAdapter):
             thread_id=thread.id,
             assistant_id=assistant.id,
         )
-        self._wait_on_run(run, thread)
+        self.__wait_on_run(run, thread)
         response: SyncCursorPage[Message] = self.cli.beta.threads.messages.list(
             thread_id=thread.id, order="asc", after=new_message.id
         )

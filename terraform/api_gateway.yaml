@@ -132,7 +132,7 @@ paths:
           type: string
       responses:
         201:
-          description: return created document
+          description: return empty
           schema:
             type: object
             additionalProperties: false
@@ -144,20 +144,16 @@ paths:
           in: path
           required: true
           type: string
-        - name: question
+        - name: message
           in: formData
           required: true
           type: string
       responses:
-        200:
-          description: return answer
+        201:
+          description: return empty
           schema:
             type: object
-            properties:
-              answer:
-                type: string
-            required:
-              - answer
+            additionalProperties: false
   /documents/pre_signed_upload_url:
     post:
       operationId: documentPreSignedUploadUrl

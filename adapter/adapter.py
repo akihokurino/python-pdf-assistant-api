@@ -3,7 +3,12 @@ from typing import Protocol, Any, Tuple, List, Optional
 
 from config.envs import DEFAULT_BUCKET_NAME
 from model.document import DocumentId, Document
-from model.openai_assistant import OpenaiAssistant, OpenaiAssistantId, OpenaiThreadId
+from model.openai_assistant import (
+    OpenaiAssistant,
+    OpenaiAssistantId,
+    OpenaiThreadId,
+    OpenaiMessage,
+)
 from model.user import User, UserId
 
 
@@ -114,3 +119,7 @@ class OpenaiAssistantFSRepository(Protocol):
     async def put(self, item: OpenaiAssistant) -> None: ...
 
     async def delete(self, _id: OpenaiAssistantId) -> None: ...
+
+
+class OpenaiMessageFSRepository(Protocol):
+    async def put(self, assistant: OpenaiAssistant, message: OpenaiMessage) -> None: ...

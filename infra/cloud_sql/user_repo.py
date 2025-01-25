@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple, final
+from typing import Optional, List, Tuple, final, Final
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.future import select
@@ -22,7 +22,7 @@ class UserRepoImpl(UserRepository):
             self,
             session: async_sessionmaker[AsyncSession],
     ) -> None:
-        self.session = session
+        self.session: Final = session
 
     @classmethod
     def new(

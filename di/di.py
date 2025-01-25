@@ -14,7 +14,7 @@ from adapter.adapter import (
     OpenaiAdapter,
     LogAdapter,
     TaskQueueAdapter,
-    OpenaiAssistantFSRepository,
+    OpenaiAssistantFSRepository, OpenaiMessageFSRepository,
 )
 from config.envs import DATABASE_URL
 from config.envs import OPENAI_API_KEY
@@ -24,6 +24,7 @@ from infra.cloud_sql.user_repo import UserRepoImpl
 from infra.cloud_storage import CloudStorageImpl
 from infra.cloud_tasks import CloudTasksImpl
 from infra.datastore.openai_assistant_repo import OpenaiAssistantFSRepoImpl
+from infra.datastore.openai_message_repo import OpenaiMessageFSRepoImpl
 from infra.logger import LoggerImpl
 from infra.openai import OpenaiImpl
 
@@ -33,6 +34,7 @@ class AppContainer(containers.DeclarativeContainer):
     openai_api_key = providers.Object(OPENAI_API_KEY)
     engine = providers.Singleton(create_async_engine, database_url)
     session = providers.Singleton(async_sessionmaker, bind=engine)
+    
     cloud_storage_client: Singleton[storage.Client] = providers.Singleton(
         storage.Client
     )
@@ -68,39 +70,9 @@ class AppContainer(containers.DeclarativeContainer):
     openai_assistant_fs_repository: Singleton[OpenaiAssistantFSRepository] = (
         providers.Singleton(OpenaiAssistantFSRepoImpl.new, firestore)
     )
+    openai_message_fs_repository: Singleton[OpenaiMessageFSRepository] = (
+        providers.Singleton(OpenaiMessageFSRepoImpl.new, firestore)
+    )
 
 
 container = AppContainer()
-
-
-## FastAPIに依存注入する場合の型チェック用
-def use_storage() -> StorageAdapter:
-    return container.storage_adapter()
-
-
-def use_task_queue() -> TaskQueueAdapter:
-    return container.task_queue_adapter()
-
-
-def use_log() -> LogAdapter:
-    return container.log_adapter()
-
-
-def use_openai() -> OpenaiAdapter:
-    return container.openai_adapter()
-
-
-def use_user_repo() -> UserRepository:
-    return container.user_repository()
-
-
-def use_document_repo() -> DocumentRepository:
-    return container.document_repository()
-
-
-def use_openai_assistant_repo() -> OpenaiAssistantRepository:
-    return container.openai_assistant_repository()
-
-
-def use_openai_assistant_fs_repo() -> OpenaiAssistantFSRepository:
-    return container.openai_assistant_fs_repository()
