@@ -23,8 +23,8 @@ from infra.cloud_sql.document_repo import DocumentRepoImpl
 from infra.cloud_sql.user_repo import UserRepoImpl
 from infra.cloud_storage import CloudStorageImpl
 from infra.cloud_tasks import CloudTasksImpl
-from infra.datastore.assistant_repo import AssistantFSRepoImpl
-from infra.datastore.message_repo import MessageFSRepoImpl
+from infra.firestore.assistant_repo import AssistantFSRepoImpl
+from infra.firestore.message_repo import MessageFSRepoImpl
 from infra.logger import LoggerImpl
 from infra.openai import OpenAIImpl
 
