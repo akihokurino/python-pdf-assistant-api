@@ -8,7 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 import handler
-from di.di import AppContainer
+from di.di import container
 from handler.document import router as document_router
 from handler.me import router as me_router
 from handler.middleware.auth import AuthMiddleware
@@ -19,8 +19,7 @@ from handler.user import router as user_router
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
-    container = AppContainer()
+async def _lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
     modules = [
         f"handler.{name}"
         for _, name, _ in pkgutil.iter_modules(handler.__path__)
@@ -30,7 +29,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
     yield
 
 
-app: Final[FastAPI] = FastAPI(lifespan=lifespan)
+app: Final[FastAPI] = FastAPI(lifespan=_lifespan)
 app.add_middleware(AuthMiddleware)
 app.add_middleware(LogMiddleware)
 app.add_middleware(ErrorMiddleware)

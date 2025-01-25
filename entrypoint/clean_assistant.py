@@ -7,7 +7,7 @@ from di.di import container
 from model.document import Status
 
 
-async def main() -> None:
+async def _main() -> None:
     openai_adapter: OpenAIAdapter = container.openai_adapter()
     assistant_repository: AssistantRepository = container.assistant_repository()
     assistant_fs_repository: AssistantFSRepository = container.assistant_fs_repository()
@@ -27,4 +27,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(_main())
