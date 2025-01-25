@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime, timezone, timedelta
 from typing import Final
 
-from adapter.adapter import OpenAIAdapter, AssistantRepository
+from adapter.adapter import OpenAIAdapter, AssistantRepository, AssistantFSRepository
 from di.di import container
 from model.document import Status
 
@@ -10,6 +10,7 @@ from model.document import Status
 async def main() -> None:
     openai_adapter: OpenAIAdapter = container.openai_adapter()
     assistant_repository: AssistantRepository = container.assistant_repository()
+    assistant_fs_repository: AssistantFSRepository = container.assistant_fs_repository()
 
     now: Final[datetime] = datetime.now(timezone.utc)
     target: Final[datetime] = now - timedelta(hours=3)
@@ -22,6 +23,7 @@ async def main() -> None:
         document.update_status(Status.PREPARE_ASSISTANT, now)
         openai_adapter.delete(assistant.id)
         await assistant_repository.delete_with_update_document(document.id, document)
+        await assistant_fs_repository.delete(assistant.id)
 
 
 if __name__ == "__main__":

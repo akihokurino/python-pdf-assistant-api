@@ -162,8 +162,12 @@ class DocumentRepoImpl(DocumentRepository):
                     .scalars()
                     .one_or_none()
                 )
-                if entity1 is not None:
-                    await session.delete(entity1)
+                if not entity1:
+                    raise AppError(
+                        ErrorKind.NOT_FOUND,
+                        f"アシスタントが見つかりません: {_id}",
+                    )
+                await session.delete(entity1)
 
                 entity2 = (
                     (await session.execute(select(DocumentEntity).filter_by(id=_id)))
