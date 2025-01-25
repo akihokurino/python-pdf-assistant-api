@@ -2,24 +2,24 @@ from typing import final, Final
 
 from google.cloud.firestore import AsyncClient
 
-from adapter.adapter import OpenaiMessageFSRepository
+from adapter.adapter import MessageFSRepository
+from model.assistant import Message, Assistant
 from model.error import AppError, ErrorKind
-from model.openai_assistant import OpenaiMessage, OpenaiAssistant
 
 
 @final
-class OpenaiMessageFSRepoImpl(OpenaiMessageFSRepository):
+class MessageFSRepoImpl(MessageFSRepository):
     def __init__(self, db: AsyncClient) -> None:
         self.db: Final = db
 
     @classmethod
-    def new(cls, db: AsyncClient) -> OpenaiMessageFSRepository:
+    def new(cls, db: AsyncClient) -> MessageFSRepository:
         return cls(db)
 
-    async def put(self, assistant: OpenaiAssistant, item: OpenaiMessage) -> None:
+    async def put(self, assistant: Assistant, item: Message) -> None:
         try:
-            parent_doc_ref = self.db.collection("OpenaiAssistant").document(assistant.id)
-            doc_ref = parent_doc_ref.collection("OpenaiMessage").document(item.id)
+            parent_doc_ref = self.db.collection("Assistant").document(assistant.id)
+            doc_ref = parent_doc_ref.collection("Message").document(item.id)
             await doc_ref.set(
                 {
                     "id": item.id,

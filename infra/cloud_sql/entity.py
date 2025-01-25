@@ -7,12 +7,12 @@ from sqlalchemy import Column, String, DateTime, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Mapped
 
+from model.assistant import Assistant, ThreadId, AssistantId
 from model.document import (
     Document,
     DocumentId,
     Status,
 )
-from model.openai_assistant import OpenaiAssistant, OpenaiThreadId, OpenaiAssistantId
 from model.user import User, UserId
 
 Base = declarative_base()
@@ -68,8 +68,8 @@ class DocumentEntity(Base):
     updated_at: datetime = Column(DateTime(timezone=True), nullable=False)
 
     user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="documents")
-    openai_assistant: Mapped["OpenaiAssistantEntity"] = relationship(
-        "OpenaiAssistantEntity", back_populates="document"
+    assistant: Mapped["AssistantEntity"] = relationship(
+        "AssistantEntity", back_populates="document"
     )
 
     def update(self, document: Document) -> None:
@@ -107,8 +107,8 @@ def document_from(e: DocumentEntity) -> Document:
 
 
 @final
-class OpenaiAssistantEntity(Base):
-    __tablename__ = "openai_assistants"
+class AssistantEntity(Base):
+    __tablename__ = "assistants"
 
     document_id: str = Column(String(255), ForeignKey("documents.id"), primary_key=True)
     assistant_id: str = Column(String(255), nullable=False)
@@ -118,16 +118,16 @@ class OpenaiAssistantEntity(Base):
     updated_at: datetime = Column(DateTime(timezone=True), nullable=False)
 
     document: Mapped["DocumentEntity"] = relationship(
-        "DocumentEntity", back_populates="openai_assistant"
+        "DocumentEntity", back_populates="assistant"
     )
 
-    def update(self, assistant: OpenaiAssistant) -> None:
+    def update(self, assistant: Assistant) -> None:
         self.used_at = assistant.used_at
         self.updated_at = assistant.updated_at
 
 
-def openai_assistant_entity_from(d: OpenaiAssistant) -> OpenaiAssistantEntity:
-    return OpenaiAssistantEntity(
+def assistant_entity_from(d: Assistant) -> AssistantEntity:
+    return AssistantEntity(
         document_id=d.document_id,
         assistant_id=d.id,
         thread_id=d.thread_id,
@@ -137,11 +137,11 @@ def openai_assistant_entity_from(d: OpenaiAssistant) -> OpenaiAssistantEntity:
     )
 
 
-def openai_assistant_from(e: OpenaiAssistantEntity) -> OpenaiAssistant:
-    return OpenaiAssistant(
-        _id=OpenaiAssistantId(e.assistant_id),
+def assistant_from(e: AssistantEntity) -> Assistant:
+    return Assistant(
+        _id=AssistantId(e.assistant_id),
         document_id=DocumentId(e.document_id),
-        thread_id=OpenaiThreadId(e.thread_id),
+        thread_id=ThreadId(e.thread_id),
         used_at=e.used_at,
         created_at=e.created_at,
         updated_at=e.updated_at,

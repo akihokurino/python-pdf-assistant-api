@@ -5,21 +5,21 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
-from adapter.adapter import OpenaiAssistantRepository
+from adapter.adapter import AssistantRepository
 from infra.cloud_sql.entity import (
-    openai_assistant_entity_from,
-    openai_assistant_from,
-    OpenaiAssistantEntity,
+    assistant_entity_from,
+    assistant_from,
+    AssistantEntity,
     document_from,
     DocumentEntity,
 )
+from model.assistant import Assistant
 from model.document import DocumentId, Document
 from model.error import AppError, ErrorKind
-from model.openai_assistant import OpenaiAssistant
 
 
 @final
-class OpenaiAssistantRepoImpl(OpenaiAssistantRepository):
+class AssistantRepoImpl(AssistantRepository):
     def __init__(
             self,
             session: async_sessionmaker[AsyncSession],
@@ -30,40 +30,40 @@ class OpenaiAssistantRepoImpl(OpenaiAssistantRepository):
     def new(
             cls,
             session: async_sessionmaker[AsyncSession],
-    ) -> OpenaiAssistantRepository:
+    ) -> AssistantRepository:
         return cls(session)
 
     async def find_past(
             self,
             date: datetime,
-    ) -> List[Tuple[OpenaiAssistant, Document]]:
+    ) -> List[Tuple[Assistant, Document]]:
         try:
             async with self.session() as session:
                 entities = (
                     (
                         await session.execute(
-                            select(OpenaiAssistantEntity)
-                            .filter(OpenaiAssistantEntity.used_at < date)
-                            .options(selectinload(OpenaiAssistantEntity.document))
+                            select(AssistantEntity)
+                            .filter(AssistantEntity.used_at < date)
+                            .options(selectinload(AssistantEntity.document))
                         )
                     )
                     .scalars()
                     .all()
                 )
                 return [
-                    (openai_assistant_from(e), document_from(e.document))
+                    (assistant_from(e), document_from(e.document))
                     for e in entities
                 ]
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"データの取得に失敗しました。") from e
 
-    async def get(self, _id: DocumentId) -> Optional[OpenaiAssistant]:
+    async def get(self, _id: DocumentId) -> Optional[Assistant]:
         try:
             async with self.session() as session:
                 entity = (
                     (
                         await session.execute(
-                            select(OpenaiAssistantEntity).filter_by(document_id=_id)
+                            select(AssistantEntity).filter_by(document_id=_id)
                         )
                     )
                     .scalars()
@@ -71,16 +71,16 @@ class OpenaiAssistantRepoImpl(OpenaiAssistantRepository):
                 )
                 if not entity:
                     return None
-                return openai_assistant_from(entity)
+                return assistant_from(entity)
         except Exception as e:
             raise AppError(
                 ErrorKind.INTERNAL, f"アシスタントの取得に失敗しました。"
             ) from e
 
-    async def insert(self, item: OpenaiAssistant) -> None:
+    async def insert(self, item: Assistant) -> None:
         try:
             async with self.session() as session:
-                entity = openai_assistant_entity_from(item)
+                entity = assistant_entity_from(item)
                 session.add(entity)
                 await session.commit()
         except Exception as e:
@@ -89,11 +89,11 @@ class OpenaiAssistantRepoImpl(OpenaiAssistantRepository):
             ) from e
 
     async def insert_with_update_document(
-            self, assistant: OpenaiAssistant, document: Document
+            self, assistant: Assistant, document: Document
     ) -> None:
         try:
             async with self.session() as session:
-                entity1 = openai_assistant_entity_from(assistant)
+                entity1 = assistant_entity_from(assistant)
                 session.add(entity1)
 
                 entity2 = (
@@ -118,13 +118,13 @@ class OpenaiAssistantRepoImpl(OpenaiAssistantRepository):
                 ErrorKind.INTERNAL, f"アシスタントの登録に失敗しました。"
             ) from e
 
-    async def update(self, item: OpenaiAssistant) -> None:
+    async def update(self, item: Assistant) -> None:
         try:
             async with self.session() as session:
                 entity = (
                     (
                         await session.execute(
-                            select(OpenaiAssistantEntity).filter_by(
+                            select(AssistantEntity).filter_by(
                                 document_id=item.document_id
                             )
                         )
@@ -149,7 +149,7 @@ class OpenaiAssistantRepoImpl(OpenaiAssistantRepository):
                 entity = (
                     (
                         await session.execute(
-                            select(OpenaiAssistantEntity).filter_by(document_id=_id)
+                            select(AssistantEntity).filter_by(document_id=_id)
                         )
                     )
                     .scalars()
@@ -174,7 +174,7 @@ class OpenaiAssistantRepoImpl(OpenaiAssistantRepository):
                 entity1 = (
                     (
                         await session.execute(
-                            select(OpenaiAssistantEntity).filter_by(document_id=_id)
+                            select(AssistantEntity).filter_by(document_id=_id)
                         )
                     )
                     .scalars()

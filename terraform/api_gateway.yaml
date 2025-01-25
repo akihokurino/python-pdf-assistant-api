@@ -122,9 +122,9 @@ paths:
       responses:
         200:
           description: empty
-  /documents/{id}/openai_assistants:
+  /documents/{id}/assistants:
     post:
-      operationId: createOpenaiAssistant
+      operationId: createAssistant
       parameters:
         - name: id
           in: path
@@ -136,9 +136,9 @@ paths:
           schema:
             type: object
             additionalProperties: false
-  /documents/{id}/openai_messages:
+  /documents/{id}/messages:
     post:
-      operationId: createOpenaiMessage
+      operationId: createMessage
       parameters:
         - name: id
           in: path

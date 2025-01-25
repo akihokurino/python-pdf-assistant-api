@@ -10,8 +10,9 @@ from infra.cloud_sql.entity import (
     document_from,
     document_entity_from,
     user_from,
-    OpenaiAssistantEntity,
+    AssistantEntity, assistant_from,
 )
+from model.assistant import Assistant
 from model.document import Document, DocumentId
 from model.error import ErrorKind, AppError
 from model.user import UserId, User
@@ -66,7 +67,8 @@ class DocumentRepoImpl(DocumentRepository):
                 ErrorKind.INTERNAL, f"ドキュメントの取得に失敗しました。"
             ) from e
 
-    async def get_with_user(self, _id: DocumentId) -> Optional[Tuple[Document, User]]:
+    async def get_with_user_and_assistant(self, _id: DocumentId) -> Optional[
+        Tuple[Document, User, Optional[Assistant]]]:
         try:
             async with self.session() as session:
                 entity = (
@@ -74,7 +76,10 @@ class DocumentRepoImpl(DocumentRepository):
                         await session.execute(
                             select(DocumentEntity)
                             .filter_by(id=_id)
-                            .options(selectinload(DocumentEntity.user))
+                            .options(
+                                selectinload(DocumentEntity.user),
+                                selectinload(DocumentEntity.assistant),
+                            )
                         )
                     )
                     .scalars()
@@ -82,7 +87,11 @@ class DocumentRepoImpl(DocumentRepository):
                 )
                 if not entity:
                     return None
-                return document_from(entity), user_from(entity.user)
+                return (
+                    document_from(entity),
+                    user_from(entity.user),
+                    assistant_from(entity.assistant) if entity.assistant else None,
+                )
         except Exception as e:
             raise AppError(
                 ErrorKind.INTERNAL, f"ドキュメントの取得に失敗しました。"
@@ -147,7 +156,7 @@ class DocumentRepoImpl(DocumentRepository):
                 entity1 = (
                     (
                         await session.execute(
-                            select(OpenaiAssistantEntity).filter_by(document_id=_id)
+                            select(AssistantEntity).filter_by(document_id=_id)
                         )
                     )
                     .scalars()

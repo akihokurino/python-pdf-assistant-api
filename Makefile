@@ -18,8 +18,8 @@ test:
 run-api:
 	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) IS_LOCAL=true python -m entrypoint.api
 
-run-clean-openai-assistant:
-	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) IS_LOCAL=true python -m entrypoint.clean_openai_assistant
+run-clean-assistant:
+	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) IS_LOCAL=true python -m entrypoint.clean_assistant
 
 gcloud-login:
 	gcloud --quiet config set project $(PROJECT_ID)
@@ -47,7 +47,7 @@ deploy: push-pdf-assistant
       	--command "sh" \
       	--args "-c,python -m entrypoint.api"
 
-	gcloud run jobs deploy clean-openai-assistant \
+	gcloud run jobs deploy clean-assistant \
         --image asia-northeast1-docker.pkg.dev/$(PROJECT_ID)/app/pdf-assistant:latest \
         --set-cloudsql-instances $(PROJECT_ID):asia-northeast1:pdf-assistant \
         --region asia-northeast1 \
@@ -59,7 +59,7 @@ deploy: push-pdf-assistant
         --parallelism 1 \
         --tasks 1 \
         --command "sh" \
-        --args "-c,python -m entrypoint.clean_openai_assistant"
+        --args "-c,python -m entrypoint.clean_assistant"
 
 terraform-plan:
 	gcloud config set project $(PROJECT_ID)

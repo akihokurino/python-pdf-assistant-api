@@ -23,7 +23,7 @@ ALTER TABLE documents
     ON UPDATE NO ACTION;
 CREATE INDEX IF NOT EXISTS idx_user_id ON documents (user_id);
 
-CREATE TABLE IF NOT EXISTS openai_assistants (
+CREATE TABLE IF NOT EXISTS assistants (
     document_id VARCHAR(255) NOT NULL,
     assistant_id VARCHAR(255) NOT NULL,
     thread_id VARCHAR(255) NOT NULL,
@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS openai_assistants (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
     PRIMARY KEY (document_id)
 );
-ALTER TABLE openai_assistants
-    ADD CONSTRAINT fk_openai_assistants_documents
+ALTER TABLE assistants
+    ADD CONSTRAINT fk_assistants_documents
     FOREIGN KEY (document_id)
     REFERENCES documents (id)
     ON DELETE NO ACTION

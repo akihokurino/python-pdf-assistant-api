@@ -6,18 +6,18 @@ from typing import final, NewType, Final, Literal
 
 from model.document import DocumentId
 
-OpenaiAssistantId = NewType("OpenaiAssistantId", str)
-OpenaiThreadId = NewType("OpenaiThreadId", str)
-OpenaiMessageId = NewType("OpenaiMessageId", str)
+AssistantId = NewType("AssistantId", str)
+ThreadId = NewType("ThreadId", str)
+MessageId = NewType("MessageId", str)
 
 
 @final
-class OpenaiAssistant:
+class Assistant:
     def __init__(
             self,
-            _id: OpenaiAssistantId,
+            _id: AssistantId,
             document_id: DocumentId,
-            thread_id: OpenaiThreadId,
+            thread_id: ThreadId,
             used_at: datetime,
             created_at: datetime,
             updated_at: datetime,
@@ -32,11 +32,11 @@ class OpenaiAssistant:
     @classmethod
     def new(
             cls,
-            _id: OpenaiAssistantId,
+            _id: AssistantId,
             document_id: DocumentId,
-            thread_id: OpenaiThreadId,
+            thread_id: ThreadId,
             now: datetime,
-    ) -> OpenaiAssistant:
+    ) -> Assistant:
         return cls(
             _id,
             document_id,
@@ -52,11 +52,11 @@ class OpenaiAssistant:
 
 
 @final
-class OpenaiMessage:
+class Message:
     def __init__(
             self,
-            _id: OpenaiMessageId,
-            thread_id: OpenaiThreadId,
+            _id: MessageId,
+            thread_id: ThreadId,
             role: Literal["user", "assistant"],
             message: str,
             created_at: datetime,
@@ -70,13 +70,13 @@ class OpenaiMessage:
     @classmethod
     def new(
             cls,
-            thread_id: OpenaiThreadId,
+            thread_id: ThreadId,
             role: Literal["user", "assistant"],
             message: str,
             now: datetime,
-    ) -> OpenaiMessage:
+    ) -> Message:
         return cls(
-            OpenaiMessageId(str(uuid.uuid4())),
+            MessageId(str(uuid.uuid4())),
             thread_id,
             role,
             message,

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
-from model.document import Document, Status
-from model.user import User
+from model.assistant import AssistantId, ThreadId, Assistant
+from model.document import Document, Status, DocumentId
+from model.user import User, UserId
 
 
 class MeResp(BaseModel):
@@ -22,7 +23,7 @@ class MeResp(BaseModel):
 
 
 class UserResp(BaseModel):
-    id: str
+    id: UserId
     name: str
     created_at: datetime
     updated_at: datetime
@@ -38,8 +39,8 @@ class UserResp(BaseModel):
 
 
 class DocumentResp(BaseModel):
-    id: str
-    user_id: str
+    id: DocumentId
+    user_id: UserId
     name: str
     description: str
     gs_file_url: str
@@ -61,15 +62,39 @@ class DocumentResp(BaseModel):
         )
 
 
-class DocumentWithUserResp(BaseModel):
+class DocumentWithUserAndAssistantResp(BaseModel):
     user: UserResp
     document: DocumentResp
+    assistant: Optional[AssistantResp]
 
     @classmethod
-    def from_model(cls, user: User, document: Document) -> DocumentWithUserResp:
+    def from_model(
+            cls,
+            user: User,
+            document: Document,
+            assistant: Optional[Assistant]) -> DocumentWithUserAndAssistantResp:
         return cls(
             user=UserResp.from_model(user),
             document=DocumentResp.from_model(document),
+            assistant=AssistantResp.from_model(assistant) if assistant else None
+        )
+
+
+class AssistantResp(BaseModel):
+    id: AssistantId
+    thread_id: ThreadId
+    used_at: datetime
+    created_at: datetime
+    updated_at: datetime
+
+    @classmethod
+    def from_model(cls, assistant: Assistant) -> AssistantResp:
+        return cls(
+            id=assistant.id,
+            thread_id=assistant.thread_id,
+            used_at=assistant.used_at,
+            created_at=assistant.created_at,
+            updated_at=assistant.updated_at,
         )
 
 
@@ -80,10 +105,6 @@ class PreSignUploadResp(BaseModel):
 
 class PreSignGetResp(BaseModel):
     url: str
-
-
-class AnswerResp(BaseModel):
-    answer: str
 
 
 class EmptyResp(BaseModel):

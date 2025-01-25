@@ -63,9 +63,9 @@ resource "google_cloud_run_service_iam_binding" "api_access" {
   ]
 }
 
-resource "google_cloud_run_v2_job" "clean_openai_assistant" {
+resource "google_cloud_run_v2_job" "clean_assistant" {
   provider = google-beta
-  name     = "clean-openai-assistant"
+  name     = "clean-assistant"
   location = var.region
 
   template {
@@ -73,7 +73,7 @@ resource "google_cloud_run_v2_job" "clean_openai_assistant" {
       containers {
         image = "asia-northeast1-docker.pkg.dev/${var.project_id}/app/pdf-assistant:latest"
         command = ["sh"]
-        args = ["-c", "python -m entrypoint.clean_openai_assistant"]
+        args = ["-c", "python -m entrypoint.clean_assistant"]
 
         env {
           name  = "PROJECT_ID"
@@ -111,9 +111,9 @@ resource "google_cloud_run_v2_job" "clean_openai_assistant" {
     google_project_service.cloud_run
   ]
 }
-resource "google_cloud_run_v2_job_iam_binding" "clean_openai_assistant_access" {
-  name     = google_cloud_run_v2_job.clean_openai_assistant.name
-  location = google_cloud_run_v2_job.clean_openai_assistant.location
+resource "google_cloud_run_v2_job_iam_binding" "clean_assistant_access" {
+  name     = google_cloud_run_v2_job.clean_assistant.name
+  location = google_cloud_run_v2_job.clean_assistant.location
   role     = "roles/run.invoker"
   members = [
     "serviceAccount:${google_service_account.cloud_scheduler_sa.email}"

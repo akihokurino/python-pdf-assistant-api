@@ -11,18 +11,17 @@ from adapter.adapter import (
     StorageAdapter,
     DocumentRepository,
     TaskQueueAdapter,
-    OpenaiAssistantRepository,
-    OpenaiAdapter,
-    OpenaiAssistantFSRepository,
+    AssistantRepository,
+    OpenAIAdapter,
+    AssistantFSRepository,
 )
 from config.envs import DEFAULT_BUCKET_NAME
 from di.di import AppContainer
 from handler.response import (
-    DocumentWithUserResp,
     PreSignUploadResp,
     PreSignGetResp,
     DocumentResp,
-    EmptyResp,
+    EmptyResp, DocumentWithUserAndAssistantResp,
 )
 from model.document import Document, DocumentId, Status
 from model.error import AppError, ErrorKind
@@ -37,14 +36,14 @@ router: Final[APIRouter] = APIRouter()
 async def _get_document(
         document_id: DocumentId,
         document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
-) -> DocumentWithUserResp:
-    result = await document_repository.get_with_user(document_id)
+) -> DocumentWithUserAndAssistantResp:
+    result = await document_repository.get_with_user_and_assistant(document_id)
     if not result:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
         )
 
-    return DocumentWithUserResp.from_model(result[1], result[0])
+    return DocumentWithUserAndAssistantResp.from_model(result[1], result[0], result[2])
 
 
 @router.post("/documents/pre_signed_upload_url")
@@ -105,68 +104,6 @@ async def _create_documents(
     return DocumentResp.from_model(new_document)
 
 
-@router.post("/documents/{document_id}/openai_assistants")
-@inject
-async def _create_openai_assistant(
-        document_id: DocumentId,
-        request: Request,
-        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
-        task_queue_adapter: TaskQueueAdapter = Depends(Provide[AppContainer.task_queue_adapter]),
-) -> JSONResponse:
-    uid: Final[UserId] = request.state.uid
-
-    document = await document_repository.get(document_id)
-    if not document:
-        raise AppError(
-            ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
-        )
-    if document.user_id != uid:
-        raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
-
-    task_queue_adapter.send_queue(
-        "create-openai-assistant",
-        "/subscriber/create_openai_assistant",
-        {"document_id": document.id},
-    )
-
-    return JSONResponse(content={}, status_code=201)
-
-
-@final
-class _CreateOpenaiMessagePayload(BaseModel):
-    message: str
-
-
-@router.post("/documents/{document_id}/openai_messages")
-@inject
-async def _create_openai_message(
-        document_id: DocumentId,
-        request: Request,
-        payload: _CreateOpenaiMessagePayload,
-        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
-        task_queue_adapter: TaskQueueAdapter = Depends(Provide[AppContainer.task_queue_adapter]),
-) -> JSONResponse:
-    uid: Final[UserId] = request.state.uid
-
-    document = await document_repository.get(document_id)
-    if not document:
-        raise AppError(
-            ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
-        )
-    if document.user_id != uid:
-        raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
-    if document.status != Status.READY_ASSISTANT:
-        raise AppError(ErrorKind.BAD_REQUEST, "アシスタントが準備できていません")
-
-    task_queue_adapter.send_queue(
-        "create-openai-message",
-        "/subscriber/create_openai_message",
-        {"document_id": document.id, "message": payload.message},
-    )
-
-    return JSONResponse(content={}, status_code=201)
-
-
 @final
 class _UpdateDocumentPayload(BaseModel):
     name: str
@@ -176,8 +113,8 @@ class _UpdateDocumentPayload(BaseModel):
 @router.put("/documents/{document_id}")
 @inject
 async def _update_documents(
-        document_id: DocumentId,
         request: Request,
+        document_id: DocumentId,
         payload: _UpdateDocumentPayload,
         document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
 ) -> DocumentResp:
@@ -201,15 +138,15 @@ async def _update_documents(
 @router.delete("/documents/{document_id}")
 @inject
 async def _delete_documents(
-        document_id: DocumentId,
         request: Request,
+        document_id: DocumentId,
         storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
-        openai_adapter: OpenaiAdapter = Depends(Provide[AppContainer.openai_adapter]),
+        openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
         document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
-        openai_assistant_repository: OpenaiAssistantRepository = Depends(
-            Provide[AppContainer.openai_assistant_repository]),
-        openai_assistant_fs_repository: OpenaiAssistantFSRepository = Depends(
-            Provide[AppContainer.openai_assistant_fs_repository]),
+        assistant_repository: AssistantRepository = Depends(
+            Provide[AppContainer.assistant_repository]),
+        assistant_fs_repository: AssistantFSRepository = Depends(
+            Provide[AppContainer.assistant_fs_repository]),
 ) -> EmptyResp:
     uid: Final[UserId] = request.state.uid
 
@@ -226,10 +163,72 @@ async def _delete_documents(
         raise AppError(ErrorKind.INTERNAL, "gs_urlが不正です")
     storage_adapter.delete_object(key)
 
-    assistant = await openai_assistant_repository.get(document.id)
+    assistant = await assistant_repository.get(document.id)
     if assistant is not None:
         openai_adapter.delete(assistant.id)
-        await openai_assistant_fs_repository.delete(assistant.id)
+        await assistant_fs_repository.delete(assistant.id)
     await document_repository.delete_with_assistant(document_id)
 
     return EmptyResp()
+
+
+@router.post("/documents/{document_id}/assistants")
+@inject
+async def _create_assistant(
+        request: Request,
+        document_id: DocumentId,
+        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
+        task_queue_adapter: TaskQueueAdapter = Depends(Provide[AppContainer.task_queue_adapter]),
+) -> JSONResponse:
+    uid: Final[UserId] = request.state.uid
+
+    document = await document_repository.get(document_id)
+    if not document:
+        raise AppError(
+            ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
+        )
+    if document.user_id != uid:
+        raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
+
+    task_queue_adapter.send_queue(
+        "create-assistant",
+        "/subscriber/create_assistant",
+        {"document_id": document.id},
+    )
+
+    return JSONResponse(content={}, status_code=201)
+
+
+@final
+class _CreateMessagePayload(BaseModel):
+    message: str
+
+
+@router.post("/documents/{document_id}/messages")
+@inject
+async def _create_message(
+        request: Request,
+        document_id: DocumentId,
+        payload: _CreateMessagePayload,
+        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
+        task_queue_adapter: TaskQueueAdapter = Depends(Provide[AppContainer.task_queue_adapter]),
+) -> JSONResponse:
+    uid: Final[UserId] = request.state.uid
+
+    document = await document_repository.get(document_id)
+    if not document:
+        raise AppError(
+            ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
+        )
+    if document.user_id != uid:
+        raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
+    if document.status != Status.READY_ASSISTANT:
+        raise AppError(ErrorKind.BAD_REQUEST, "アシスタントが準備できていません")
+
+    task_queue_adapter.send_queue(
+        "create-message",
+        "/subscriber/create_message",
+        {"document_id": document.id, "message": payload.message},
+    )
+
+    return JSONResponse(content={}, status_code=201)

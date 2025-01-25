@@ -7,16 +7,16 @@ from openai.types.beta.assistant import Assistant
 from openai.types.beta.thread import Thread
 from openai.types.beta.threads import MessageContent, TextContentBlock, Run, Message
 
-from adapter.adapter import OpenaiAdapter
+from adapter.adapter import OpenAIAdapter
+from model.assistant import Assistant as AppAssistant, AssistantId, ThreadId
 from model.document import (
     DocumentId,
 )
 from model.error import AppError, ErrorKind
-from model.openai_assistant import OpenaiAssistant, OpenaiAssistantId, OpenaiThreadId
 
 
 @final
-class OpenaiImpl(OpenaiAdapter):
+class OpenAIImpl(OpenAIAdapter):
     def __init__(
             self,
             cli: OpenAI,
@@ -27,7 +27,7 @@ class OpenaiImpl(OpenaiAdapter):
     def new(
             cls,
             cli: OpenAI,
-    ) -> OpenaiAdapter:
+    ) -> OpenAIAdapter:
         return cls(cli)
 
     def __wait_on_run(self, run: Run, thread: Thread) -> Run:
@@ -39,7 +39,7 @@ class OpenaiImpl(OpenaiAdapter):
             time.sleep(0.5)
         return run
 
-    def get_answer(self, _assistant: OpenaiAssistant, question: str) -> str:
+    def get_answer(self, _assistant: AppAssistant, message: str) -> str:
         assistant: Final[Assistant] = self.cli.beta.assistants.retrieve(
             assistant_id=_assistant.id
         )
@@ -50,7 +50,7 @@ class OpenaiImpl(OpenaiAdapter):
         new_message: Final[Message] = self.cli.beta.threads.messages.create(
             thread_id=thread.id,
             role="user",
-            content=question,
+            content=message,
         )
         run: Final[Run] = self.cli.beta.threads.runs.create(
             thread_id=thread.id,
@@ -76,7 +76,7 @@ class OpenaiImpl(OpenaiAdapter):
 
     def create(
             self, document_id: DocumentId, document_path: str
-    ) -> Tuple[OpenaiAssistantId, OpenaiThreadId]:
+    ) -> Tuple[AssistantId, ThreadId]:
         assistant = self.cli.beta.assistants.create(
             name=document_id,
             description=f"顧客向けアシスタント",
@@ -110,7 +110,7 @@ class OpenaiImpl(OpenaiAdapter):
             ]
         )
 
-        return OpenaiAssistantId(assistant.id), OpenaiThreadId(thread.id)
+        return AssistantId(assistant.id), ThreadId(thread.id)
 
-    def delete(self, assistant_id: OpenaiAssistantId) -> None:
+    def delete(self, assistant_id: AssistantId) -> None:
         self.cli.beta.assistants.delete(assistant_id=assistant_id)

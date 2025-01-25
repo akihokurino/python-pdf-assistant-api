@@ -55,7 +55,7 @@ steps:
       - run
       - jobs
       - deploy
-      - clean-openai-assistant
+      - clean-assistant
       - --image
       - asia-northeast1-docker.pkg.dev/$PROJECT_ID/app/pdf-assistant:$BUILD_ID
       - --set-cloudsql-instances
@@ -79,7 +79,7 @@ steps:
       - --command
       - "sh"
       - --args
-      - "-c,python -m entrypoint.clean_openai_assistant"
+      - "-c,python -m entrypoint.clean_assistant"
 timeout: 3600s
 options:
   logging: CLOUD_LOGGING_ONLY

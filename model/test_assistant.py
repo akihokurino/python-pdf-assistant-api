@@ -1,15 +1,15 @@
 from datetime import datetime, timezone, timedelta
 
+from model.assistant import Assistant, AssistantId, ThreadId
 from model.document import DocumentId
-from model.openai_assistant import OpenaiAssistant, OpenaiAssistantId, OpenaiThreadId
 
 
-def test_openai_assistant_initialization() -> None:
+def test_assistant_initialization() -> None:
     now = datetime.now(timezone.utc)
-    assistant = OpenaiAssistant(
-        _id=OpenaiAssistantId("123"),
+    assistant = Assistant(
+        _id=AssistantId("123"),
         document_id=DocumentId("456"),
-        thread_id=OpenaiThreadId("789"),
+        thread_id=ThreadId("789"),
         used_at=now,
         created_at=now,
         updated_at=now,
@@ -23,12 +23,12 @@ def test_openai_assistant_initialization() -> None:
     assert assistant.updated_at == now
 
 
-def test_openai_assistant_new() -> None:
+def test_assistant_new() -> None:
     now = datetime.now(timezone.utc)
-    assistant = OpenaiAssistant.new(
-        _id=OpenaiAssistantId("123"),
+    assistant = Assistant.new(
+        _id=AssistantId("123"),
         document_id=DocumentId("456"),
-        thread_id=OpenaiThreadId("789"),
+        thread_id=ThreadId("789"),
         now=now,
     )
 
@@ -40,12 +40,12 @@ def test_openai_assistant_new() -> None:
     assert assistant.updated_at == now
 
 
-def test_openai_assistant_use() -> None:
+def test_assistant_use() -> None:
     now = datetime.now(timezone.utc)
-    assistant = OpenaiAssistant(
-        _id=OpenaiAssistantId("123"),
+    assistant = Assistant(
+        _id=AssistantId("123"),
         document_id=DocumentId("456"),
-        thread_id=OpenaiThreadId("789"),
+        thread_id=ThreadId("789"),
         used_at=now,
         created_at=now,
         updated_at=now,

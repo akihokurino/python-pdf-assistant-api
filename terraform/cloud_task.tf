@@ -1,5 +1,5 @@
-resource "google_cloud_tasks_queue" "create_openai_assistant" {
-  name     = "create-openai-assistant"
+resource "google_cloud_tasks_queue" "create_assistant" {
+  name     = "create-assistant"
   location = var.region
 
   rate_limits {
@@ -18,8 +18,8 @@ resource "google_cloud_tasks_queue" "create_openai_assistant" {
   ]
 }
 
-resource "google_cloud_tasks_queue" "create_openai_message" {
-  name     = "create-openai-message"
+resource "google_cloud_tasks_queue" "create_message" {
+  name     = "create-message"
   location = var.region
 
   rate_limits {

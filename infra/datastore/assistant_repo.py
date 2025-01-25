@@ -2,32 +2,32 @@ from typing import final, Final
 
 from google.cloud.firestore import AsyncClient
 
-from adapter.adapter import OpenaiAssistantFSRepository
+from adapter.adapter import AssistantFSRepository
+from model.assistant import Assistant, AssistantId
 from model.error import AppError, ErrorKind
-from model.openai_assistant import OpenaiAssistant, OpenaiAssistantId
 
 
 @final
-class OpenaiAssistantFSRepoImpl(OpenaiAssistantFSRepository):
+class AssistantFSRepoImpl(AssistantFSRepository):
     def __init__(self, db: AsyncClient) -> None:
         self.db: Final = db
 
     @classmethod
-    def new(cls, db: AsyncClient) -> OpenaiAssistantFSRepository:
+    def new(cls, db: AsyncClient) -> AssistantFSRepository:
         return cls(db)
 
-    async def put(self, item: OpenaiAssistant) -> None:
+    async def put(self, item: Assistant) -> None:
         try:
-            doc_ref = self.db.collection("OpenaiAssistant").document(item.id)
+            doc_ref = self.db.collection("Assistant").document(item.id)
             await doc_ref.set(
                 {"id": item.id, "created_at": item.created_at.isoformat()}
             )
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, "データの保存に失敗しました。") from e
 
-    async def delete(self, _id: OpenaiAssistantId) -> None:
+    async def delete(self, _id: AssistantId) -> None:
         try:
-            doc_ref = self.db.collection("OpenaiAssistant").document(_id)
+            doc_ref = self.db.collection("Assistant").document(_id)
             await doc_ref.delete()
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, "データの削除に失敗しました。") from e

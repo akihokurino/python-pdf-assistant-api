@@ -11,11 +11,11 @@ import handler
 from di.di import AppContainer
 from handler.document import router as document_router
 from handler.me import router as me_router
+from handler.middleware.auth import AuthMiddleware
+from handler.middleware.error import ErrorMiddleware
+from handler.middleware.log import LogMiddleware
 from handler.subscriber import router as subscriber_router
 from handler.user import router as user_router
-from middleware.auth import AuthMiddleware
-from middleware.error import ErrorMiddleware
-from middleware.log import LogMiddleware
 
 
 @asynccontextmanager
