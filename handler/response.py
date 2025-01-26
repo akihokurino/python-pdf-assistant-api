@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from model.assistant import AssistantId, ThreadId, Assistant
+from model.assistant import AssistantId, ThreadId, Assistant, MessageId, Message
 from model.document import Document, Status, DocumentId
 from model.user import User, UserId
 
@@ -69,14 +69,12 @@ class DocumentWithUserAndAssistantResp(BaseModel):
 
     @classmethod
     def from_model(
-            cls,
-            user: User,
-            document: Document,
-            assistant: Optional[Assistant]) -> DocumentWithUserAndAssistantResp:
+            cls, user: User, document: Document, assistant: Optional[Assistant]
+    ) -> DocumentWithUserAndAssistantResp:
         return cls(
             user=UserResp.from_model(user),
             document=DocumentResp.from_model(document),
-            assistant=AssistantResp.from_model(assistant) if assistant else None
+            assistant=AssistantResp.from_model(assistant) if assistant else None,
         )
 
 
@@ -95,6 +93,24 @@ class AssistantResp(BaseModel):
             used_at=assistant.used_at,
             created_at=assistant.created_at,
             updated_at=assistant.updated_at,
+        )
+
+
+class MessageResp(BaseModel):
+    id: MessageId
+    thread_id: ThreadId
+    role: str
+    message: str
+    created_at: datetime
+
+    @classmethod
+    def from_model(cls, message: Message) -> MessageResp:
+        return cls(
+            id=message.id,
+            thread_id=message.thread_id,
+            role=message.role,
+            message=message.message,
+            created_at=message.created_at,
         )
 
 

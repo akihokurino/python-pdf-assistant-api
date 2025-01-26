@@ -137,6 +137,20 @@ paths:
             type: object
             additionalProperties: false
   /documents/{id}/messages:
+    get:
+      operationId: getMessages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: return messages
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Message"
     post:
       operationId: createMessage
       parameters:
@@ -229,3 +243,22 @@ definitions:
       - status
       - created_at
       - updated_at
+  Message:
+    type: object
+    properties:
+      id:
+        type: string
+      thread_id:
+        type: string
+      role:
+        type: string
+      message:
+        type: string
+      created_at:
+        type: string
+    required:
+      - id
+      - thread_id
+      - role
+      - message
+      - created_at

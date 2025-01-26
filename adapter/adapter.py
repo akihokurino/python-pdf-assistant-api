@@ -94,9 +94,7 @@ class DocumentRepository(Protocol):
 
 
 class AssistantRepository(Protocol):
-    async def find_past(
-            self, date: datetime
-    ) -> List[Tuple[Assistant, Document]]: ...
+    async def find_past(self, date: datetime) -> List[Tuple[Assistant, Document]]: ...
 
     async def get(self, _id: DocumentId) -> Optional[Assistant]: ...
 
@@ -122,4 +120,6 @@ class AssistantFSRepository(Protocol):
 
 
 class MessageFSRepository(Protocol):
+    async def find(self, assistant: Assistant) -> List[Message]: ...
+
     async def put(self, assistant: Assistant, message: Message) -> None: ...

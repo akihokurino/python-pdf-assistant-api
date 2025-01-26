@@ -3,6 +3,7 @@ from typing import final, Final
 from google.cloud.firestore import AsyncClient
 
 from adapter.adapter import AssistantFSRepository
+from infra.firestore.util import delete_sub_collections
 from model.assistant import Assistant, AssistantId
 from model.error import AppError, ErrorKind
 
@@ -28,6 +29,7 @@ class AssistantFSRepoImpl(AssistantFSRepository):
     async def delete(self, _id: AssistantId) -> None:
         try:
             doc_ref = self.db.collection("Assistant").document(_id)
+            await delete_sub_collections(doc_ref)
             await doc_ref.delete()
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, "データの削除に失敗しました。") from e

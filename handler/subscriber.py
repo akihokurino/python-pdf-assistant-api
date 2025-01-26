@@ -10,14 +10,15 @@ from adapter.adapter import (
     AssistantRepository,
     DocumentRepository,
     StorageAdapter,
-    AssistantFSRepository, MessageFSRepository,
+    AssistantFSRepository,
+    MessageFSRepository,
 )
 from di.di import AppContainer
 from handler.response import EmptyResp
+from handler.util import extract_gs_key
 from model.assistant import Assistant, Message
 from model.document import DocumentId, Status
 from model.error import AppError, ErrorKind
-from util.gs_url import gs_url_to_key
 
 router: Final[APIRouter] = APIRouter()
 
@@ -34,10 +35,14 @@ async def _create_assistant(
         openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
         storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
         assistant_repository: AssistantRepository = Depends(
-            Provide[AppContainer.assistant_repository]),
-        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
+            Provide[AppContainer.assistant_repository]
+        ),
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
         assistant_fs_repository: AssistantFSRepository = Depends(
-            Provide[AppContainer.assistant_fs_repository]),
+            Provide[AppContainer.assistant_fs_repository]
+        ),
 ) -> EmptyResp:
     now: Final[datetime] = datetime.now(timezone.utc)
     assistant = await assistant_repository.get(payload.document_id)
@@ -50,7 +55,7 @@ async def _create_assistant(
 
     document.update_status(Status.READY_ASSISTANT, now)
 
-    key = gs_url_to_key(document.gs_file_url)
+    key = extract_gs_key(document.gs_file_url)
     if not key:
         raise AppError(ErrorKind.INTERNAL, "ファイルのURLが不正です")
     destination_file_name: Final[str] = f"/tmp/{document.id}_downloaded.pdf"
@@ -60,12 +65,8 @@ async def _create_assistant(
         document.id,
         destination_file_name,
     )
-    assistant = Assistant.new(
-        new_assistant[0], document.id, new_assistant[1], now
-    )
-    await assistant_repository.insert_with_update_document(
-        assistant, document
-    )
+    assistant = Assistant.new(new_assistant[0], document.id, new_assistant[1], now)
+    await assistant_repository.insert_with_update_document(assistant, document)
     await assistant_fs_repository.put(assistant)
 
     return EmptyResp()
@@ -83,10 +84,14 @@ async def _create_message(
         payload: _CreateMessagePayload,
         openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
         assistant_repository: AssistantRepository = Depends(
-            Provide[AppContainer.assistant_repository]),
-        document_repository: DocumentRepository = Depends(Provide[AppContainer.document_repository]),
+            Provide[AppContainer.assistant_repository]
+        ),
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
         message_fs_repository: MessageFSRepository = Depends(
-            Provide[AppContainer.message_fs_repository]),
+            Provide[AppContainer.message_fs_repository]
+        ),
 ) -> EmptyResp:
     now: Final[datetime] = datetime.now(timezone.utc)
 
@@ -103,13 +108,15 @@ async def _create_message(
     assistant.use(now)
     await assistant_repository.update(assistant)
 
-    my_message = Message.new(assistant.thread_id, "user", payload.message, now)
+    my_message = Message.new(
+        assistant.thread_id, "user", payload.message, datetime.now(timezone.utc)
+    )
     await message_fs_repository.put(assistant, my_message)
 
     answer = openai_adapter.get_answer(assistant, payload.message)
 
     assistant_message = Message.new(
-        assistant.thread_id, "assistant", answer, now
+        assistant.thread_id, "assistant", answer, datetime.now(timezone.utc)
     )
     await message_fs_repository.put(assistant, assistant_message)
 

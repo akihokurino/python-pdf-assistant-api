@@ -3,26 +3,29 @@ from contextlib import asynccontextmanager
 from typing import Final, Any, AsyncGenerator
 
 import uvicorn
-from fastapi import FastAPI
+from dependency_injector.wiring import Provide, inject
+from fastapi import FastAPI, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 import handler
-from di.di import container
+from adapter.adapter import AssistantFSRepository
+from di.di import container, AppContainer
 from handler.document import router as document_router
 from handler.me import router as me_router
 from handler.middleware.auth import AuthMiddleware
 from handler.middleware.error import ErrorMiddleware
 from handler.middleware.log import LogMiddleware
+from handler.response import EmptyResp
 from handler.subscriber import router as subscriber_router
 from handler.user import router as user_router
+from model.assistant import AssistantId
 
 
 @asynccontextmanager
 async def _lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
     modules = [
-        f"handler.{name}"
-        for _, name, _ in pkgutil.iter_modules(handler.__path__)
+        f"handler.{name}" for _, name, _ in pkgutil.iter_modules(handler.__path__)
     ]
     container.wire(modules=modules)
     _app.container = container  # type: ignore
@@ -48,6 +51,17 @@ async def _validation_exception_handler(exc: RequestValidationError) -> JSONResp
             "detail": exc.errors(),
         },
     )
+
+
+@app.get("/debug")
+@inject
+async def _debug(
+    assistant_fs_repository: AssistantFSRepository = Depends(
+        Provide[AppContainer.assistant_fs_repository]
+    ),
+) -> EmptyResp:
+    await assistant_fs_repository.delete(AssistantId("asst_GjNy30WZSKq52kPp70dXWfyC"))
+    return EmptyResp()
 
 
 def start() -> None:
