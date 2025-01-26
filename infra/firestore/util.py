@@ -8,7 +8,7 @@ async def delete_sub_collections(doc_ref: AsyncDocumentReference) -> None:
         async for collection in doc_ref.collections():
             async for doc in collection.stream():
                 await delete_sub_collections(doc.reference)
-                await doc.reference.delete()
+                await doc.reference.delete_assistant()
     except Exception as e:
         raise AppError(
             ErrorKind.INTERNAL, "サブコレクションの削除に失敗しました。"

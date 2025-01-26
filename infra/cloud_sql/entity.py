@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import final, List
 
-from sqlalchemy import Column, String, DateTime, Integer, ForeignKey
+from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Mapped
 
@@ -11,7 +11,7 @@ from model.assistant import Assistant, ThreadId, AssistantId
 from model.document import (
     Document,
     DocumentId,
-    Status,
+    Status, DocumentSummary, DocumentSummaryId,
 )
 from model.user import User, UserId
 
@@ -71,6 +71,9 @@ class DocumentEntity(Base):
     assistant: Mapped["AssistantEntity"] = relationship(
         "AssistantEntity", back_populates="document"
     )
+    summaries: Mapped[List["DocumentSummaryEntity"]] = relationship(
+        "DocumentSummaryEntity", back_populates="document"
+    )
 
     def update(self, document: Document) -> None:
         self.name = document.name
@@ -101,6 +104,44 @@ def document_from(e: DocumentEntity) -> Document:
         description=e.description,
         gs_file_url=e.gs_file_url,
         status=Status(e.status),
+        created_at=e.created_at,
+        updated_at=e.updated_at,
+    )
+
+
+@final
+class DocumentSummaryEntity(Base):
+    __tablename__ = "document_summaries"
+
+    id: str = Column(String(255), primary_key=True)
+    document_id: str = Column(String(255), ForeignKey("documents.id"), nullable=False)
+    text: str = Column(Text, nullable=False)
+    index: int = Column(Integer(), nullable=False)
+    created_at: datetime = Column(DateTime(timezone=True), nullable=False)
+    updated_at: datetime = Column(DateTime(timezone=True), nullable=False)
+
+    document: Mapped["DocumentEntity"] = relationship(
+        "DocumentEntity", back_populates="summaries"
+    )
+
+
+def document_summary_entity_from(d: DocumentSummary) -> DocumentSummaryEntity:
+    return DocumentSummaryEntity(
+        id=d.id,
+        document_id=d.document_id,
+        text=d.text,
+        index=d.index,
+        created_at=d.created_at,
+        updated_at=d.updated_at,
+    )
+
+
+def document_summary_from(e: DocumentSummaryEntity) -> DocumentSummary:
+    return DocumentSummary(
+        _id=DocumentSummaryId(e.id),
+        document_id=DocumentId(e.document_id),
+        text=e.text,
+        index=e.index,
         created_at=e.created_at,
         updated_at=e.updated_at,
     )

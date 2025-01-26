@@ -8,6 +8,7 @@ from typing import final, NewType, Final
 from model.user import UserId
 
 DocumentId = NewType("DocumentId", str)
+DocumentSummaryId = NewType("DocumentSummaryId", str)
 
 
 @final
@@ -66,3 +67,33 @@ class Document:
 class Status(Enum):
     PREPARE_ASSISTANT = 1
     READY_ASSISTANT = 2
+
+
+@final
+class DocumentSummary:
+    def __init__(
+            self,
+            _id: DocumentSummaryId,
+            document_id: DocumentId,
+            text: str,
+            index: int,
+            created_at: datetime,
+            updated_at: datetime,
+    ) -> None:
+        self.id: Final = _id
+        self.document_id: Final = document_id
+        self.text: Final = text
+        self.index: Final = index
+        self.created_at: Final = created_at
+        self.updated_at: Final = updated_at
+
+    @classmethod
+    def new(cls, document_id: DocumentId, text: str, index: int, now: datetime) -> DocumentSummary:
+        return cls(
+            DocumentSummaryId(str(uuid.uuid4())),
+            document_id,
+            text,
+            index,
+            now,
+            now,
+        )

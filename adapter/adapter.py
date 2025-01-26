@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Protocol, Any, Tuple, List, Optional
+from typing import Protocol, Any, Tuple, List, Optional, Final, Literal
 
 from config.envs import DEFAULT_BUCKET_NAME
 from model.assistant import (
@@ -8,7 +8,7 @@ from model.assistant import (
     ThreadId,
     Message,
 )
-from model.document import DocumentId, Document
+from model.document import DocumentId, Document, DocumentSummary
 from model.user import User, UserId
 
 
@@ -49,14 +49,22 @@ class LogAdapter(Protocol):
     def log_error(self, e: Exception) -> None: ...
 
 
-class OpenAIAdapter(Protocol):
-    def get_answer(self, _assistant: Assistant, message: str) -> str: ...
+class ChatMessage:
+    def __init__(self, role: Literal["user", "system"], content: str) -> None:
+        self.role: Final = role
+        self.content: Final = content
 
-    def create(
+
+class OpenAIAdapter(Protocol):
+    def chat_assistant(self, _assistant: Assistant, message: str) -> str: ...
+
+    def create_assistant(
             self, document_id: DocumentId, document_path: str
     ) -> Tuple[AssistantId, ThreadId]: ...
 
-    def delete(self, assistant_id: AssistantId) -> None: ...
+    def delete_assistant(self, assistant_id: AssistantId) -> None: ...
+
+    def chat_completion(self, messages: List[ChatMessage]) -> str: ...
 
 
 class UserRepository(Protocol):
@@ -91,6 +99,14 @@ class DocumentRepository(Protocol):
     async def delete(self, _id: DocumentId) -> None: ...
 
     async def delete_with_assistant(self, _id: DocumentId) -> None: ...
+
+
+class DocumentSummaryRepository(Protocol):
+    async def find_by_document(self, document_id: DocumentId) -> List[DocumentSummary]: ...
+
+    async def insert(self, item: DocumentSummary) -> None: ...
+
+    async def delete_by_document(self, document_id: DocumentId) -> None: ...
 
 
 class AssistantRepository(Protocol):

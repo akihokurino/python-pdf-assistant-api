@@ -125,3 +125,7 @@ class PreSignGetResp(BaseModel):
 
 class EmptyResp(BaseModel):
     pass
+
+
+class TextResp(BaseModel):
+    text: str

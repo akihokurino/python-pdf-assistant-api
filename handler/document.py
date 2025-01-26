@@ -14,7 +14,7 @@ from adapter.adapter import (
     AssistantRepository,
     OpenAIAdapter,
     AssistantFSRepository,
-    MessageFSRepository,
+    MessageFSRepository, DocumentSummaryRepository,
 )
 from config.envs import DEFAULT_BUCKET_NAME
 from di.di import AppContainer
@@ -24,7 +24,7 @@ from handler.response import (
     DocumentResp,
     EmptyResp,
     DocumentWithUserAndAssistantResp,
-    MessageResp,
+    MessageResp, TextResp
 )
 from handler.util import extract_gs_key
 from model.document import Document, DocumentId, Status
@@ -178,7 +178,7 @@ async def _delete_documents(
 
     assistant = await assistant_repository.get(document.id)
     if assistant is not None:
-        openai_adapter.delete(assistant.id)
+        openai_adapter.delete_assistant(assistant.id)
         await document_repository.delete_with_assistant(document.id)
         await assistant_fs_repository.delete(assistant.id)
     else:
@@ -289,6 +289,64 @@ async def _create_message(
         "create-message",
         "/subscriber/create_message",
         {"document_id": document.id, "message": payload.message},
+    )
+
+    return JSONResponse(content={}, status_code=201)
+
+
+@router.get("/documents/{document_id}/summaries")
+@inject
+async def _get_document_summaries(
+        request: Request,
+        document_id: DocumentId,
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
+        document_summary_repository: DocumentSummaryRepository = Depends(
+            Provide[AppContainer.document_summary_repository]
+        ),
+) -> List[TextResp]:
+    uid: Final[UserId] = request.state.uid
+
+    document = await document_repository.get(document_id)
+    if not document:
+        raise AppError(
+            ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
+        )
+    if document.user_id != uid:
+        raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
+
+    summaries = await document_summary_repository.find_by_document(document.id)
+
+    return [TextResp(text=summary.text) for summary in summaries]
+
+
+@router.post("/documents/{document_id}/summaries")
+@inject
+async def _summarise_document(
+        request: Request,
+        document_id: DocumentId,
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
+        task_queue_adapter: TaskQueueAdapter = Depends(
+            Provide[AppContainer.task_queue_adapter]
+        ),
+) -> JSONResponse:
+    uid: Final[UserId] = request.state.uid
+
+    document = await document_repository.get(document_id)
+    if not document:
+        raise AppError(
+            ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
+        )
+    if document.user_id != uid:
+        raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
+
+    task_queue_adapter.send_queue(
+        "summarise-document",
+        "/subscriber/summarise_document",
+        {"document_id": document.id},
     )
 
     return JSONResponse(content={}, status_code=201)

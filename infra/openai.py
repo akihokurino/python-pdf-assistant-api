@@ -1,18 +1,23 @@
 import time
-from typing import Final, Tuple, final
+from typing import Final, Tuple, final, List
 
 from openai import OpenAI
 from openai.pagination import SyncCursorPage
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.thread import Thread
 from openai.types.beta.threads import MessageContent, TextContentBlock, Run, Message
+from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
+from openai.types.chat.chat_completion_system_message_param import ChatCompletionSystemMessageParam
+from openai.types.chat.chat_completion_user_message_param import ChatCompletionUserMessageParam
 
-from adapter.adapter import OpenAIAdapter
+from adapter.adapter import OpenAIAdapter, ChatMessage
 from model.assistant import Assistant as AppAssistant, AssistantId, ThreadId
 from model.document import (
     DocumentId,
 )
 from model.error import AppError, ErrorKind
+
+MODEL: Final = "gpt-4o-2024-11-20"
 
 
 @final
@@ -39,7 +44,7 @@ class OpenAIImpl(OpenAIAdapter):
             time.sleep(0.5)
         return run
 
-    def get_answer(self, _assistant: AppAssistant, message: str) -> str:
+    def chat_assistant(self, _assistant: AppAssistant, message: str) -> str:
         assistant: Final[Assistant] = self.cli.beta.assistants.retrieve(
             assistant_id=_assistant.id
         )
@@ -74,13 +79,13 @@ class OpenAIImpl(OpenAIAdapter):
         else:
             raise AppError(ErrorKind.INTERNAL)
 
-    def create(
+    def create_assistant(
             self, document_id: DocumentId, document_path: str
     ) -> Tuple[AssistantId, ThreadId]:
         assistant = self.cli.beta.assistants.create(
             name=document_id,
             description=f"顧客向けアシスタント",
-            model="gpt-4o-2024-11-20",
+            model=MODEL,
             instructions="""\
         あなたはアップロードされているPDFから特定の情報を抽出するための専用のアシスタントです。
         PDFの情報を参考にしながらユーザーの質問に回答してください
@@ -112,5 +117,40 @@ class OpenAIImpl(OpenAIAdapter):
 
         return AssistantId(assistant.id), ThreadId(thread.id)
 
-    def delete(self, assistant_id: AssistantId) -> None:
+    def delete_assistant(self, assistant_id: AssistantId) -> None:
         self.cli.beta.assistants.delete(assistant_id=assistant_id)
+
+    def chat_completion(self, messages: List[ChatMessage]) -> str:
+        params: List[ChatCompletionMessageParam] = []
+        for message in messages:
+            if message.role == "system":
+                params.append(
+                    ChatCompletionSystemMessageParam(
+                        role="system",
+                        content=message.content,
+                    )
+                )
+            if message.role == "user":
+                params.append(
+                    ChatCompletionUserMessageParam(
+                        role="user",
+                        content=message.content,
+                    )
+                )
+                
+        try:
+            response = self.cli.chat.completions.create(
+                model=MODEL,
+                messages=params,
+                max_tokens=1000,
+                n=1,
+                stop=None,
+                temperature=0.7,
+                top_p=1,
+            )
+            text = response.choices[0].message.content
+            if text is None:
+                raise AppError(ErrorKind.INTERNAL, "OpenAIでエラーが発生しました")
+            return text
+        except Exception as e:
+            raise AppError(ErrorKind.INTERNAL, f"OpenAIでエラーが発生しました") from e

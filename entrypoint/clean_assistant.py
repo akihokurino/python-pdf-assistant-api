@@ -21,7 +21,7 @@ async def _main() -> None:
         document = result[1]
 
         document.update_status(Status.PREPARE_ASSISTANT, now)
-        openai_adapter.delete(assistant.id)
+        openai_adapter.delete_assistant(assistant.id)
         await assistant_repository.delete_with_update_document(document.id, document)
         await assistant_fs_repository.delete(assistant.id)
 

@@ -197,6 +197,35 @@ paths:
                 type: string
             required:
               - url
+  /documents/{id}/summaries:
+    get:
+      operationId: getDocumentSummaries
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: return summaries
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/DocumentSummary"
+    post:
+      operationId: summarizeDocument
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      responses:
+        201:
+          description: return empty
+          schema:
+            type: object
+            additionalProperties: false
+
 
 definitions:
   User:
@@ -262,3 +291,10 @@ definitions:
       - role
       - message
       - created_at
+  DocumentSummary:
+    type: object
+    properties:
+      text:
+        type: string
+    required:
+      - text

@@ -14,12 +14,13 @@ from adapter.adapter import (
     OpenAIAdapter,
     LogAdapter,
     TaskQueueAdapter,
-    AssistantFSRepository, MessageFSRepository,
+    AssistantFSRepository, MessageFSRepository, DocumentSummaryRepository,
 )
 from config.envs import DATABASE_URL
 from config.envs import OPENAI_API_KEY
 from infra.cloud_sql.assistant_repo import AssistantRepoImpl
 from infra.cloud_sql.document_repo import DocumentRepoImpl
+from infra.cloud_sql.document_summary_repo import DocumentSummaryRepoImpl
 from infra.cloud_sql.user_repo import UserRepoImpl
 from infra.cloud_storage import CloudStorageImpl
 from infra.cloud_tasks import CloudTasksImpl
@@ -63,6 +64,9 @@ class AppContainer(containers.DeclarativeContainer):
     )
     document_repository: Singleton[DocumentRepository] = providers.Singleton(
         DocumentRepoImpl.new, session
+    )
+    document_summary_repository: Singleton[DocumentSummaryRepository] = providers.Singleton(
+        DocumentSummaryRepoImpl.new, session
     )
     assistant_repository: Singleton[AssistantRepository] = (
         providers.Singleton(AssistantRepoImpl.new, session)
