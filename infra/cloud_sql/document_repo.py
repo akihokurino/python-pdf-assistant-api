@@ -22,15 +22,15 @@ from infra.cloud_sql.entity import (
 @final
 class DocumentRepoImpl(DocumentRepository):
     def __init__(
-            self,
-            session: async_sessionmaker[AsyncSession],
+        self,
+        session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-            cls,
-            session: async_sessionmaker[AsyncSession],
+        cls,
+        session: async_sessionmaker[AsyncSession],
     ) -> DocumentRepository:
         return cls(session)
 
@@ -69,7 +69,7 @@ class DocumentRepoImpl(DocumentRepository):
             ) from e
 
     async def get_with_user_and_assistant(
-            self, _id: DocumentId
+        self, _id: DocumentId
     ) -> Optional[tuple[Document, User, Optional[Assistant]]]:
         try:
             async with self.session() as session:

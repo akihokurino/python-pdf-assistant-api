@@ -15,8 +15,8 @@ router: Final[APIRouter] = APIRouter()
 @router.get("/me")
 @inject
 async def _me(
-        request: Request,
-        user_repository: UserRepository = Depends(Provide[AppContainer.user_repository]),
+    request: Request,
+    user_repository: UserRepository = Depends(Provide[AppContainer.user_repository]),
 ) -> MeResp:
     uid: Final[UserId] = request.state.uid
 

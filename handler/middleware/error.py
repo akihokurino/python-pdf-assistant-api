@@ -12,7 +12,7 @@ from domain.error import AppError
 @final
 class ErrorMiddleware(BaseHTTPMiddleware):
     async def dispatch(
-            self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         log_adapter: LogAdapter = container.log_adapter()
 

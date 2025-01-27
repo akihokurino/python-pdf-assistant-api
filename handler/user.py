@@ -22,9 +22,9 @@ class _CreateUserPayload(BaseModel):
 @router.post("/users")
 @inject
 async def _create_user(
-        request: Request,
-        payload: _CreateUserPayload,
-        user_repository: UserRepository = Depends(Provide[AppContainer.user_repository]),
+    request: Request,
+    payload: _CreateUserPayload,
+    user_repository: UserRepository = Depends(Provide[AppContainer.user_repository]),
 ) -> UserResp:
     uid: Final[UserId] = request.state.uid
     now: Final = datetime.now(timezone.utc)
@@ -47,9 +47,9 @@ class _UpdateUserPayload(BaseModel):
 @router.put("/users")
 @inject
 async def _update_user(
-        request: Request,
-        payload: _UpdateUserPayload,
-        user_repository: UserRepository = Depends(Provide[AppContainer.user_repository]),
+    request: Request,
+    payload: _UpdateUserPayload,
+    user_repository: UserRepository = Depends(Provide[AppContainer.user_repository]),
 ) -> UserResp:
     uid: Final[UserId] = request.state.uid
     now: Final = datetime.now(timezone.utc)

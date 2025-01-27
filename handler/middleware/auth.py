@@ -24,7 +24,7 @@ NO_AUTH_PATH = ["/debug", "/subscriber/storage_upload_notification"]
 @final
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
-            self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         if request.url.path in NO_AUTH_PATH:
             response: Response = await call_next(request)

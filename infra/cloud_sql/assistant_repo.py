@@ -21,21 +21,21 @@ from infra.cloud_sql.entity import (
 @final
 class AssistantRepoImpl(AssistantRepository):
     def __init__(
-            self,
-            session: async_sessionmaker[AsyncSession],
+        self,
+        session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-            cls,
-            session: async_sessionmaker[AsyncSession],
+        cls,
+        session: async_sessionmaker[AsyncSession],
     ) -> AssistantRepository:
         return cls(session)
 
     async def find_past(
-            self,
-            date: datetime,
+        self,
+        date: datetime,
     ) -> list[tuple[Assistant, Document]]:
         try:
             async with self.session() as session:
@@ -88,7 +88,7 @@ class AssistantRepoImpl(AssistantRepository):
             ) from e
 
     async def insert_with_update_document(
-            self, assistant: Assistant, document: Document
+        self, assistant: Assistant, document: Document
     ) -> None:
         try:
             async with self.session() as session:
@@ -166,7 +166,7 @@ class AssistantRepoImpl(AssistantRepository):
             ) from e
 
     async def delete_with_update_document(
-            self, _id: DocumentId, document: Document
+        self, _id: DocumentId, document: Document
     ) -> None:
         try:
             async with self.session() as session:

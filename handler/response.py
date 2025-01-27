@@ -69,7 +69,7 @@ class DocumentWithUserAndAssistantResp(BaseModel):
 
     @classmethod
     def from_model(
-            cls, user: User, document: Document, assistant: Optional[Assistant]
+        cls, user: User, document: Document, assistant: Optional[Assistant]
     ) -> DocumentWithUserAndAssistantResp:
         return cls(
             user=UserResp.from_model(user),

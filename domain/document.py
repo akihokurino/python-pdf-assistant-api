@@ -26,12 +26,12 @@ class Document:
 
     @classmethod
     def new(
-            cls,
-            user_id: UserId,
-            name: str,
-            description: str,
-            gs_file_url: str,
-            now: datetime,
+        cls,
+        user_id: UserId,
+        name: str,
+        description: str,
+        gs_file_url: str,
+        now: datetime,
     ) -> Document:
         return cls(
             id=DocumentId(str(uuid.uuid4())),
@@ -72,7 +72,7 @@ class DocumentSummary:
 
     @classmethod
     def new(
-            cls, document_id: DocumentId, text: str, index: int, now: datetime
+        cls, document_id: DocumentId, text: str, index: int, now: datetime
     ) -> DocumentSummary:
         return cls(
             id=DocumentSummaryId(str(uuid.uuid4())),

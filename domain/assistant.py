@@ -24,11 +24,11 @@ class Assistant:
 
     @classmethod
     def new(
-            cls,
-            _id: AssistantId,
-            document_id: DocumentId,
-            thread_id: ThreadId,
-            now: datetime,
+        cls,
+        _id: AssistantId,
+        document_id: DocumentId,
+        thread_id: ThreadId,
+        now: datetime,
     ) -> Assistant:
         return cls(
             id=_id,
@@ -55,11 +55,11 @@ class Message:
 
     @classmethod
     def new(
-            cls,
-            thread_id: ThreadId,
-            role: Literal["user", "assistant"],
-            message: str,
-            now: datetime,
+        cls,
+        thread_id: ThreadId,
+        role: Literal["user", "assistant"],
+        message: str,
+        now: datetime,
     ) -> Message:
         return cls(
             id=MessageId(str(uuid.uuid4())),
