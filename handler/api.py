@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 import handler
-from adapter.adapter import AssistantFSRepository, StorageAdapter
+from adapter.adapter import StorageAdapter
 from di.di import container, AppContainer
 from handler.document import router as document_router
 from handler.me import router as me_router
@@ -60,11 +60,7 @@ async def _validation_exception_handler(exc: RequestValidationError) -> JSONResp
 
 @app.get("/debug")
 @inject
-async def _debug(
-        assistant_fs_repository: AssistantFSRepository = Depends(
-            Provide[AppContainer.assistant_fs_repository]
-        ),
-) -> EmptyResp:
+async def _debug() -> EmptyResp:
     return EmptyResp()
 
 
