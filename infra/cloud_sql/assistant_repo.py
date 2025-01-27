@@ -21,21 +21,21 @@ from infra.cloud_sql.entity import (
 @final
 class AssistantRepoImpl(AssistantRepository):
     def __init__(
-        self,
-        session: async_sessionmaker[AsyncSession],
+            self,
+            session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-        cls,
-        session: async_sessionmaker[AsyncSession],
+            cls,
+            session: async_sessionmaker[AsyncSession],
     ) -> AssistantRepository:
         return cls(session)
 
     async def find_past(
-        self,
-        date: datetime,
+            self,
+            date: datetime,
     ) -> list[tuple[Assistant, Document]]:
         try:
             async with self.session() as session:
@@ -54,7 +54,7 @@ class AssistantRepoImpl(AssistantRepository):
                     (assistant_from(e), document_from(e.document)) for e in entities
                 ]
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"データの取得に失敗しました。") from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
     async def get(self, _id: DocumentId) -> Optional[Assistant]:
         try:
@@ -72,23 +72,19 @@ class AssistantRepoImpl(AssistantRepository):
                     return None
                 return assistant_from(entity)
         except Exception as e:
-            raise AppError(
-                ErrorKind.INTERNAL, f"アシスタントの取得に失敗しました。"
-            ) from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
-    async def insert(self, item: Assistant) -> None:
+    async def insert(self, assistant: Assistant) -> None:
         try:
             async with self.session() as session:
-                entity = assistant_entity_from(item)
+                entity = assistant_entity_from(assistant)
                 session.add(entity)
                 await session.commit()
         except Exception as e:
-            raise AppError(
-                ErrorKind.INTERNAL, f"アシスタントの登録に失敗しました。"
-            ) from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
     async def insert_with_update_document(
-        self, assistant: Assistant, document: Document
+            self, assistant: Assistant, document: Document
     ) -> None:
         try:
             async with self.session() as session:
@@ -105,26 +101,21 @@ class AssistantRepoImpl(AssistantRepository):
                     .one_or_none()
                 )
                 if not entity2:
-                    raise AppError(
-                        ErrorKind.NOT_FOUND,
-                        f"ドキュメントが見つかりません: {document.id}",
-                    )
+                    raise AppError(ErrorKind.NOT_FOUND)
                 entity2.update(document)
 
                 await session.commit()
         except Exception as e:
-            raise AppError(
-                ErrorKind.INTERNAL, f"アシスタントの登録に失敗しました。"
-            ) from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
-    async def update(self, item: Assistant) -> None:
+    async def update(self, assistant: Assistant) -> None:
         try:
             async with self.session() as session:
                 entity = (
                     (
                         await session.execute(
                             select(AssistantEntity).filter_by(
-                                document_id=item.document_id
+                                document_id=assistant.document_id
                             )
                         )
                     )
@@ -132,15 +123,11 @@ class AssistantRepoImpl(AssistantRepository):
                     .one_or_none()
                 )
                 if not entity:
-                    raise AppError(
-                        ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {item.id}"
-                    )
-                entity.update(item)
+                    raise AppError(ErrorKind.NOT_FOUND)
+                entity.update(assistant)
                 await session.commit()
         except Exception as e:
-            raise AppError(
-                ErrorKind.INTERNAL, f"アシスタントの更新に失敗しました。"
-            ) from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
     async def delete(self, _id: DocumentId) -> None:
         try:
@@ -155,18 +142,14 @@ class AssistantRepoImpl(AssistantRepository):
                     .one_or_none()
                 )
                 if not entity:
-                    raise AppError(
-                        ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {_id}"
-                    )
+                    raise AppError(ErrorKind.NOT_FOUND)
                 await session.delete(entity)
                 await session.commit()
         except Exception as e:
-            raise AppError(
-                ErrorKind.INTERNAL, f"アシスタントの削除に失敗しました。"
-            ) from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
     async def delete_with_update_document(
-        self, _id: DocumentId, document: Document
+            self, _id: DocumentId, document: Document
     ) -> None:
         try:
             async with self.session() as session:
@@ -180,9 +163,7 @@ class AssistantRepoImpl(AssistantRepository):
                     .one_or_none()
                 )
                 if not entity1:
-                    raise AppError(
-                        ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {_id}"
-                    )
+                    raise AppError(ErrorKind.NOT_FOUND)
                 await session.delete(entity1)
 
                 entity2 = (
@@ -195,14 +176,9 @@ class AssistantRepoImpl(AssistantRepository):
                     .one_or_none()
                 )
                 if not entity2:
-                    raise AppError(
-                        ErrorKind.NOT_FOUND,
-                        f"ドキュメントが見つかりません: {document.id}",
-                    )
+                    raise AppError(ErrorKind.NOT_FOUND)
                 entity2.update(document)
 
                 await session.commit()
         except Exception as e:
-            raise AppError(
-                ErrorKind.INTERNAL, f"アシスタントの削除に失敗しました。"
-            ) from e
+            raise AppError(ErrorKind.INTERNAL) from e

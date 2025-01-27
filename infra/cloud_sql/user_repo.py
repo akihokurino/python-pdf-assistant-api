@@ -19,15 +19,15 @@ from infra.cloud_sql.entity import (
 @final
 class UserRepoImpl(UserRepository):
     def __init__(
-        self,
-        session: async_sessionmaker[AsyncSession],
+            self,
+            session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-        cls,
-        session: async_sessionmaker[AsyncSession],
+            cls,
+            session: async_sessionmaker[AsyncSession],
     ) -> UserRepository:
         return cls(session)
 
@@ -38,7 +38,7 @@ class UserRepoImpl(UserRepository):
                 entities = result.scalars().all()
                 return [user_from(e) for e in entities]
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
     async def get(self, _id: UserId) -> Optional[User]:
         try:
@@ -49,10 +49,10 @@ class UserRepoImpl(UserRepository):
                     return None
                 return user_from(entity)
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
     async def get_with_documents(
-        self, _id: UserId
+            self, _id: UserId
     ) -> Optional[tuple[User, list[Document]]]:
         try:
             async with self.session() as session:
@@ -66,30 +66,28 @@ class UserRepoImpl(UserRepository):
                     return None
                 return user_from(entity), [document_from(e) for e in entity.documents]
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
-    async def insert(self, item: User) -> None:
+    async def insert(self, user: User) -> None:
         try:
             async with self.session() as session:
-                entity = user_entity_from(item)
+                entity = user_entity_from(user)
                 session.add(entity)
                 await session.commit()
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"ユーザーの登録に失敗しました。") from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
-    async def update(self, item: User) -> None:
+    async def update(self, user: User) -> None:
         try:
             async with self.session() as session:
-                result = await session.execute(select(UserEntity).filter_by(id=item.id))
+                result = await session.execute(select(UserEntity).filter_by(id=user.id))
                 entity = result.scalars().one_or_none()
                 if not entity:
-                    raise AppError(
-                        ErrorKind.NOT_FOUND, f"ユーザーが見つかりません: {item.id}"
-                    )
-                entity.update(item)
+                    raise AppError(ErrorKind.NOT_FOUND)
+                entity.update(user)
                 await session.commit()
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"ユーザーの更新に失敗しました。") from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
     async def delete(self, _id: UserId) -> None:
         try:
@@ -97,10 +95,8 @@ class UserRepoImpl(UserRepository):
                 result = await session.execute(select(UserEntity).filter_by(id=_id))
                 entity = result.scalars().one_or_none()
                 if not entity:
-                    raise AppError(
-                        ErrorKind.NOT_FOUND, f"ユーザーが見つかりません: {_id}"
-                    )
+                    raise AppError(ErrorKind.NOT_FOUND)
                 await session.delete(entity)
                 await session.commit()
         except Exception as e:
-            raise AppError(ErrorKind.INTERNAL, f"ユーザーの削除に失敗しました。") from e
+            raise AppError(ErrorKind.INTERNAL) from e

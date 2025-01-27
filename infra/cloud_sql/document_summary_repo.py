@@ -17,15 +17,15 @@ from infra.cloud_sql.entity import (
 @final
 class DocumentSummaryRepoImpl(DocumentSummaryRepository):
     def __init__(
-        self,
-        session: async_sessionmaker[AsyncSession],
+            self,
+            session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-        cls,
-        session: async_sessionmaker[AsyncSession],
+            cls,
+            session: async_sessionmaker[AsyncSession],
     ) -> DocumentSummaryRepository:
         return cls(session)
 
@@ -45,20 +45,16 @@ class DocumentSummaryRepoImpl(DocumentSummaryRepository):
                 )
                 return [document_summary_from(e) for e in entities]
         except Exception as e:
-            raise AppError(
-                ErrorKind.INTERNAL, f"ドキュメントサマリーの取得に失敗しました。"
-            ) from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
-    async def insert(self, item: DocumentSummary) -> None:
+    async def insert(self, summary: DocumentSummary) -> None:
         try:
             async with self.session() as session:
-                entity = document_summary_entity_from(item)
+                entity = document_summary_entity_from(summary)
                 session.add(entity)
                 await session.commit()
         except Exception as e:
-            raise AppError(
-                ErrorKind.INTERNAL, f"ドキュメントサマリーの登録に失敗しました。"
-            ) from e
+            raise AppError(ErrorKind.INTERNAL) from e
 
     async def delete_by_document(self, document_id: DocumentId) -> None:
         try:
@@ -69,6 +65,4 @@ class DocumentSummaryRepoImpl(DocumentSummaryRepository):
                 await session.execute(stmt)
                 await session.commit()
         except Exception as e:
-            raise AppError(
-                ErrorKind.INTERNAL, f"ドキュメントサマリーの削除に失敗しました。"
-            ) from e
+            raise AppError(ErrorKind.INTERNAL) from e

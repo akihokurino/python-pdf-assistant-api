@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import uuid
 from datetime import datetime
-from typing import final, NewType, Literal
+from typing import final, NewType, Literal, TypeAlias
 
 from domain.document import DocumentId
 
@@ -24,11 +24,11 @@ class Assistant:
 
     @classmethod
     def new(
-        cls,
-        _id: AssistantId,
-        document_id: DocumentId,
-        thread_id: ThreadId,
-        now: datetime,
+            cls,
+            _id: AssistantId,
+            document_id: DocumentId,
+            thread_id: ThreadId,
+            now: datetime,
     ) -> Assistant:
         return cls(
             id=_id,
@@ -49,17 +49,17 @@ class Assistant:
 class Message:
     id: MessageId
     thread_id: ThreadId
-    role: Literal["user", "assistant"]
+    role: MessageRole
     message: str
     created_at: datetime
 
     @classmethod
     def new(
-        cls,
-        thread_id: ThreadId,
-        role: Literal["user", "assistant"],
-        message: str,
-        now: datetime,
+            cls,
+            thread_id: ThreadId,
+            role: MessageRole,
+            message: str,
+            now: datetime,
     ) -> Message:
         return cls(
             id=MessageId(str(uuid.uuid4())),
@@ -68,3 +68,6 @@ class Message:
             message=message,
             created_at=now,
         )
+
+
+MessageRole: TypeAlias = Literal["user", "assistant"]
