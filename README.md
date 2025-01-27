@@ -21,5 +21,3 @@
 - secret manager
 - auth0
 - pdfminer.six ( https://github.com/pdfminer/pdfminer.six )
-
-https://qiita.com/nicco_mirai/items/5591c1c48b1422c324c9
