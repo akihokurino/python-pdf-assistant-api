@@ -10,7 +10,7 @@ from infra.firestore.util import delete_sub_collections
 
 
 @final
-class AssistantFSRepoImpl(AssistantFSRepository):
+class AssistantFSRepoImpl:
     def __init__(self, db: AsyncClient) -> None:
         self.db: Final = db
 

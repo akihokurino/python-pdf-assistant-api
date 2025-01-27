@@ -19,7 +19,7 @@ from infra.cloud_sql.entity import (
 
 
 @final
-class AssistantRepoImpl(AssistantRepository):
+class AssistantRepoImpl:
     def __init__(
             self,
             session: async_sessionmaker[AsyncSession],

@@ -14,7 +14,7 @@ from infra.firestore.entity import (
 
 
 @final
-class MessageFSRepoImpl(MessageFSRepository):
+class MessageFSRepoImpl:
     def __init__(self, db: AsyncClient) -> None:
         self.db: Final = db
 

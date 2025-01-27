@@ -8,7 +8,7 @@ from config.envs import PROJECT_ID, TASK_QUEUE_TOKEN, CLOUD_RUN_SA, API_BASE_URL
 
 
 @final
-class CloudTasksImpl(TaskQueueAdapter):
+class CloudTasksImpl:
     def __init__(
             self,
             cli: tasks_v2.CloudTasksClient,

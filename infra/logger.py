@@ -5,7 +5,7 @@ from adapter.adapter import LogAdapter
 
 
 @final
-class LoggerImpl(LogAdapter):
+class LoggerImpl:
     def __init__(
             self,
     ) -> None:

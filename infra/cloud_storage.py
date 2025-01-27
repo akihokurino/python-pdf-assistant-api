@@ -32,36 +32,36 @@ def _credential() -> Credentials:
 
 
 @final
-class CloudStorageImpl(StorageAdapter):
+class CloudStorageImpl:
     def __init__(
-        self,
-        cli: Client,
+            self,
+            cli: Client,
     ) -> None:
         self.cli: Final = cli
 
     @classmethod
     def new(
-        cls,
-        cli: Client,
+            cls,
+            cli: Client,
     ) -> StorageAdapter:
         return cls(cli)
 
     def download_object(
-        self,
-        key: str,
-        destination_file_name: str,
-        bucket_name: str = DEFAULT_BUCKET_NAME,
+            self,
+            key: str,
+            destination_file_name: str,
+            bucket_name: str = DEFAULT_BUCKET_NAME,
     ) -> None:
         bucket: Final[Bucket] = self.cli.bucket(bucket_name)
         blob: Final[Blob] = bucket.blob(key)
         blob.download_to_filename(destination_file_name)
 
     def gen_pre_signed_upload_url(
-        self,
-        key: str,
-        content_type: str,
-        bucket_name: str = DEFAULT_BUCKET_NAME,
-        expiration_minutes: int = 15,
+            self,
+            key: str,
+            content_type: str,
+            bucket_name: str = DEFAULT_BUCKET_NAME,
+            expiration_minutes: int = 15,
     ) -> str:
         bucket: Final[Bucket] = self.cli.bucket(bucket_name)
         blob: Final[Blob] = bucket.blob(key)
@@ -88,10 +88,10 @@ class CloudStorageImpl(StorageAdapter):
         return url
 
     def gen_pre_signed_get_url(
-        self,
-        key: str,
-        bucket_name: str = DEFAULT_BUCKET_NAME,
-        expiration_minutes: int = 15,
+            self,
+            key: str,
+            bucket_name: str = DEFAULT_BUCKET_NAME,
+            expiration_minutes: int = 15,
     ) -> str:
         bucket: Final[Bucket] = self.cli.bucket(bucket_name)
         blob: Final[Blob] = bucket.blob(key)
