@@ -43,18 +43,18 @@ class _CreateAssistantPayload(BaseModel):
 @router.post("/subscriber/create_assistant")
 @inject
 async def _create_assistant(
-        payload: _CreateAssistantPayload,
-        openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
-        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
-        assistant_repository: AssistantRepository = Depends(
-            Provide[AppContainer.assistant_repository]
-        ),
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
-        assistant_fs_repository: AssistantFSRepository = Depends(
-            Provide[AppContainer.assistant_fs_repository]
-        ),
+    payload: _CreateAssistantPayload,
+    openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
+    storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+    assistant_repository: AssistantRepository = Depends(
+        Provide[AppContainer.assistant_repository]
+    ),
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
+    assistant_fs_repository: AssistantFSRepository = Depends(
+        Provide[AppContainer.assistant_fs_repository]
+    ),
 ) -> EmptyResp:
     now: Final = datetime.now(timezone.utc)
 
@@ -96,17 +96,17 @@ class _CreateMessagePayload(BaseModel):
 @router.post("/subscriber/create_message")
 @inject
 async def _create_message(
-        payload: _CreateMessagePayload,
-        openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
-        assistant_repository: AssistantRepository = Depends(
-            Provide[AppContainer.assistant_repository]
-        ),
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
-        message_fs_repository: MessageFSRepository = Depends(
-            Provide[AppContainer.message_fs_repository]
-        ),
+    payload: _CreateMessagePayload,
+    openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
+    assistant_repository: AssistantRepository = Depends(
+        Provide[AppContainer.assistant_repository]
+    ),
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
+    message_fs_repository: MessageFSRepository = Depends(
+        Provide[AppContainer.message_fs_repository]
+    ),
 ) -> EmptyResp:
     now: Final = datetime.now(timezone.utc)
 
@@ -146,15 +146,15 @@ class _SummariseDocumentPayload(BaseModel):
 @router.post("/subscriber/summarise_document")
 @inject
 async def _summarise(
-        payload: _SummariseDocumentPayload,
-        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
-        openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
-        document_summary_repository: DocumentSummaryRepository = Depends(
-            Provide[AppContainer.document_summary_repository]
-        ),
+    payload: _SummariseDocumentPayload,
+    storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+    openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
+    document_summary_repository: DocumentSummaryRepository = Depends(
+        Provide[AppContainer.document_summary_repository]
+    ),
 ) -> EmptyResp:
     now: Final = datetime.now(timezone.utc)
 
@@ -177,7 +177,7 @@ async def _summarise(
     wc_max: Final = 10000
 
     def split_text(_text: str) -> list[str]:
-        chunks = [_text[_i: _i + wc_max] for _i in range(0, len(_text), wc_max)]
+        chunks = [_text[_i : _i + wc_max] for _i in range(0, len(_text), wc_max)]
         return chunks
 
     def create_prompt(_text: str, total: int) -> str:
@@ -226,11 +226,11 @@ class _StorageUploadNotificationPayload(BaseModel):
 @router.post("/subscriber/storage_upload_notification")
 @inject
 async def _storage_upload_notification(
-        payload: _StorageUploadNotificationPayload,
-        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
+    payload: _StorageUploadNotificationPayload,
+    storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
 ) -> EmptyResp:
     now: Final = datetime.now(timezone.utc)
 

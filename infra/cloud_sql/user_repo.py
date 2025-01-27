@@ -19,15 +19,15 @@ from model.user import User, UserId
 @final
 class UserRepoImpl(UserRepository):
     def __init__(
-            self,
-            session: async_sessionmaker[AsyncSession],
+        self,
+        session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-            cls,
-            session: async_sessionmaker[AsyncSession],
+        cls,
+        session: async_sessionmaker[AsyncSession],
     ) -> UserRepository:
         return cls(session)
 
@@ -52,7 +52,7 @@ class UserRepoImpl(UserRepository):
             raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
 
     async def get_with_documents(
-            self, _id: UserId
+        self, _id: UserId
     ) -> Optional[tuple[User, list[Document]]]:
         try:
             async with self.session() as session:
