@@ -1,25 +1,30 @@
 import pkgutil
+import uuid
 from contextlib import asynccontextmanager
-from typing import Final, Any, AsyncGenerator
+from typing import Final, Any, AsyncGenerator, final
 
 import uvicorn
 from dependency_injector.wiring import Provide, inject
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
+from fastapi import Request, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 import handler
-from adapter.adapter import AssistantFSRepository
+from adapter.adapter import AssistantFSRepository, StorageAdapter
 from di.di import container, AppContainer
 from handler.document import router as document_router
 from handler.me import router as me_router
 from handler.middleware.auth import AuthMiddleware
 from handler.middleware.error import ErrorMiddleware
 from handler.middleware.log import LogMiddleware
-from handler.response import EmptyResp
+from handler.response import EmptyResp, PreSignUploadResp, PreSignGetResp
 from handler.subscriber import router as subscriber_router
 from handler.user import router as user_router
-from model.assistant import AssistantId
+from handler.util import extract_gs_key
+from model.error import AppError, ErrorKind
+from model.user import UserId
 
 
 @asynccontextmanager
@@ -56,12 +61,59 @@ async def _validation_exception_handler(exc: RequestValidationError) -> JSONResp
 @app.get("/debug")
 @inject
 async def _debug(
-    assistant_fs_repository: AssistantFSRepository = Depends(
-        Provide[AppContainer.assistant_fs_repository]
-    ),
+        assistant_fs_repository: AssistantFSRepository = Depends(
+            Provide[AppContainer.assistant_fs_repository]
+        ),
 ) -> EmptyResp:
-    await assistant_fs_repository.delete(AssistantId("asst_GjNy30WZSKq52kPp70dXWfyC"))
     return EmptyResp()
+
+
+@final
+class _PreSignedUploadUrlPayload(BaseModel):
+    path: str
+
+
+@app.post("/pre_signed_upload_url")
+@inject
+async def _pre_signed_upload_url(
+        request: Request,
+        payload: _PreSignedUploadUrlPayload,
+        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+) -> PreSignUploadResp:
+    uid: Final[UserId] = request.state.uid
+
+    if payload.path != "documents" and payload.path != "csv":
+        raise AppError(ErrorKind.BAD_REQUEST, "pathが不正です")
+
+    ext = "pdf"
+    content_type = "application/pdf"
+    if payload.path == "csv":
+        ext = "csv"
+        content_type = "text/csv"
+
+    key: Final = f"{payload.path}/{uid}/{uuid.uuid4()}.{ext}"
+    url: Final = storage_adapter.gen_pre_signed_upload_url(key, content_type)
+
+    return PreSignUploadResp(url=url, key=key)
+
+
+@final
+class _PreSignedGetUrlPayload(BaseModel):
+    gs_url: str
+
+
+@app.post("/pre_signed_get_url")
+@inject
+async def _pre_signed_get_url(
+        payload: _PreSignedGetUrlPayload,
+        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+) -> PreSignGetResp:
+    key: Final = extract_gs_key(payload.gs_url)
+    if not key:
+        raise AppError(ErrorKind.BAD_REQUEST, "gs_urlが不正です")
+    url: Final = storage_adapter.gen_pre_signed_get_url(key)
+
+    return PreSignGetResp(url=url)
 
 
 def start() -> None:

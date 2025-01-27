@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime, timezone
 from typing import Final, final, List
 
@@ -14,17 +13,17 @@ from adapter.adapter import (
     AssistantRepository,
     OpenAIAdapter,
     AssistantFSRepository,
-    MessageFSRepository, DocumentSummaryRepository,
+    MessageFSRepository,
+    DocumentSummaryRepository,
 )
 from config.envs import DEFAULT_BUCKET_NAME
 from di.di import AppContainer
 from handler.response import (
-    PreSignUploadResp,
-    PreSignGetResp,
     DocumentResp,
     EmptyResp,
     DocumentWithUserAndAssistantResp,
-    MessageResp, TextResp
+    MessageResp,
+    TextResp,
 )
 from handler.util import extract_gs_key
 from model.document import Document, DocumentId, Status
@@ -51,38 +50,6 @@ async def _get_document(
     return DocumentWithUserAndAssistantResp.from_model(result[1], result[0], result[2])
 
 
-@router.post("/documents/pre_signed_upload_url")
-@inject
-async def _pre_signed_upload_url(
-        request: Request,
-        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
-) -> PreSignUploadResp:
-    uid: Final[UserId] = request.state.uid
-    key = f"documents/{uid}/{uuid.uuid4()}.pdf"
-    url = storage_adapter.gen_pre_signed_upload_url(key)
-
-    return PreSignUploadResp(url=url, key=key)
-
-
-@final
-class _PreSignedGetUrlPayload(BaseModel):
-    gs_url: str
-
-
-@router.post("/documents/pre_signed_get_url")
-@inject
-async def _pre_signed_get_url(
-        payload: _PreSignedGetUrlPayload,
-        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
-) -> PreSignGetResp:
-    key = extract_gs_key(payload.gs_url)
-    if not key:
-        raise AppError(ErrorKind.BAD_REQUEST, "gs_urlが不正です")
-    url = storage_adapter.gen_pre_signed_get_url(key)
-
-    return PreSignGetResp(url=url)
-
-
 @final
 class _CreateDocumentPayload(BaseModel):
     name: str
@@ -92,7 +59,7 @@ class _CreateDocumentPayload(BaseModel):
 
 @router.post("/documents")
 @inject
-async def _create_documents(
+async def _create_document(
         request: Request,
         payload: _CreateDocumentPayload,
         document_repository: DocumentRepository = Depends(
@@ -119,7 +86,7 @@ class _UpdateDocumentPayload(BaseModel):
 
 @router.put("/documents/{document_id}")
 @inject
-async def _update_documents(
+async def _update_document(
         request: Request,
         document_id: DocumentId,
         payload: _UpdateDocumentPayload,
@@ -128,9 +95,9 @@ async def _update_documents(
         ),
 ) -> DocumentResp:
     uid: Final[UserId] = request.state.uid
-    now: Final[datetime] = datetime.now(timezone.utc)
+    now: Final = datetime.now(timezone.utc)
 
-    document = await document_repository.get(document_id)
+    document: Final = await document_repository.get(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -146,7 +113,7 @@ async def _update_documents(
 
 @router.delete("/documents/{document_id}")
 @inject
-async def _delete_documents(
+async def _delete_document(
         request: Request,
         document_id: DocumentId,
         storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
@@ -163,7 +130,7 @@ async def _delete_documents(
 ) -> EmptyResp:
     uid: Final[UserId] = request.state.uid
 
-    document = await document_repository.get(document_id)
+    document: Final = await document_repository.get(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -171,12 +138,12 @@ async def _delete_documents(
     if document.user_id != uid:
         raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
 
-    key = extract_gs_key(document.gs_file_url)
+    key: Final = extract_gs_key(document.gs_file_url)
     if not key:
         raise AppError(ErrorKind.INTERNAL, "gs_urlが不正です")
     storage_adapter.delete_object(key)
 
-    assistant = await assistant_repository.get(document.id)
+    assistant: Final = await assistant_repository.get(document.id)
     if assistant is not None:
         openai_adapter.delete_assistant(assistant.id)
         await document_repository.delete_with_assistant(document.id)
@@ -201,7 +168,7 @@ async def _create_assistant(
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
-    document = await document_repository.get(document_id)
+    document: Final = await document_repository.get(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -235,7 +202,7 @@ async def _get_messages(
 ) -> List[MessageResp]:
     uid: Final[UserId] = request.state.uid
 
-    document = await document_repository.get(document_id)
+    document: Final = await document_repository.get(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -245,12 +212,12 @@ async def _get_messages(
     if document.status != Status.READY_ASSISTANT:
         raise AppError(ErrorKind.BAD_REQUEST, "アシスタントが準備できていません")
 
-    assistant = await assistant_repository.get(document.id)
+    assistant: Final = await assistant_repository.get(document.id)
     if not assistant:
         raise AppError(
             ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {document.id}"
         )
-    messages = await message_fs_repository.find(assistant)
+    messages: Final = await message_fs_repository.find(assistant)
 
     return [MessageResp.from_model(message) for message in messages]
 
@@ -275,7 +242,7 @@ async def _create_message(
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
-    document = await document_repository.get(document_id)
+    document: Final = await document_repository.get(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -308,7 +275,7 @@ async def _get_document_summaries(
 ) -> List[TextResp]:
     uid: Final[UserId] = request.state.uid
 
-    document = await document_repository.get(document_id)
+    document: Final = await document_repository.get(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
@@ -316,7 +283,7 @@ async def _get_document_summaries(
     if document.user_id != uid:
         raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
 
-    summaries = await document_summary_repository.find_by_document(document.id)
+    summaries: Final = await document_summary_repository.find_by_document(document.id)
 
     return [TextResp(text=summary.text) for summary in summaries]
 
@@ -335,7 +302,7 @@ async def _summarise_document(
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
-    document = await document_repository.get(document_id)
+    document: Final = await document_repository.get(document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"

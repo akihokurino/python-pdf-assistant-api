@@ -23,6 +23,7 @@ class StorageAdapter(Protocol):
     def gen_pre_signed_upload_url(
             self,
             key: str,
+            content_type: str,
             bucket_name: str = DEFAULT_BUCKET_NAME,
             expiration_minutes: int = 15,
     ) -> str: ...
@@ -102,7 +103,9 @@ class DocumentRepository(Protocol):
 
 
 class DocumentSummaryRepository(Protocol):
-    async def find_by_document(self, document_id: DocumentId) -> List[DocumentSummary]: ...
+    async def find_by_document(
+            self, document_id: DocumentId
+    ) -> List[DocumentSummary]: ...
 
     async def insert(self, item: DocumentSummary) -> None: ...
 

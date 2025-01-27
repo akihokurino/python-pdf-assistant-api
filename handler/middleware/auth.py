@@ -18,15 +18,21 @@ AUTH0_ISSUER = "https://dev-im6sd3gmyj703h6n.us.auth0.com/"
 AUTH0_JWKS_URL = "https://dev-im6sd3gmyj703h6n.us.auth0.com/.well-known/jwks.json"
 AUTH0_AUDIENCE = "https://api-gateway-7nwm7l18.an.gateway.dev"
 
+NO_AUTH_PATH = ["/debug", "/subscriber/storage_upload_notification"]
+
 
 @final
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
-        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+            self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
+        if request.url.path in NO_AUTH_PATH:
+            response: Response = await call_next(request)
+            return response
+
         task_queue_token: Optional[str] = request.headers.get("x-queue-token")
         if task_queue_token and task_queue_token == TASK_QUEUE_TOKEN:
-            response: Response = await call_next(request)
+            response = await call_next(request)
             return response
 
         user_info_encoded: Optional[str] = request.headers.get(

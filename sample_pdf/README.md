@@ -1,5 +1,0 @@
-# ファイルのアップロード
-
-```shell
-curl -X PUT -H "Content-Type: application/pdf" --upload-file web3.pdf "https://storage.googleapis.com/my-python-448116-userdata/documents/yqkYZa7SJoaVEgBX3XKxzwaryg93gv7x%40clients/c8942d6e-23a2-4abb-be30-18157efbd955.pdf?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=cloud-run-sa%40my-python-448116.iam.gserviceaccount.com%2F20250125%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20250125T155352Z&X-Goog-Expires=900&X-Goog-SignedHeaders=content-type%3Bhost&X-Goog-Signature=9ac263bcf67cc9d56ebaea0b0049f115a10c2e8362880fef76e953ad997a699a115c36814d1cded4cf7733433ca116b4aaebdecafc34f2b15873223a25c6f493bf28c9d100337fd980c720cb46b04698b545980324cd6ad0f7c920ef5d34d25ac331f0d19c943f24bcca93273bb1f1b4cb079437e5034d724be46e23a5f74e9250fd24adb89e265168f0bb3d9eb1b3a408e65c86adc9c9197ec42ed240fa5c2d08600ccd23187c1ee10c776764383d4babea0a8cf3f1d7927c5b2753ee028d994b4d37086d97c2a85181e923fbf24feb04369f3600255a4098e463ba646abecb44cf05fc83fa92cff4f1b9f7e2d057e077e96e099dfa0d773096de00b1cab854"
-```

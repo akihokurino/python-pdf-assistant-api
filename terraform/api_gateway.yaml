@@ -25,6 +25,40 @@ security:
   - auth0_jwk: [ ]
 
 paths:
+  /pre_signed_upload_url:
+    post:
+      operationId: preSignedUploadUrl
+      parameters:
+        - name: path
+          in: formData
+          required: true
+          type: string
+      responses:
+        200:
+          description: empty
+          schema:
+            type: object
+            properties:
+              url:
+                type: string
+              key:
+                type: string
+            required:
+              - url
+              - key
+  /pre_signed_get_url:
+    post:
+      operationId: preSignedGetUrl
+      responses:
+        200:
+          description: empty
+          schema:
+            type: object
+            properties:
+              url:
+                type: string
+            required:
+              - url
   /me:
     get:
       operationId: me
@@ -168,35 +202,6 @@ paths:
           schema:
             type: object
             additionalProperties: false
-  /documents/pre_signed_upload_url:
-    post:
-      operationId: documentPreSignedUploadUrl
-      responses:
-        200:
-          description: empty
-          schema:
-            type: object
-            properties:
-              url:
-                type: string
-              key:
-                type: string
-            required:
-              - url
-              - key
-  /documents/pre_signed_get_url:
-    post:
-      operationId: documentPreSignedGetUrl
-      responses:
-        200:
-          description: empty
-          schema:
-            type: object
-            properties:
-              url:
-                type: string
-            required:
-              - url
   /documents/{id}/summaries:
     get:
       operationId: getDocumentSummaries

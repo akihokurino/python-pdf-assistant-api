@@ -59,6 +59,7 @@ class CloudStorageImpl(StorageAdapter):
     def gen_pre_signed_upload_url(
             self,
             key: str,
+            content_type: str,
             bucket_name: str = DEFAULT_BUCKET_NAME,
             expiration_minutes: int = 15,
     ) -> str:
@@ -71,7 +72,7 @@ class CloudStorageImpl(StorageAdapter):
                 version="v4",
                 expiration=timedelta(minutes=expiration_minutes),
                 method="PUT",
-                content_type="application/pdf",
+                content_type=content_type,
             )
         else:
             credentials = _credential()
@@ -81,7 +82,7 @@ class CloudStorageImpl(StorageAdapter):
                 version="v4",
                 expiration=timedelta(minutes=expiration_minutes),
                 method="PUT",
-                content_type="application/pdf",
+                content_type=content_type,
             )
 
         return url

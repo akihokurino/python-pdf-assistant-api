@@ -104,6 +104,8 @@ dependencies = [
     "greenlet (>=3.1.1,<4.0.0)",
     "google-cloud-firestore (>=2.20.0,<3.0.0)",
     "pdfminer-six (>=20240706,<20240707)",
+    "pandas (>=2.2.3,<3.0.0)",
+    "pandas-stubs (>=2.2.3.241126,<3.0.0.0)",
 ]
 
 

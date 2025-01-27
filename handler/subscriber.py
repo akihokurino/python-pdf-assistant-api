@@ -1,7 +1,9 @@
+import base64
 import re
 from datetime import datetime, timezone
 from typing import Final, final, List
 
+import pandas as pd
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends
 from pdfminer.high_level import extract_text
@@ -13,16 +15,24 @@ from adapter.adapter import (
     DocumentRepository,
     StorageAdapter,
     AssistantFSRepository,
-    MessageFSRepository, DocumentSummaryRepository, ChatMessage,
+    MessageFSRepository,
+    DocumentSummaryRepository,
+    ChatMessage,
 )
 from di.di import AppContainer
 from handler.response import EmptyResp
 from handler.util import extract_gs_key
 from model.assistant import Assistant, Message
-from model.document import DocumentId, Status, DocumentSummary
+from model.document import DocumentId, Status, DocumentSummary, Document
 from model.error import AppError, ErrorKind
+from model.user import UserId
 
 router: Final[APIRouter] = APIRouter()
+
+
+@final
+class PubSubMessage(BaseModel):
+    data: str  # base64 encoded
 
 
 @final
@@ -46,28 +56,29 @@ async def _create_assistant(
             Provide[AppContainer.assistant_fs_repository]
         ),
 ) -> EmptyResp:
-    now: Final[datetime] = datetime.now(timezone.utc)
-    assistant = await assistant_repository.get(payload.document_id)
-    if assistant:
+    now: Final = datetime.now(timezone.utc)
+
+    already: Final = await assistant_repository.get(payload.document_id)
+    if already:
         return EmptyResp()
 
-    document = await document_repository.get(payload.document_id)
+    document: Final = await document_repository.get(payload.document_id)
     if not document:
         raise AppError(ErrorKind.NOT_FOUND, "ドキュメントが見つかりません")
 
     document.update_status(Status.READY_ASSISTANT, now)
 
-    key = extract_gs_key(document.gs_file_url)
+    key: Final = extract_gs_key(document.gs_file_url)
     if not key:
         raise AppError(ErrorKind.INTERNAL, "ファイルのURLが不正です")
-    destination_file_name: Final[str] = f"/tmp/{document.id}_downloaded.pdf"
+    destination_file_name: Final = f"/tmp/{document.id}_downloaded.pdf"
     storage_adapter.download_object(key, destination_file_name)
 
-    new_assistant = openai_adapter.create_assistant(
+    new_assistant: Final = openai_adapter.create_assistant(
         document.id,
         destination_file_name,
     )
-    assistant = Assistant.new(new_assistant[0], document.id, new_assistant[1], now)
+    assistant: Final = Assistant.new(new_assistant[0], document.id, new_assistant[1], now)
     await assistant_repository.insert_with_update_document(assistant, document)
     await assistant_fs_repository.put(assistant)
 
@@ -95,13 +106,13 @@ async def _create_message(
             Provide[AppContainer.message_fs_repository]
         ),
 ) -> EmptyResp:
-    now: Final[datetime] = datetime.now(timezone.utc)
+    now: Final = datetime.now(timezone.utc)
 
-    document = await document_repository.get(payload.document_id)
+    document: Final = await document_repository.get(payload.document_id)
     if not document:
         raise AppError(ErrorKind.NOT_FOUND, "ドキュメントが見つかりません")
 
-    assistant = await assistant_repository.get(document.id)
+    assistant: Final = await assistant_repository.get(document.id)
     if not assistant:
         raise AppError(
             ErrorKind.NOT_FOUND, f"アシスタントが見つかりません: {document.id}"
@@ -110,14 +121,14 @@ async def _create_message(
     assistant.use(now)
     await assistant_repository.update(assistant)
 
-    my_message = Message.new(
+    my_message: Final = Message.new(
         assistant.thread_id, "user", payload.message, datetime.now(timezone.utc)
     )
     await message_fs_repository.put(assistant, my_message)
 
-    answer = openai_adapter.chat_assistant(assistant, payload.message)
+    answer: Final = openai_adapter.chat_assistant(assistant, payload.message)
 
-    assistant_message = Message.new(
+    assistant_message: Final = Message.new(
         assistant.thread_id, "assistant", answer, datetime.now(timezone.utc)
     )
     await message_fs_repository.put(assistant, assistant_message)
@@ -143,27 +154,28 @@ async def _summarise(
             Provide[AppContainer.document_summary_repository]
         ),
 ) -> EmptyResp:
-    now: Final[datetime] = datetime.now(timezone.utc)
-    document = await document_repository.get(payload.document_id)
+    now: Final = datetime.now(timezone.utc)
+
+    document: Final = await document_repository.get(payload.document_id)
     if not document:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {payload.document_id}"
         )
 
-    key = extract_gs_key(document.gs_file_url)
+    key: Final = extract_gs_key(document.gs_file_url)
     if not key:
         raise AppError(ErrorKind.INTERNAL, "ファイルのURLが不正です")
-    destination_file_name: Final[str] = f"/tmp/{document.id}_downloaded.pdf"
+    destination_file_name: Final = f"/tmp/{document.id}_downloaded.pdf"
     storage_adapter.download_object(key, destination_file_name)
 
     text = extract_text(destination_file_name)
-    text = text.replace('-\n', '')
-    text = re.sub(r'\s+', ' ', text)
+    text = text.replace("-\n", "")
+    text = re.sub(r"\s+", " ", text)
 
     wc_max: Final = 10000
 
     def split_text(_text: str) -> List[str]:
-        chunks = [_text[i:i + wc_max] for i in range(0, len(_text), wc_max)]
+        chunks = [_text[i: i + wc_max] for i in range(0, len(_text), wc_max)]
         return chunks
 
     def create_prompt(_text: str, total: int) -> str:
@@ -182,13 +194,17 @@ async def _summarise(
 
 要約:"""
 
-    parted_text = split_text(text)
-    summaries: List[DocumentSummary] = []
+    parted_text: Final = split_text(text)
+    summaries: Final[List[DocumentSummary]] = []
     for i in range(len(parted_text)):
         messages: List[ChatMessage] = [
-            ChatMessage(role="system",
-                        content="あなたはPDFを要約する専門家です。あなたは前後に問い合わせした内容を考慮して思慮深い回答をします。"),
-            ChatMessage(role="user", content=create_prompt(parted_text[i], len(parted_text)))
+            ChatMessage(
+                role="system",
+                content="あなたはPDFを要約する専門家です。あなたは前後に問い合わせした内容を考慮して思慮深い回答をします。",
+            ),
+            ChatMessage(
+                role="user", content=create_prompt(parted_text[i], len(parted_text))
+            ),
         ]
         resp = openai_adapter.chat_completion(messages)
         summaries.append(DocumentSummary.new(document.id, resp, i, now))
@@ -196,5 +212,52 @@ async def _summarise(
     await document_summary_repository.delete_by_document(document.id)
     for summary in summaries:
         await document_summary_repository.insert(summary)
+
+    return EmptyResp()
+
+
+@final
+class _StorageUploadNotificationPayload(BaseModel):
+    message: PubSubMessage
+
+
+@router.post("/subscriber/storage_upload_notification")
+@inject
+async def _storage_upload_notification(
+        payload: _StorageUploadNotificationPayload,
+        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
+) -> EmptyResp:
+    now: Final = datetime.now(timezone.utc)
+
+    @final
+    class _Params(BaseModel):
+        bucket: str
+        name: str
+        timeCreated: str
+        updated: str
+
+    decoded_data: Final = base64.b64decode(payload.message.data).decode("utf-8")
+    params: Final = _Params.model_validate_json(decoded_data)
+
+    match: Final = re.search(r'csv/([^/]+)/[\w-]+\.csv', params.name)
+    if match:
+        uid = UserId(match.group(1))
+    else:
+        raise AppError(ErrorKind.INTERNAL, "ファイルのURLが不正です")
+
+    destination_file_name: Final = f"/tmp/{uid}_downloaded.csv"
+    storage_adapter.download_object(params.name, destination_file_name)
+
+    df: Final = pd.read_csv(destination_file_name, header=None, names=["name", "description", "gs_path"])
+    documents: List[Document] = [
+        Document.new(uid, str(row["name"]), str(row["description"]), str(row["gs_path"]), now)
+        for _, row in df.iterrows()
+    ]
+
+    for document in documents:
+        await document_repository.insert(document)
 
     return EmptyResp()

@@ -20,7 +20,7 @@ async def _me(
 ) -> MeResp:
     uid: Final[UserId] = request.state.uid
 
-    result = await user_repository.get_with_documents(uid)
+    result: Final = await user_repository.get_with_documents(uid)
     if not result:
         raise AppError(ErrorKind.NOT_FOUND, f"ユーザーが見つかりません: {uid}")
 

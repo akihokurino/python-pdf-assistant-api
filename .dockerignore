@@ -2,5 +2,5 @@
 venv
 cloud_sql
 terraform
-sample_pdf
+sample_resource
 signer-cred.json
