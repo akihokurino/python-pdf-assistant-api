@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import dataclasses
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import final, NewType, Final
+from typing import final, NewType
 
 from model.user import UserId
 
@@ -12,26 +13,16 @@ DocumentSummaryId = NewType("DocumentSummaryId", str)
 
 
 @final
+@dataclasses.dataclass
 class Document:
-    def __init__(
-            self,
-            _id: DocumentId,
-            user_id: UserId,
-            name: str,
-            description: str,
-            gs_file_url: str,
-            status: Status,
-            created_at: datetime,
-            updated_at: datetime,
-    ) -> None:
-        self.id: Final = _id
-        self.user_id: Final = user_id
-        self.name = name
-        self.description = description
-        self.gs_file_url = gs_file_url
-        self.status: Status = status
-        self.created_at: Final = created_at
-        self.updated_at = updated_at
+    id: DocumentId
+    user_id: UserId
+    name: str
+    description: str
+    gs_file_url: str
+    status: Status
+    created_at: datetime
+    updated_at: datetime
 
     @classmethod
     def new(
@@ -43,14 +34,14 @@ class Document:
             now: datetime,
     ) -> Document:
         return cls(
-            DocumentId(str(uuid.uuid4())),
-            user_id,
-            name,
-            description,
-            gs_file_url,
-            Status.PREPARE_ASSISTANT,
-            now,
-            now,
+            id=DocumentId(str(uuid.uuid4())),
+            user_id=user_id,
+            name=name,
+            description=description,
+            gs_file_url=gs_file_url,
+            status=Status.PREPARE_ASSISTANT,
+            created_at=now,
+            updated_at=now,
         )
 
     def update(self, name: str, description: str, now: datetime) -> None:
@@ -70,30 +61,24 @@ class Status(Enum):
 
 
 @final
+@dataclasses.dataclass
 class DocumentSummary:
-    def __init__(
-            self,
-            _id: DocumentSummaryId,
-            document_id: DocumentId,
-            text: str,
-            index: int,
-            created_at: datetime,
-            updated_at: datetime,
-    ) -> None:
-        self.id: Final = _id
-        self.document_id: Final = document_id
-        self.text: Final = text
-        self.index: Final = index
-        self.created_at: Final = created_at
-        self.updated_at: Final = updated_at
+    id: DocumentSummaryId
+    document_id: DocumentId
+    text: str
+    index: int
+    created_at: datetime
+    updated_at: datetime
 
     @classmethod
-    def new(cls, document_id: DocumentId, text: str, index: int, now: datetime) -> DocumentSummary:
+    def new(
+            cls, document_id: DocumentId, text: str, index: int, now: datetime
+    ) -> DocumentSummary:
         return cls(
-            DocumentSummaryId(str(uuid.uuid4())),
-            document_id,
-            text,
-            index,
-            now,
-            now,
+            id=DocumentSummaryId(str(uuid.uuid4())),
+            document_id=document_id,
+            text=text,
+            index=index,
+            created_at=now,
+            updated_at=now,
         )

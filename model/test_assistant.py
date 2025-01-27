@@ -7,7 +7,7 @@ from model.document import DocumentId
 def test_assistant_initialization() -> None:
     now = datetime.now(timezone.utc)
     assistant = Assistant(
-        _id=AssistantId("123"),
+        id=AssistantId("123"),
         document_id=DocumentId("456"),
         thread_id=ThreadId("789"),
         used_at=now,
@@ -43,7 +43,7 @@ def test_assistant_new() -> None:
 def test_assistant_use() -> None:
     now = datetime.now(timezone.utc)
     assistant = Assistant(
-        _id=AssistantId("123"),
+        id=AssistantId("123"),
         document_id=DocumentId("456"),
         thread_id=ThreadId("789"),
         used_at=now,

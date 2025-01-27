@@ -28,7 +28,7 @@ class MessageFSRepoImpl(MessageFSRepository):
 
             messages = [
                 Message(
-                    _id=MessageId(doc.id),
+                    id=MessageId(doc.id),
                     thread_id=ThreadId(doc.get("thread_id")),
                     role=doc.get("role"),
                     message=doc.get("message"),

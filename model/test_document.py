@@ -7,7 +7,7 @@ from model.user import UserId
 def test_document_initialization() -> None:
     now = datetime.now(timezone.utc)
     document = Document(
-        _id=DocumentId("123"),
+        id=DocumentId("123"),
         user_id=UserId("456"),
         name="SamplePDF",
         description="This is a sample PDF",
@@ -49,7 +49,7 @@ def test_document_new() -> None:
 def test_document_update() -> None:
     now = datetime.now(timezone.utc)
     document = Document(
-        _id=DocumentId("123"),
+        id=DocumentId("123"),
         user_id=UserId("456"),
         name="SamplePDF",
         description="This is a sample PDF",
@@ -74,7 +74,7 @@ def test_document_update() -> None:
 def test_document_update_status() -> None:
     now = datetime.now(timezone.utc)
     document = Document(
-        _id=DocumentId("123"),
+        id=DocumentId("123"),
         user_id=UserId("456"),
         name="SamplePDF",
         description="This is a sample PDF",

@@ -1,5 +1,6 @@
+import dataclasses
 from datetime import datetime
-from typing import Protocol, Any, Tuple, List, Optional, Final, Literal
+from typing import Protocol, Any, Tuple, List, Optional, Literal, final
 
 from config.envs import DEFAULT_BUCKET_NAME
 from model.assistant import (
@@ -50,10 +51,11 @@ class LogAdapter(Protocol):
     def log_error(self, e: Exception) -> None: ...
 
 
+@final
+@dataclasses.dataclass(frozen=True)
 class ChatMessage:
-    def __init__(self, role: Literal["user", "system"], content: str) -> None:
-        self.role: Final = role
-        self.content: Final = content
+    role: Literal["user", "system"]
+    content: str
 
 
 class OpenAIAdapter(Protocol):

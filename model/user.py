@@ -1,24 +1,23 @@
 from __future__ import annotations
 
+import dataclasses
 from datetime import datetime
-from typing import final, NewType, Final
+from typing import final, NewType
 
 UserId = NewType("UserId", str)
 
 
 @final
+@dataclasses.dataclass
 class User:
-    def __init__(
-            self, _id: UserId, name: str, created_at: datetime, updated_at: datetime
-    ) -> None:
-        self.id: Final = _id
-        self.name = name
-        self.created_at: Final = created_at
-        self.updated_at = updated_at
+    id: UserId
+    name: str
+    created_at: datetime
+    updated_at: datetime
 
     @classmethod
     def new(cls, _id: UserId, name: str, now: datetime) -> User:
-        return cls(_id, name, now, now)
+        return cls(id=_id, name=name, created_at=now, updated_at=now)
 
     def update(self, name: str, now: datetime) -> None:
         self.name = name

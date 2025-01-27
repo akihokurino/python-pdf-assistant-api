@@ -49,7 +49,7 @@ def user_entity_from(d: User) -> UserEntity:
 
 def user_from(e: UserEntity) -> User:
     return User(
-        _id=UserId(e.id),
+        id=UserId(e.id),
         name=e.name,
         created_at=e.created_at,
         updated_at=e.updated_at,
@@ -100,7 +100,7 @@ def document_entity_from(d: Document) -> DocumentEntity:
 
 def document_from(e: DocumentEntity) -> Document:
     return Document(
-        _id=DocumentId(e.id),
+        id=DocumentId(e.id),
         user_id=UserId(e.user_id),
         name=e.name,
         description=e.description,
@@ -140,7 +140,7 @@ def document_summary_entity_from(d: DocumentSummary) -> DocumentSummaryEntity:
 
 def document_summary_from(e: DocumentSummaryEntity) -> DocumentSummary:
     return DocumentSummary(
-        _id=DocumentSummaryId(e.id),
+        id=DocumentSummaryId(e.id),
         document_id=DocumentId(e.document_id),
         text=e.text,
         index=e.index,
@@ -182,7 +182,7 @@ def assistant_entity_from(d: Assistant) -> AssistantEntity:
 
 def assistant_from(e: AssistantEntity) -> Assistant:
     return Assistant(
-        _id=AssistantId(e.assistant_id),
+        id=AssistantId(e.assistant_id),
         document_id=DocumentId(e.document_id),
         thread_id=ThreadId(e.thread_id),
         used_at=e.used_at,

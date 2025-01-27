@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import dataclasses
 import uuid
 from datetime import datetime
-from typing import final, NewType, Final, Literal
+from typing import final, NewType, Literal
 
 from model.document import DocumentId
 
@@ -12,22 +13,14 @@ MessageId = NewType("MessageId", str)
 
 
 @final
+@dataclasses.dataclass
 class Assistant:
-    def __init__(
-            self,
-            _id: AssistantId,
-            document_id: DocumentId,
-            thread_id: ThreadId,
-            used_at: datetime,
-            created_at: datetime,
-            updated_at: datetime,
-    ) -> None:
-        self.id: Final = _id
-        self.document_id: Final = document_id
-        self.thread_id: Final = thread_id
-        self.used_at = used_at
-        self.created_at: Final = created_at
-        self.updated_at = updated_at
+    id: AssistantId
+    document_id: DocumentId
+    thread_id: ThreadId
+    used_at: datetime
+    created_at: datetime
+    updated_at: datetime
 
     @classmethod
     def new(
@@ -38,12 +31,12 @@ class Assistant:
             now: datetime,
     ) -> Assistant:
         return cls(
-            _id,
-            document_id,
-            thread_id,
-            now,
-            now,
-            now,
+            id=_id,
+            document_id=document_id,
+            thread_id=thread_id,
+            used_at=now,
+            created_at=now,
+            updated_at=now,
         )
 
     def use(self, now: datetime) -> None:
@@ -52,20 +45,13 @@ class Assistant:
 
 
 @final
+@dataclasses.dataclass
 class Message:
-    def __init__(
-            self,
-            _id: MessageId,
-            thread_id: ThreadId,
-            role: Literal["user", "assistant"],
-            message: str,
-            created_at: datetime,
-    ) -> None:
-        self.id: Final = _id
-        self.thread_id: Final = thread_id
-        self.role: Final = role
-        self.message: Final = message
-        self.created_at: Final = created_at
+    id: MessageId
+    thread_id: ThreadId
+    role: Literal["user", "assistant"]
+    message: str
+    created_at: datetime
 
     @classmethod
     def new(
@@ -76,9 +62,9 @@ class Message:
             now: datetime,
     ) -> Message:
         return cls(
-            MessageId(str(uuid.uuid4())),
-            thread_id,
-            role,
-            message,
-            now,
+            id=MessageId(str(uuid.uuid4())),
+            thread_id=thread_id,
+            role=role,
+            message=message,
+            created_at=now,
         )

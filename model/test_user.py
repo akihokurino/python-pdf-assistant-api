@@ -5,7 +5,7 @@ from model.user import User, UserId
 
 def test_user_initialization() -> None:
     now = datetime.now(timezone.utc)
-    user = User(_id=UserId("123"), name="Alice", created_at=now, updated_at=now)
+    user = User(id=UserId("123"), name="Alice", created_at=now, updated_at=now)
 
     assert user.id == "123"
     assert user.name == "Alice"
