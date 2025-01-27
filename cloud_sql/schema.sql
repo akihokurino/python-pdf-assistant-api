@@ -22,6 +22,7 @@ ALTER TABLE documents
     ON DELETE NO ACTION
     ON UPDATE NO ACTION;
 CREATE INDEX IF NOT EXISTS idx_user_id ON documents (user_id);
+CREATE INDEX IF NOT EXISTS idx_pager ON documents (created_at DESC, id DESC);
 
 CREATE TABLE IF NOT EXISTS document_summaries (
     id VARCHAR(255) PRIMARY KEY,

@@ -35,7 +35,7 @@ paths:
           type: string
       responses:
         200:
-          description: empty
+          description: return presign url and key
           schema:
             type: object
             properties:
@@ -51,7 +51,7 @@ paths:
       operationId: preSignedGetUrl
       responses:
         200:
-          description: empty
+          description: return presign url
           schema:
             type: object
             properties:
@@ -93,6 +93,24 @@ paths:
           schema:
             $ref: "#/definitions/User"
   /documents:
+    get:
+      operationId: listDocument
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          type: integer
+        - name: cursor
+          in: query
+          required: false
+          type: string
+      responses:
+        200:
+          description: return document list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Document"
     post:
       operationId: createDocument
       parameters:
@@ -155,7 +173,7 @@ paths:
           type: string
       responses:
         200:
-          description: empty
+          description: return empty
   /documents/{id}/assistants:
     post:
       operationId: createAssistant
@@ -172,7 +190,7 @@ paths:
             additionalProperties: false
   /documents/{id}/messages:
     get:
-      operationId: getMessages
+      operationId: listMessage
       parameters:
         - name: id
           in: path
@@ -180,7 +198,7 @@ paths:
           type: string
       responses:
         200:
-          description: return messages
+          description: return message list
           schema:
             type: array
             items:
@@ -204,7 +222,7 @@ paths:
             additionalProperties: false
   /documents/{id}/summaries:
     get:
-      operationId: getDocumentSummaries
+      operationId: listDocumentSummary
       parameters:
         - name: id
           in: path
@@ -212,7 +230,7 @@ paths:
           type: string
       responses:
         200:
-          description: return summaries
+          description: return document summary list
           schema:
             type: array
             items:
