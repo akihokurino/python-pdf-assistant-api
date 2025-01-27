@@ -163,7 +163,7 @@ class DocumentRepoImpl(DocumentRepository):
     async def delete_with_assistant(self, _id: DocumentId) -> None:
         try:
             async with self.session() as session:
-                entity1 = (
+                assistant_entity = (
                     (
                         await session.execute(
                             select(AssistantEntity).filter_by(document_id=_id)
@@ -172,18 +172,18 @@ class DocumentRepoImpl(DocumentRepository):
                     .scalars()
                     .one_or_none()
                 )
-                if not entity1:
+                if not assistant_entity:
                     raise AppError(ErrorKind.NOT_FOUND)
-                await session.delete(entity1)
+                await session.delete(assistant_entity)
 
-                entity2 = (
+                document_entity = (
                     (await session.execute(select(DocumentEntity).filter_by(id=_id)))
                     .scalars()
                     .one_or_none()
                 )
-                if not entity2:
+                if not document_entity:
                     raise AppError(ErrorKind.NOT_FOUND)
-                await session.delete(entity2)
+                await session.delete(document_entity)
 
                 await session.commit()
         except Exception as e:

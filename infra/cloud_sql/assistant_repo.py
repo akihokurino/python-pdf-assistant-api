@@ -88,10 +88,10 @@ class AssistantRepoImpl(AssistantRepository):
     ) -> None:
         try:
             async with self.session() as session:
-                entity1 = assistant_entity_from(assistant)
-                session.add(entity1)
+                assistant_entity = assistant_entity_from(assistant)
+                session.add(assistant_entity)
 
-                entity2 = (
+                document_entity = (
                     (
                         await session.execute(
                             select(DocumentEntity).filter_by(id=document.id)
@@ -100,9 +100,9 @@ class AssistantRepoImpl(AssistantRepository):
                     .scalars()
                     .one_or_none()
                 )
-                if not entity2:
+                if not document_entity:
                     raise AppError(ErrorKind.NOT_FOUND)
-                entity2.update(document)
+                document_entity.update(document)
 
                 await session.commit()
         except Exception as e:
@@ -153,7 +153,7 @@ class AssistantRepoImpl(AssistantRepository):
     ) -> None:
         try:
             async with self.session() as session:
-                entity1 = (
+                assistant_entity = (
                     (
                         await session.execute(
                             select(AssistantEntity).filter_by(document_id=_id)
@@ -162,11 +162,11 @@ class AssistantRepoImpl(AssistantRepository):
                     .scalars()
                     .one_or_none()
                 )
-                if not entity1:
+                if not assistant_entity:
                     raise AppError(ErrorKind.NOT_FOUND)
-                await session.delete(entity1)
+                await session.delete(assistant_entity)
 
-                entity2 = (
+                document_entity = (
                     (
                         await session.execute(
                             select(DocumentEntity).filter_by(id=document.id)
@@ -175,9 +175,9 @@ class AssistantRepoImpl(AssistantRepository):
                     .scalars()
                     .one_or_none()
                 )
-                if not entity2:
+                if not document_entity:
                     raise AppError(ErrorKind.NOT_FOUND)
-                entity2.update(document)
+                document_entity.update(document)
 
                 await session.commit()
         except Exception as e:
