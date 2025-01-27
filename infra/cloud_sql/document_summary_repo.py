@@ -5,27 +5,27 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.future import select
 
 from adapter.adapter import DocumentSummaryRepository
+from domain.document import DocumentId, DocumentSummary
+from domain.error import ErrorKind, AppError
 from infra.cloud_sql.entity import (
     document_summary_entity_from,
     DocumentSummaryEntity,
     document_summary_from,
 )
-from model.document import DocumentId, DocumentSummary
-from model.error import ErrorKind, AppError
 
 
 @final
 class DocumentSummaryRepoImpl(DocumentSummaryRepository):
     def __init__(
-        self,
-        session: async_sessionmaker[AsyncSession],
+            self,
+            session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-        cls,
-        session: async_sessionmaker[AsyncSession],
+            cls,
+            session: async_sessionmaker[AsyncSession],
     ) -> DocumentSummaryRepository:
         return cls(session)
 

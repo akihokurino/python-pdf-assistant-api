@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from typing import final, NewType, Literal
 
-from model.document import DocumentId
+from domain.document import DocumentId
 
 AssistantId = NewType("AssistantId", str)
 ThreadId = NewType("ThreadId", str)

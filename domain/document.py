@@ -6,7 +6,7 @@ from datetime import datetime
 from enum import Enum
 from typing import final, NewType
 
-from model.user import UserId
+from domain.user import UserId
 
 DocumentId = NewType("DocumentId", str)
 DocumentSummaryId = NewType("DocumentSummaryId", str)

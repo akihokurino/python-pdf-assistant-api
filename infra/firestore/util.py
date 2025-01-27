@@ -1,6 +1,6 @@
 from google.cloud.firestore import AsyncDocumentReference
 
-from model.error import ErrorKind, AppError
+from domain.error import ErrorKind, AppError
 
 
 async def delete_sub_collections(doc_ref: AsyncDocumentReference) -> None:

@@ -7,9 +7,9 @@ from pydantic import BaseModel
 
 from adapter.adapter import UserRepository
 from di.di import AppContainer
+from domain.error import AppError, ErrorKind
+from domain.user import User, UserId
 from handler.response import UserResp
-from model.error import AppError, ErrorKind
-from model.user import User, UserId
 
 router: Final[APIRouter] = APIRouter()
 

@@ -3,14 +3,14 @@ from datetime import datetime
 from typing import Protocol, Any, Tuple, List, Optional, Literal, final
 
 from config.envs import DEFAULT_BUCKET_NAME
-from model.assistant import (
+from domain.assistant import (
     Assistant,
     AssistantId,
     ThreadId,
     Message,
 )
-from model.document import DocumentId, Document, DocumentSummary
-from model.user import User, UserId
+from domain.document import DocumentId, Document, DocumentSummary
+from domain.user import User, UserId
 
 
 class StorageAdapter(Protocol):

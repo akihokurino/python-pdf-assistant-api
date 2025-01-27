@@ -14,6 +14,8 @@ from pydantic import BaseModel
 import handler
 from adapter.adapter import StorageAdapter
 from di.di import container, AppContainer
+from domain.error import AppError, ErrorKind
+from domain.user import UserId
 from handler.document import router as document_router
 from handler.me import router as me_router
 from handler.middleware.auth import AuthMiddleware
@@ -23,8 +25,6 @@ from handler.response import EmptyResp, PreSignUploadResp, PreSignGetResp
 from handler.subscriber import router as subscriber_router
 from handler.user import router as user_router
 from handler.util import extract_gs_key
-from model.error import AppError, ErrorKind
-from model.user import UserId
 
 
 @asynccontextmanager

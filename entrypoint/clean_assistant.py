@@ -4,7 +4,7 @@ from typing import Final
 
 from adapter.adapter import OpenAIAdapter, AssistantRepository, AssistantFSRepository
 from di.di import container
-from model.document import Status
+from domain.document import Status
 
 
 async def _main() -> None:

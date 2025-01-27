@@ -5,9 +5,9 @@ from fastapi import APIRouter, Request, Depends
 
 from adapter.adapter import UserRepository
 from di.di import AppContainer
+from domain.error import AppError, ErrorKind
+from domain.user import UserId
 from handler.response import MeResp
-from model.error import AppError, ErrorKind
-from model.user import UserId
 
 router: Final[APIRouter] = APIRouter()
 

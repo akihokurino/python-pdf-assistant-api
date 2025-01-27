@@ -7,15 +7,15 @@ from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Mapped
 
-from model.assistant import Assistant, ThreadId, AssistantId
-from model.document import (
+from domain.assistant import Assistant, ThreadId, AssistantId
+from domain.document import (
     Document,
     DocumentId,
     Status,
     DocumentSummary,
     DocumentSummaryId,
 )
-from model.user import User, UserId
+from domain.user import User, UserId
 
 Base = declarative_base()
 

@@ -5,29 +5,29 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from adapter.adapter import UserRepository
+from domain.document import Document
+from domain.error import AppError, ErrorKind
+from domain.user import User, UserId
 from infra.cloud_sql.entity import (
     UserEntity,
     user_from,
     user_entity_from,
     document_from,
 )
-from model.document import Document
-from model.error import AppError, ErrorKind
-from model.user import User, UserId
 
 
 @final
 class UserRepoImpl(UserRepository):
     def __init__(
-        self,
-        session: async_sessionmaker[AsyncSession],
+            self,
+            session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-        cls,
-        session: async_sessionmaker[AsyncSession],
+            cls,
+            session: async_sessionmaker[AsyncSession],
     ) -> UserRepository:
         return cls(session)
 
@@ -52,7 +52,7 @@ class UserRepoImpl(UserRepository):
             raise AppError(ErrorKind.INTERNAL, f"ユーザーの取得に失敗しました。") from e
 
     async def get_with_documents(
-        self, _id: UserId
+            self, _id: UserId
     ) -> Optional[tuple[User, list[Document]]]:
         try:
             async with self.session() as session:

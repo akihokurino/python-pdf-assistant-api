@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 
-from model.document import Document, DocumentId, Status
-from model.user import UserId
+from domain.document import Document, DocumentId, Status
+from domain.user import UserId
 
 
 def test_document_initialization() -> None:

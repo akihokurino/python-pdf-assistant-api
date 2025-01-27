@@ -1,4 +1,4 @@
-from model.error import AppError, ErrorKind
+from domain.error import AppError, ErrorKind
 
 
 def test_app_error_initialization() -> None:

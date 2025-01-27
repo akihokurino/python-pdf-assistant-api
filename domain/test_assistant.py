@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 
-from model.assistant import Assistant, AssistantId, ThreadId
-from model.document import DocumentId
+from domain.assistant import Assistant, AssistantId, ThreadId
+from domain.document import DocumentId
 
 
 def test_assistant_initialization() -> None:

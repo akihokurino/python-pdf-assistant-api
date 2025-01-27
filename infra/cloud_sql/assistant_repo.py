@@ -6,6 +6,9 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from adapter.adapter import AssistantRepository
+from domain.assistant import Assistant
+from domain.document import DocumentId, Document
+from domain.error import AppError, ErrorKind
 from infra.cloud_sql.entity import (
     assistant_entity_from,
     assistant_from,
@@ -13,29 +16,26 @@ from infra.cloud_sql.entity import (
     document_from,
     DocumentEntity,
 )
-from model.assistant import Assistant
-from model.document import DocumentId, Document
-from model.error import AppError, ErrorKind
 
 
 @final
 class AssistantRepoImpl(AssistantRepository):
     def __init__(
-        self,
-        session: async_sessionmaker[AsyncSession],
+            self,
+            session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-        cls,
-        session: async_sessionmaker[AsyncSession],
+            cls,
+            session: async_sessionmaker[AsyncSession],
     ) -> AssistantRepository:
         return cls(session)
 
     async def find_past(
-        self,
-        date: datetime,
+            self,
+            date: datetime,
     ) -> list[tuple[Assistant, Document]]:
         try:
             async with self.session() as session:
@@ -88,7 +88,7 @@ class AssistantRepoImpl(AssistantRepository):
             ) from e
 
     async def insert_with_update_document(
-        self, assistant: Assistant, document: Document
+            self, assistant: Assistant, document: Document
     ) -> None:
         try:
             async with self.session() as session:
@@ -166,7 +166,7 @@ class AssistantRepoImpl(AssistantRepository):
             ) from e
 
     async def delete_with_update_document(
-        self, _id: DocumentId, document: Document
+            self, _id: DocumentId, document: Document
     ) -> None:
         try:
             async with self.session() as session:

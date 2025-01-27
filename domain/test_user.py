@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from model.user import User, UserId
+from domain.user import User, UserId
 
 
 def test_user_initialization() -> None:

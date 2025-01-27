@@ -5,9 +5,9 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from model.assistant import AssistantId, ThreadId, Assistant, MessageId, Message
-from model.document import Document, Status, DocumentId
-from model.user import User, UserId
+from domain.assistant import AssistantId, ThreadId, Assistant, MessageId, Message
+from domain.document import Document, Status, DocumentId
+from domain.user import User, UserId
 
 
 class MeResp(BaseModel):
@@ -69,7 +69,7 @@ class DocumentWithUserAndAssistantResp(BaseModel):
 
     @classmethod
     def from_model(
-        cls, user: User, document: Document, assistant: Optional[Assistant]
+            cls, user: User, document: Document, assistant: Optional[Assistant]
     ) -> DocumentWithUserAndAssistantResp:
         return cls(
             user=UserResp.from_model(user),

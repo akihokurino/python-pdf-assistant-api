@@ -9,7 +9,7 @@ from google.oauth2.service_account import Credentials
 
 from adapter.adapter import StorageAdapter
 from config.envs import DEFAULT_BUCKET_NAME
-from model.error import AppError, ErrorKind
+from domain.error import AppError, ErrorKind
 
 
 def _local_credentials() -> Credentials:

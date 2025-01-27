@@ -11,8 +11,8 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from config.envs import TASK_QUEUE_TOKEN
-from model.error import AppError, ErrorKind
-from model.user import UserId
+from domain.error import AppError, ErrorKind
+from domain.user import UserId
 
 AUTH0_ISSUER = "https://dev-im6sd3gmyj703h6n.us.auth0.com/"
 AUTH0_JWKS_URL = "https://dev-im6sd3gmyj703h6n.us.auth0.com/.well-known/jwks.json"

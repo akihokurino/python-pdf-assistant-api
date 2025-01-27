@@ -4,8 +4,8 @@ from typing import final, Final
 from google.cloud.firestore import AsyncClient
 
 from adapter.adapter import MessageFSRepository
-from model.assistant import Message, Assistant, MessageId, ThreadId
-from model.error import AppError, ErrorKind
+from domain.assistant import Message, Assistant, MessageId, ThreadId
+from domain.error import AppError, ErrorKind
 
 
 @final

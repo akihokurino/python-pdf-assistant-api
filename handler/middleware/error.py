@@ -6,7 +6,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from adapter.adapter import LogAdapter
 from di.di import container
-from model.error import AppError
+from domain.error import AppError
 
 
 @final

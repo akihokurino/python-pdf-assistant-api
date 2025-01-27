@@ -5,6 +5,10 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from adapter.adapter import DocumentRepository
+from domain.assistant import Assistant
+from domain.document import Document, DocumentId
+from domain.error import ErrorKind, AppError
+from domain.user import UserId, User
 from infra.cloud_sql.entity import (
     DocumentEntity,
     document_from,
@@ -13,24 +17,20 @@ from infra.cloud_sql.entity import (
     AssistantEntity,
     assistant_from,
 )
-from model.assistant import Assistant
-from model.document import Document, DocumentId
-from model.error import ErrorKind, AppError
-from model.user import UserId, User
 
 
 @final
 class DocumentRepoImpl(DocumentRepository):
     def __init__(
-        self,
-        session: async_sessionmaker[AsyncSession],
+            self,
+            session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-        cls,
-        session: async_sessionmaker[AsyncSession],
+            cls,
+            session: async_sessionmaker[AsyncSession],
     ) -> DocumentRepository:
         return cls(session)
 
@@ -69,7 +69,7 @@ class DocumentRepoImpl(DocumentRepository):
             ) from e
 
     async def get_with_user_and_assistant(
-        self, _id: DocumentId
+            self, _id: DocumentId
     ) -> Optional[tuple[Document, User, Optional[Assistant]]]:
         try:
             async with self.session() as session:

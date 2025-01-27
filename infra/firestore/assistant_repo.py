@@ -4,8 +4,8 @@ from google.cloud.firestore import AsyncClient
 
 from adapter.adapter import AssistantFSRepository
 from infra.firestore.util import delete_sub_collections
-from model.assistant import Assistant, AssistantId
-from model.error import AppError, ErrorKind
+from domain.assistant import Assistant, AssistantId
+from domain.error import AppError, ErrorKind
 
 
 @final
