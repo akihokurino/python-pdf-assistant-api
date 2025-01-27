@@ -4,7 +4,7 @@ import dataclasses
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import final, NewType
+from typing import final, NewType, Self
 
 from domain.user import UserId
 
@@ -26,13 +26,13 @@ class Document:
 
     @classmethod
     def new(
-        cls,
-        user_id: UserId,
-        name: str,
-        description: str,
-        gs_file_url: str,
-        now: datetime,
-    ) -> Document:
+            cls,
+            user_id: UserId,
+            name: str,
+            description: str,
+            gs_file_url: str,
+            now: datetime,
+    ) -> Self:
         return cls(
             id=DocumentId(str(uuid.uuid4())),
             user_id=user_id,
@@ -72,8 +72,8 @@ class DocumentSummary:
 
     @classmethod
     def new(
-        cls, document_id: DocumentId, text: str, index: int, now: datetime
-    ) -> DocumentSummary:
+            cls, document_id: DocumentId, text: str, index: int, now: datetime
+    ) -> Self:
         return cls(
             id=DocumentSummaryId(str(uuid.uuid4())),
             document_id=document_id,

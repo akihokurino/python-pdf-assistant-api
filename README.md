@@ -17,6 +17,7 @@
 - cloud sql（postgres sql 17.0）
 - cloud scheduler
 - cloud tasks
+- pubsub
 - firestore (native mode)
 - secret manager
 - auth0

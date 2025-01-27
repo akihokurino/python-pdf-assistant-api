@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Final, final
+from typing import Final, final, Optional
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Request, Depends
@@ -14,7 +14,7 @@ from adapter.adapter import (
     OpenAIAdapter,
     AssistantFSRepository,
     MessageFSRepository,
-    DocumentSummaryRepository,
+    DocumentSummaryRepository, Pager,
 )
 from config.envs import DEFAULT_BUCKET_NAME
 from di.di import AppContainer
@@ -26,28 +26,50 @@ from handler.response import (
     EmptyResp,
     DocumentWithUserAndAssistantResp,
     MessageResp,
-    TextResp,
+    TextResp, WithPagerResp,
 )
 from handler.util import extract_gs_key
 
 router: Final[APIRouter] = APIRouter()
 
 
+@router.get("/documents")
+@inject
+async def _list_document(
+        request: Request,
+        cursor: Optional[str] = None,
+        limit: int = 10,
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
+) -> WithPagerResp[DocumentResp]:
+    uid: Final[UserId] = request.state.uid
+    pager: Final = Pager(cursor=cursor, limit=limit)
+
+    documents, next_cursor = await document_repository.find_by_user_with_pager(uid, pager)
+
+    return WithPagerResp.from_model(
+        [DocumentResp.from_model(d) for d in documents],
+        next_cursor,
+    )
+
+
 @router.get("/documents/{document_id}")
 @inject
 async def _get_document(
-    document_id: DocumentId,
-    document_repository: DocumentRepository = Depends(
-        Provide[AppContainer.document_repository]
-    ),
+        document_id: DocumentId,
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
 ) -> DocumentWithUserAndAssistantResp:
-    result = await document_repository.get_with_user_and_assistant(document_id)
+    result: Final = await document_repository.get_with_user_and_assistant(document_id)
     if not result:
         raise AppError(
             ErrorKind.NOT_FOUND, f"ドキュメントが見つかりません: {document_id}"
         )
+    document, user, assistant = result
 
-    return DocumentWithUserAndAssistantResp.from_model(result[1], result[0], result[2])
+    return DocumentWithUserAndAssistantResp.from_model(document, user, assistant)
 
 
 @final
@@ -60,11 +82,11 @@ class _CreateDocumentPayload(BaseModel):
 @router.post("/documents")
 @inject
 async def _create_document(
-    request: Request,
-    payload: _CreateDocumentPayload,
-    document_repository: DocumentRepository = Depends(
-        Provide[AppContainer.document_repository]
-    ),
+        request: Request,
+        payload: _CreateDocumentPayload,
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
 ) -> DocumentResp:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
@@ -87,12 +109,12 @@ class _UpdateDocumentPayload(BaseModel):
 @router.put("/documents/{document_id}")
 @inject
 async def _update_document(
-    request: Request,
-    document_id: DocumentId,
-    payload: _UpdateDocumentPayload,
-    document_repository: DocumentRepository = Depends(
-        Provide[AppContainer.document_repository]
-    ),
+        request: Request,
+        document_id: DocumentId,
+        payload: _UpdateDocumentPayload,
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
 ) -> DocumentResp:
     uid: Final[UserId] = request.state.uid
     now: Final = datetime.now(timezone.utc)
@@ -114,19 +136,19 @@ async def _update_document(
 @router.delete("/documents/{document_id}")
 @inject
 async def _delete_document(
-    request: Request,
-    document_id: DocumentId,
-    storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
-    openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
-    document_repository: DocumentRepository = Depends(
-        Provide[AppContainer.document_repository]
-    ),
-    assistant_repository: AssistantRepository = Depends(
-        Provide[AppContainer.assistant_repository]
-    ),
-    assistant_fs_repository: AssistantFSRepository = Depends(
-        Provide[AppContainer.assistant_fs_repository]
-    ),
+        request: Request,
+        document_id: DocumentId,
+        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+        openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
+        assistant_repository: AssistantRepository = Depends(
+            Provide[AppContainer.assistant_repository]
+        ),
+        assistant_fs_repository: AssistantFSRepository = Depends(
+            Provide[AppContainer.assistant_fs_repository]
+        ),
 ) -> EmptyResp:
     uid: Final[UserId] = request.state.uid
 
@@ -157,14 +179,14 @@ async def _delete_document(
 @router.post("/documents/{document_id}/assistants")
 @inject
 async def _create_assistant(
-    request: Request,
-    document_id: DocumentId,
-    document_repository: DocumentRepository = Depends(
-        Provide[AppContainer.document_repository]
-    ),
-    task_queue_adapter: TaskQueueAdapter = Depends(
-        Provide[AppContainer.task_queue_adapter]
-    ),
+        request: Request,
+        document_id: DocumentId,
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
+        task_queue_adapter: TaskQueueAdapter = Depends(
+            Provide[AppContainer.task_queue_adapter]
+        ),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
@@ -187,18 +209,18 @@ async def _create_assistant(
 
 @router.get("/documents/{document_id}/messages")
 @inject
-async def _get_messages(
-    request: Request,
-    document_id: DocumentId,
-    document_repository: DocumentRepository = Depends(
-        Provide[AppContainer.document_repository]
-    ),
-    assistant_repository: AssistantRepository = Depends(
-        Provide[AppContainer.assistant_repository]
-    ),
-    message_fs_repository: MessageFSRepository = Depends(
-        Provide[AppContainer.message_fs_repository]
-    ),
+async def _list_message(
+        request: Request,
+        document_id: DocumentId,
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
+        assistant_repository: AssistantRepository = Depends(
+            Provide[AppContainer.assistant_repository]
+        ),
+        message_fs_repository: MessageFSRepository = Depends(
+            Provide[AppContainer.message_fs_repository]
+        ),
 ) -> list[MessageResp]:
     uid: Final[UserId] = request.state.uid
 
@@ -230,15 +252,15 @@ class _CreateMessagePayload(BaseModel):
 @router.post("/documents/{document_id}/messages")
 @inject
 async def _create_message(
-    request: Request,
-    document_id: DocumentId,
-    payload: _CreateMessagePayload,
-    document_repository: DocumentRepository = Depends(
-        Provide[AppContainer.document_repository]
-    ),
-    task_queue_adapter: TaskQueueAdapter = Depends(
-        Provide[AppContainer.task_queue_adapter]
-    ),
+        request: Request,
+        document_id: DocumentId,
+        payload: _CreateMessagePayload,
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
+        task_queue_adapter: TaskQueueAdapter = Depends(
+            Provide[AppContainer.task_queue_adapter]
+        ),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
@@ -263,15 +285,15 @@ async def _create_message(
 
 @router.get("/documents/{document_id}/summaries")
 @inject
-async def _get_document_summaries(
-    request: Request,
-    document_id: DocumentId,
-    document_repository: DocumentRepository = Depends(
-        Provide[AppContainer.document_repository]
-    ),
-    document_summary_repository: DocumentSummaryRepository = Depends(
-        Provide[AppContainer.document_summary_repository]
-    ),
+async def _list_document_summary(
+        request: Request,
+        document_id: DocumentId,
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
+        document_summary_repository: DocumentSummaryRepository = Depends(
+            Provide[AppContainer.document_summary_repository]
+        ),
 ) -> list[TextResp]:
     uid: Final[UserId] = request.state.uid
 
@@ -291,14 +313,14 @@ async def _get_document_summaries(
 @router.post("/documents/{document_id}/summaries")
 @inject
 async def _summarise_document(
-    request: Request,
-    document_id: DocumentId,
-    document_repository: DocumentRepository = Depends(
-        Provide[AppContainer.document_repository]
-    ),
-    task_queue_adapter: TaskQueueAdapter = Depends(
-        Provide[AppContainer.task_queue_adapter]
-    ),
+        request: Request,
+        document_id: DocumentId,
+        document_repository: DocumentRepository = Depends(
+            Provide[AppContainer.document_repository]
+        ),
+        task_queue_adapter: TaskQueueAdapter = Depends(
+            Provide[AppContainer.task_queue_adapter]
+        ),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 

@@ -1,14 +1,16 @@
 from typing import Optional, final, Final
 
+from sqlalchemy import and_, desc
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
-from adapter.adapter import DocumentRepository
+from adapter.adapter import DocumentRepository, Pager
 from domain.assistant import Assistant
 from domain.document import Document, DocumentId
 from domain.error import ErrorKind, AppError
 from domain.user import UserId, User
+from infra.cloud_sql.cursor import decode_cursor, encode_cursor, paging_result
 from infra.cloud_sql.entity import (
     DocumentEntity,
     document_from,
@@ -34,19 +36,41 @@ class DocumentRepoImpl(DocumentRepository):
     ) -> DocumentRepository:
         return cls(session)
 
-    async def find_by_user(self, user_id: UserId) -> list[Document]:
+    async def find_by_user(self, user_id: UserId, limit: Optional[int] = None) -> list[Document]:
         try:
             async with self.session() as session:
+                query = select(DocumentEntity).filter_by(user_id=user_id)
+                if limit:
+                    query = query.limit(limit)
                 entities = (
                     (
-                        await session.execute(
-                            select(DocumentEntity).filter_by(user_id=user_id)
-                        )
+                        await session.execute(query)
                     )
                     .scalars()
                     .all()
                 )
                 return [document_from(e) for e in entities]
+        except Exception as e:
+            raise AppError(ErrorKind.INTERNAL) from e
+
+    async def find_by_user_with_pager(self, user_id: UserId, pager: Pager) -> tuple[list[Document], str]:
+        try:
+            async with self.session() as session:
+                pager_params = decode_cursor(pager.cursor)
+                query = select(DocumentEntity).filter_by(user_id=user_id).order_by(
+                    desc(DocumentEntity.created_at), desc(DocumentEntity.id))
+                if pager_params:
+                    sk, pk = pager_params
+                    query = query.where(
+                        and_(
+                            (DocumentEntity.created_at < sk) |
+                            ((DocumentEntity.created_at == sk) & (DocumentEntity.id < pk))
+                        )
+                    )
+
+                query = query.limit(pager.limit_with_next_one())
+                entities = (await session.execute(query)).scalars().all()
+                return paging_result(pager, entities, document_from, lambda v: encode_cursor(v.created_at, v.id))
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL) from e
 

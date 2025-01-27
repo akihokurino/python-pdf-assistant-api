@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 from datetime import datetime
-from typing import final, NewType
+from typing import final, NewType, Self
 
 UserId = NewType("UserId", str)
 
@@ -16,7 +16,7 @@ class User:
     updated_at: datetime
 
     @classmethod
-    def new(cls, _id: UserId, name: str, now: datetime) -> User:
+    def new(cls, _id: UserId, name: str, now: datetime) -> Self:
         return cls(id=_id, name=name, created_at=now, updated_at=now)
 
     def update(self, name: str, now: datetime) -> None:

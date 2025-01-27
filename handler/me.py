@@ -15,13 +15,14 @@ router: Final[APIRouter] = APIRouter()
 @router.get("/me")
 @inject
 async def _me(
-    request: Request,
-    user_repository: UserRepository = Depends(Provide[AppContainer.user_repository]),
+        request: Request,
+        user_repository: UserRepository = Depends(Provide[AppContainer.user_repository]),
 ) -> MeResp:
     uid: Final[UserId] = request.state.uid
 
     result: Final = await user_repository.get_with_documents(uid)
     if not result:
         raise AppError(ErrorKind.NOT_FOUND, f"ユーザーが見つかりません: {uid}")
+    user, documents = result
 
-    return MeResp.from_model(result[0], result[1])
+    return MeResp.from_model(user, documents)

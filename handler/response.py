@@ -2,12 +2,29 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Optional
+from typing import TypeVar, Generic
 
 from pydantic import BaseModel
 
 from domain.assistant import AssistantId, ThreadId, Assistant, MessageId, Message
 from domain.document import Document, Status, DocumentId
 from domain.user import User, UserId
+
+PagingItem = TypeVar("PagingItem", bound=BaseModel)
+
+
+class WithPagerResp(BaseModel, Generic[PagingItem]):
+    items: list[PagingItem]
+    next_cursor: str
+
+    @classmethod
+    def from_model(
+            cls, items: list[PagingItem], next_cursor: str
+    ) -> WithPagerResp[PagingItem]:
+        return cls(
+            items=items,
+            next_cursor=next_cursor,
+        )
 
 
 class MeResp(BaseModel):
@@ -63,17 +80,17 @@ class DocumentResp(BaseModel):
 
 
 class DocumentWithUserAndAssistantResp(BaseModel):
-    user: UserResp
     document: DocumentResp
+    user: UserResp
     assistant: Optional[AssistantResp]
 
     @classmethod
     def from_model(
-        cls, user: User, document: Document, assistant: Optional[Assistant]
+            cls, document: Document, user: User, assistant: Optional[Assistant]
     ) -> DocumentWithUserAndAssistantResp:
         return cls(
-            user=UserResp.from_model(user),
             document=DocumentResp.from_model(document),
+            user=UserResp.from_model(user),
             assistant=AssistantResp.from_model(assistant) if assistant else None,
         )
 

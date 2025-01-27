@@ -70,6 +70,16 @@ class OpenAIAdapter(Protocol):
     def chat_completion(self, messages: List[ChatMessage]) -> str: ...
 
 
+@final
+@dataclasses.dataclass(frozen=True)
+class Pager:
+    cursor: Optional[str]
+    limit: int
+
+    def limit_with_next_one(self) -> int:
+        return self.limit + 1
+
+
 class UserRepository(Protocol):
     async def find(self) -> List[User]: ...
 
@@ -87,7 +97,9 @@ class UserRepository(Protocol):
 
 
 class DocumentRepository(Protocol):
-    async def find_by_user(self, user_id: UserId) -> List[Document]: ...
+    async def find_by_user(self, user_id: UserId, limit: Optional[int] = None) -> List[Document]: ...
+
+    async def find_by_user_with_pager(self, user_id: UserId, pager: Pager) -> tuple[list[Document], str]: ...
 
     async def get(self, _id: DocumentId) -> Optional[Document]: ...
 
