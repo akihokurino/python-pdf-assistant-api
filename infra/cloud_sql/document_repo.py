@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple, final, Final
+from typing import Optional, final, Final
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.future import select
@@ -10,7 +10,8 @@ from infra.cloud_sql.entity import (
     document_from,
     document_entity_from,
     user_from,
-    AssistantEntity, assistant_from,
+    AssistantEntity,
+    assistant_from,
 )
 from model.assistant import Assistant
 from model.document import Document, DocumentId
@@ -33,7 +34,7 @@ class DocumentRepoImpl(DocumentRepository):
     ) -> DocumentRepository:
         return cls(session)
 
-    async def find_by_user(self, user_id: UserId) -> List[Document]:
+    async def find_by_user(self, user_id: UserId) -> list[Document]:
         try:
             async with self.session() as session:
                 entities = (
@@ -67,8 +68,9 @@ class DocumentRepoImpl(DocumentRepository):
                 ErrorKind.INTERNAL, f"ドキュメントの取得に失敗しました。"
             ) from e
 
-    async def get_with_user_and_assistant(self, _id: DocumentId) -> Optional[
-        Tuple[Document, User, Optional[Assistant]]]:
+    async def get_with_user_and_assistant(
+            self, _id: DocumentId
+    ) -> Optional[tuple[Document, User, Optional[Assistant]]]:
         try:
             async with self.session() as session:
                 entity = (

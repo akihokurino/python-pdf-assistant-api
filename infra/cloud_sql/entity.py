@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import final, List
+from typing import final
 
 from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
@@ -11,7 +11,9 @@ from model.assistant import Assistant, ThreadId, AssistantId
 from model.document import (
     Document,
     DocumentId,
-    Status, DocumentSummary, DocumentSummaryId,
+    Status,
+    DocumentSummary,
+    DocumentSummaryId,
 )
 from model.user import User, UserId
 
@@ -27,7 +29,7 @@ class UserEntity(Base):
     created_at: datetime = Column(DateTime(timezone=True), nullable=False)
     updated_at: datetime = Column(DateTime(timezone=True), nullable=False)
 
-    documents: Mapped[List["DocumentEntity"]] = relationship(
+    documents: Mapped[list["DocumentEntity"]] = relationship(
         "DocumentEntity", back_populates="user"
     )
 
@@ -71,7 +73,7 @@ class DocumentEntity(Base):
     assistant: Mapped["AssistantEntity"] = relationship(
         "AssistantEntity", back_populates="document"
     )
-    summaries: Mapped[List["DocumentSummaryEntity"]] = relationship(
+    summaries: Mapped[list["DocumentSummaryEntity"]] = relationship(
         "DocumentSummaryEntity", back_populates="document"
     )
 

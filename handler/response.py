@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -12,10 +12,10 @@ from model.user import User, UserId
 
 class MeResp(BaseModel):
     user: UserResp
-    documents: List[DocumentResp]
+    documents: list[DocumentResp]
 
     @classmethod
-    def from_model(cls, user: User, document: List[Document]) -> MeResp:
+    def from_model(cls, user: User, document: list[Document]) -> MeResp:
         return cls(
             user=UserResp.from_model(user),
             documents=[DocumentResp.from_model(doc) for doc in document],

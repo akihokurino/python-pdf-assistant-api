@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Final, final, List
+from typing import Final, final
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Request, Depends
@@ -199,7 +199,7 @@ async def _get_messages(
         message_fs_repository: MessageFSRepository = Depends(
             Provide[AppContainer.message_fs_repository]
         ),
-) -> List[MessageResp]:
+) -> list[MessageResp]:
     uid: Final[UserId] = request.state.uid
 
     document: Final = await document_repository.get(document_id)
@@ -272,7 +272,7 @@ async def _get_document_summaries(
         document_summary_repository: DocumentSummaryRepository = Depends(
             Provide[AppContainer.document_summary_repository]
         ),
-) -> List[TextResp]:
+) -> list[TextResp]:
     uid: Final[UserId] = request.state.uid
 
     document: Final = await document_repository.get(document_id)

@@ -1,7 +1,7 @@
 import base64
 import re
 from datetime import datetime, timezone
-from typing import Final, final, List
+from typing import Final, final
 
 import pandas as pd
 from dependency_injector.wiring import Provide, inject
@@ -78,7 +78,9 @@ async def _create_assistant(
         document.id,
         destination_file_name,
     )
-    assistant: Final = Assistant.new(new_assistant[0], document.id, new_assistant[1], now)
+    assistant: Final = Assistant.new(
+        new_assistant[0], document.id, new_assistant[1], now
+    )
     await assistant_repository.insert_with_update_document(assistant, document)
     await assistant_fs_repository.put(assistant)
 
@@ -174,8 +176,8 @@ async def _summarise(
 
     wc_max: Final = 10000
 
-    def split_text(_text: str) -> List[str]:
-        chunks = [_text[i: i + wc_max] for i in range(0, len(_text), wc_max)]
+    def split_text(_text: str) -> list[str]:
+        chunks = [_text[_i: _i + wc_max] for _i in range(0, len(_text), wc_max)]
         return chunks
 
     def create_prompt(_text: str, total: int) -> str:
@@ -195,9 +197,9 @@ async def _summarise(
 要約:"""
 
     parted_text: Final = split_text(text)
-    summaries: Final[List[DocumentSummary]] = []
+    summaries: Final[list[DocumentSummary]] = []
     for i in range(len(parted_text)):
-        messages: List[ChatMessage] = [
+        messages: list[ChatMessage] = [
             ChatMessage(
                 role="system",
                 content="あなたはPDFを要約する専門家です。あなたは前後に問い合わせした内容を考慮して思慮深い回答をします。",
@@ -242,7 +244,7 @@ async def _storage_upload_notification(
     decoded_data: Final = base64.b64decode(payload.message.data).decode("utf-8")
     params: Final = _Params.model_validate_json(decoded_data)
 
-    match: Final = re.search(r'csv/([^/]+)/[\w-]+\.csv', params.name)
+    match: Final = re.search(r"csv/([^/]+)/[\w-]+\.csv", params.name)
     if match:
         uid = UserId(match.group(1))
     else:
@@ -251,9 +253,13 @@ async def _storage_upload_notification(
     destination_file_name: Final = f"/tmp/{uid}_downloaded.csv"
     storage_adapter.download_object(params.name, destination_file_name)
 
-    df: Final = pd.read_csv(destination_file_name, header=None, names=["name", "description", "gs_path"])
-    documents: List[Document] = [
-        Document.new(uid, str(row["name"]), str(row["description"]), str(row["gs_path"]), now)
+    df: Final = pd.read_csv(
+        destination_file_name, header=None, names=["name", "description", "gs_path"]
+    )
+    documents: list[Document] = [
+        Document.new(
+            uid, str(row["name"]), str(row["description"]), str(row["gs_path"]), now
+        )
         for _, row in df.iterrows()
     ]
 

@@ -1,4 +1,4 @@
-from typing import final, Final, List
+from typing import final, Final
 
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -6,7 +6,10 @@ from sqlalchemy.future import select
 
 from adapter.adapter import DocumentSummaryRepository
 from infra.cloud_sql.entity import (
-    document_summary_entity_from, DocumentSummaryEntity, document_summary_from, )
+    document_summary_entity_from,
+    DocumentSummaryEntity,
+    document_summary_from,
+)
 from model.document import DocumentId, DocumentSummary
 from model.error import ErrorKind, AppError
 
@@ -26,13 +29,15 @@ class DocumentSummaryRepoImpl(DocumentSummaryRepository):
     ) -> DocumentSummaryRepository:
         return cls(session)
 
-    async def find_by_document(self, document_id: DocumentId) -> List[DocumentSummary]:
+    async def find_by_document(self, document_id: DocumentId) -> list[DocumentSummary]:
         try:
             async with self.session() as session:
                 entities = (
                     (
                         await session.execute(
-                            select(DocumentSummaryEntity).filter_by(document_id=document_id)
+                            select(DocumentSummaryEntity).filter_by(
+                                document_id=document_id
+                            )
                         )
                     )
                     .scalars()
@@ -58,7 +63,9 @@ class DocumentSummaryRepoImpl(DocumentSummaryRepository):
     async def delete_by_document(self, document_id: DocumentId) -> None:
         try:
             async with self.session() as session:
-                stmt = delete(DocumentSummaryEntity).where(DocumentSummaryEntity.document_id == document_id)
+                stmt = delete(DocumentSummaryEntity).where(
+                    DocumentSummaryEntity.document_id == document_id
+                )
                 await session.execute(stmt)
                 await session.commit()
         except Exception as e:

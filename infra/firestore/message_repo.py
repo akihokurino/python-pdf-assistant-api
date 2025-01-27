@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import final, Final, List
+from typing import final, Final
 
 from google.cloud.firestore import AsyncClient
 
@@ -17,7 +17,7 @@ class MessageFSRepoImpl(MessageFSRepository):
     def new(cls, db: AsyncClient) -> MessageFSRepository:
         return cls(db)
 
-    async def find(self, assistant: Assistant) -> List[Message]:
+    async def find(self, assistant: Assistant) -> list[Message]:
         try:
             parent_doc_ref = self.db.collection("Assistant").document(assistant.id)
             docs = (

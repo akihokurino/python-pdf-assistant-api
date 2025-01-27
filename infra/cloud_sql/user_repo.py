@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple, final, Final
+from typing import Optional, final, Final
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.future import select
@@ -31,7 +31,7 @@ class UserRepoImpl(UserRepository):
     ) -> UserRepository:
         return cls(session)
 
-    async def find(self) -> List[User]:
+    async def find(self) -> list[User]:
         try:
             async with self.session() as session:
                 result = await session.execute(select(UserEntity))
@@ -53,7 +53,7 @@ class UserRepoImpl(UserRepository):
 
     async def get_with_documents(
             self, _id: UserId
-    ) -> Optional[Tuple[User, List[Document]]]:
+    ) -> Optional[tuple[User, list[Document]]]:
         try:
             async with self.session() as session:
                 result = await session.execute(

@@ -1,5 +1,5 @@
 import time
-from typing import Final, Tuple, final, List
+from typing import Final, final
 
 from openai import OpenAI
 from openai.pagination import SyncCursorPage
@@ -7,8 +7,12 @@ from openai.types.beta.assistant import Assistant
 from openai.types.beta.thread import Thread
 from openai.types.beta.threads import MessageContent, TextContentBlock, Run, Message
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
-from openai.types.chat.chat_completion_system_message_param import ChatCompletionSystemMessageParam
-from openai.types.chat.chat_completion_user_message_param import ChatCompletionUserMessageParam
+from openai.types.chat.chat_completion_system_message_param import (
+    ChatCompletionSystemMessageParam,
+)
+from openai.types.chat.chat_completion_user_message_param import (
+    ChatCompletionUserMessageParam,
+)
 
 from adapter.adapter import OpenAIAdapter, ChatMessage
 from model.assistant import Assistant as AppAssistant, AssistantId, ThreadId
@@ -81,7 +85,7 @@ class OpenAIImpl(OpenAIAdapter):
 
     def create_assistant(
             self, document_id: DocumentId, document_path: str
-    ) -> Tuple[AssistantId, ThreadId]:
+    ) -> tuple[AssistantId, ThreadId]:
         assistant = self.cli.beta.assistants.create(
             name=document_id,
             description=f"顧客向けアシスタント",
@@ -120,8 +124,8 @@ class OpenAIImpl(OpenAIAdapter):
     def delete_assistant(self, assistant_id: AssistantId) -> None:
         self.cli.beta.assistants.delete(assistant_id=assistant_id)
 
-    def chat_completion(self, messages: List[ChatMessage]) -> str:
-        params: List[ChatCompletionMessageParam] = []
+    def chat_completion(self, messages: list[ChatMessage]) -> str:
+        params: list[ChatCompletionMessageParam] = []
         for message in messages:
             if message.role == "system":
                 params.append(
@@ -137,7 +141,7 @@ class OpenAIImpl(OpenAIAdapter):
                         content=message.content,
                     )
                 )
-                
+
         try:
             response = self.cli.chat.completions.create(
                 model=MODEL,

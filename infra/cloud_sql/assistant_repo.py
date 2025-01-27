@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List, Tuple, final, Final
+from typing import Optional, final, Final
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.future import select
@@ -36,7 +36,7 @@ class AssistantRepoImpl(AssistantRepository):
     async def find_past(
             self,
             date: datetime,
-    ) -> List[Tuple[Assistant, Document]]:
+    ) -> list[tuple[Assistant, Document]]:
         try:
             async with self.session() as session:
                 entities = (
@@ -51,8 +51,7 @@ class AssistantRepoImpl(AssistantRepository):
                     .all()
                 )
                 return [
-                    (assistant_from(e), document_from(e.document))
-                    for e in entities
+                    (assistant_from(e), document_from(e.document)) for e in entities
                 ]
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"データの取得に失敗しました。") from e
