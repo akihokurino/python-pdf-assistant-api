@@ -1,3 +1,4 @@
+import asyncio
 import json
 from typing import Any, Final, final
 
@@ -10,17 +11,10 @@ from config.envs import PROJECT_ID, TASK_QUEUE_TOKEN, CLOUD_RUN_SA, API_BASE_URL
 @final
 class CloudTasksImpl:
     def __init__(
-        self,
-        cli: tasks_v2.CloudTasksClient,
+            self,
+            cli: tasks_v2.CloudTasksClient,
     ) -> None:
         self.cli: Final = cli
-
-    @classmethod
-    def new(
-        cls,
-        cli: tasks_v2.CloudTasksClient,
-    ) -> TaskQueueAdapter:
-        return cls(cli)
 
     def send_queue(self, name: str, path: str, payload: dict[str, Any]) -> None:
         parent = self.cli.queue_path(PROJECT_ID, "asia-northeast1", name)
@@ -39,3 +33,24 @@ class CloudTasksImpl:
             }
         }
         self.cli.create_task(request={"parent": parent, "task": task})
+
+
+@final
+class AsyncCloudTasksImpl:
+    def __init__(
+            self,
+            inner: CloudTasksImpl,
+    ) -> None:
+        self.inner: Final = inner
+
+    @classmethod
+    def new(
+            cls,
+            inner: CloudTasksImpl,
+    ) -> TaskQueueAdapter:
+        return cls(inner=inner)
+
+    async def send_queue(self, name: str, path: str, payload: dict[str, Any]) -> None:
+        await asyncio.to_thread(
+            self.inner.send_queue, name=name, path=path, payload=payload
+        )

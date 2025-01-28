@@ -202,7 +202,7 @@ async def _create_assistant(
     if document.user_id != uid:
         raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
 
-    task_queue_adapter.send_queue(
+    await task_queue_adapter.send_queue(
         "create-assistant",
         "/subscriber/create_assistant",
         {"document_id": document.id},
@@ -278,7 +278,7 @@ async def _create_message(
     if document.status != Status.READY_ASSISTANT:
         raise AppError(ErrorKind.BAD_REQUEST, "アシスタントが準備できていません")
 
-    task_queue_adapter.send_queue(
+    await task_queue_adapter.send_queue(
         "create-message",
         "/subscriber/create_message",
         {"document_id": document.id, "message": payload.message},
@@ -336,7 +336,7 @@ async def _summarise_document(
     if document.user_id != uid:
         raise AppError(ErrorKind.FORBIDDEN, f"権限がありません: {uid}")
 
-    task_queue_adapter.send_queue(
+    await task_queue_adapter.send_queue(
         "summarise-document",
         "/subscriber/summarise_document",
         {"document_id": document.id},

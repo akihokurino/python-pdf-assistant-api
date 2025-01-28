@@ -25,7 +25,7 @@ from infra.cloud_sql.document_repo import DocumentRepoImpl
 from infra.cloud_sql.document_summary_repo import DocumentSummaryRepoImpl
 from infra.cloud_sql.user_repo import UserRepoImpl
 from infra.cloud_storage import CloudStorageImpl, AsyncCloudStorageImpl
-from infra.cloud_tasks import CloudTasksImpl
+from infra.cloud_tasks import CloudTasksImpl, AsyncCloudTasksImpl
 from infra.firestore.assistant_repo import AssistantFSRepoImpl
 from infra.firestore.message_repo import MessageFSRepoImpl
 from infra.logger import LoggerImpl
@@ -52,15 +52,18 @@ class AppContainer(containers.DeclarativeContainer):
     __cloud_storage_impl: Singleton[CloudStorageImpl] = providers.Singleton(
         CloudStorageImpl, cli=__cloud_storage_client
     )
+    __cloud_tasks_impl: Singleton[CloudTasksImpl] = providers.Singleton(
+        CloudTasksImpl, cli=__cloud_tasks_client
+    )
 
     # Adapters
+    log_adapter: Singleton[LogAdapter] = providers.Singleton(LoggerImpl.new)
     storage_adapter: Singleton[StorageAdapter] = providers.Singleton(
         AsyncCloudStorageImpl.new, inner=__cloud_storage_impl
     )
     task_queue_adapter: Singleton[TaskQueueAdapter] = providers.Singleton(
-        CloudTasksImpl.new, __cloud_tasks_client
+        AsyncCloudTasksImpl.new, inner=__cloud_tasks_impl
     )
-    log_adapter: Singleton[LogAdapter] = providers.Singleton(LoggerImpl.new)
     openai_adapter: Singleton[OpenAIAdapter] = providers.Singleton(
         OpenAIImpl.new, __openai_client
     )
