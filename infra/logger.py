@@ -7,13 +7,13 @@ from adapter.adapter import LogAdapter
 @final
 class LoggerImpl:
     def __init__(
-            self,
+        self,
     ) -> None:
         pass
 
     @classmethod
     def new(
-            cls,
+        cls,
     ) -> LogAdapter:
         return cls()
 

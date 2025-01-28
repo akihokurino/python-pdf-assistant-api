@@ -19,15 +19,15 @@ from infra.cloud_sql.entity import (
 @final
 class UserRepoImpl:
     def __init__(
-            self,
-            session: async_sessionmaker[AsyncSession],
+        self,
+        session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-            cls,
-            session: async_sessionmaker[AsyncSession],
+        cls,
+        session: async_sessionmaker[AsyncSession],
     ) -> UserRepository:
         return cls(session)
 
@@ -52,7 +52,7 @@ class UserRepoImpl:
             raise AppError(ErrorKind.INTERNAL) from e
 
     async def get_with_documents(
-            self, _id: UserId
+        self, _id: UserId
     ) -> Optional[tuple[User, list[Document]]]:
         try:
             async with self.session() as session:

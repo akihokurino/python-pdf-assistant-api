@@ -17,15 +17,15 @@ from infra.cloud_sql.entity import (
 @final
 class DocumentSummaryRepoImpl:
     def __init__(
-            self,
-            session: async_sessionmaker[AsyncSession],
+        self,
+        session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-            cls,
-            session: async_sessionmaker[AsyncSession],
+        cls,
+        session: async_sessionmaker[AsyncSession],
     ) -> DocumentSummaryRepository:
         return cls(session)
 

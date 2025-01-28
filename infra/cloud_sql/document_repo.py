@@ -24,20 +24,20 @@ from infra.cloud_sql.entity import (
 @final
 class DocumentRepoImpl:
     def __init__(
-            self,
-            session: async_sessionmaker[AsyncSession],
+        self,
+        session: async_sessionmaker[AsyncSession],
     ) -> None:
         self.session: Final = session
 
     @classmethod
     def new(
-            cls,
-            session: async_sessionmaker[AsyncSession],
+        cls,
+        session: async_sessionmaker[AsyncSession],
     ) -> DocumentRepository:
         return cls(session)
 
     async def find_by_user(
-            self, user_id: UserId, limit: Optional[int] = None
+        self, user_id: UserId, limit: Optional[int] = None
     ) -> list[Document]:
         try:
             async with self.session() as session:
@@ -50,7 +50,7 @@ class DocumentRepoImpl:
             raise AppError(ErrorKind.INTERNAL) from e
 
     async def find_by_user_with_pager(
-            self, user_id: UserId, pager: Pager
+        self, user_id: UserId, pager: Pager
     ) -> tuple[list[Document], str]:
         try:
             async with self.session() as session:
@@ -66,8 +66,8 @@ class DocumentRepoImpl:
                         and_(
                             (DocumentEntity.created_at < sk)
                             | (
-                                    (DocumentEntity.created_at == sk)
-                                    & (DocumentEntity.id < pk)
+                                (DocumentEntity.created_at == sk)
+                                & (DocumentEntity.id < pk)
                             )
                         )
                     )
@@ -98,7 +98,7 @@ class DocumentRepoImpl:
             raise AppError(ErrorKind.INTERNAL) from e
 
     async def get_with_user_and_assistant(
-            self, _id: DocumentId
+        self, _id: DocumentId
     ) -> Optional[tuple[Document, User, Optional[Assistant]]]:
         try:
             async with self.session() as session:
