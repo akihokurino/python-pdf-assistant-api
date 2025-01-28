@@ -11,8 +11,8 @@ from config.envs import PROJECT_ID, TASK_QUEUE_TOKEN, CLOUD_RUN_SA, API_BASE_URL
 @final
 class CloudTasksImpl:
     def __init__(
-            self,
-            cli: tasks_v2.CloudTasksClient,
+        self,
+        cli: tasks_v2.CloudTasksClient,
     ) -> None:
         self.cli: Final = cli
 
@@ -38,15 +38,15 @@ class CloudTasksImpl:
 @final
 class AsyncCloudTasksImpl:
     def __init__(
-            self,
-            inner: CloudTasksImpl,
+        self,
+        inner: CloudTasksImpl,
     ) -> None:
         self.inner: Final = inner
 
     @classmethod
     def new(
-            cls,
-            inner: CloudTasksImpl,
+        cls,
+        inner: CloudTasksImpl,
     ) -> TaskQueueAdapter:
         return cls(inner=inner)
 

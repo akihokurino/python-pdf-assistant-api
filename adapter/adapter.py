@@ -15,35 +15,35 @@ from domain.user import User, UserId
 
 class StorageAdapter(Protocol):
     async def download_object(
-            self,
-            key: str,
-            destination_file_name: str,
-            bucket_name: str = DEFAULT_BUCKET_NAME,
+        self,
+        key: str,
+        destination_file_name: str,
+        bucket_name: str = DEFAULT_BUCKET_NAME,
     ) -> None: ...
 
     async def gen_pre_signed_upload_url(
-            self,
-            key: str,
-            content_type: str,
-            bucket_name: str = DEFAULT_BUCKET_NAME,
-            expiration_minutes: int = 15,
+        self,
+        key: str,
+        content_type: str,
+        bucket_name: str = DEFAULT_BUCKET_NAME,
+        expiration_minutes: int = 15,
     ) -> str: ...
 
     async def gen_pre_signed_get_url(
-            self,
-            key: str,
-            bucket_name: str = DEFAULT_BUCKET_NAME,
-            expiration_minutes: int = 15,
+        self,
+        key: str,
+        bucket_name: str = DEFAULT_BUCKET_NAME,
+        expiration_minutes: int = 15,
     ) -> str: ...
 
     async def delete_object(
-            self, key: str, bucket_name: str = DEFAULT_BUCKET_NAME
+        self, key: str, bucket_name: str = DEFAULT_BUCKET_NAME
     ) -> None: ...
 
 
 class TaskQueueAdapter(Protocol):
     async def send_queue(
-            self, name: str, path: str, payload: dict[str, Any]
+        self, name: str, path: str, payload: dict[str, Any]
     ) -> None: ...
 
 
@@ -64,7 +64,7 @@ class OpenAIAdapter(Protocol):
     async def chat_assistant(self, _assistant: Assistant, message: str) -> str: ...
 
     async def create_assistant(
-            self, document_id: DocumentId, document_path: str
+        self, document_id: DocumentId, document_path: str
     ) -> Tuple[AssistantId, ThreadId]: ...
 
     async def delete_assistant(self, assistant_id: AssistantId) -> None: ...
@@ -88,7 +88,7 @@ class UserRepository(Protocol):
     async def get(self, _id: UserId) -> Optional[User]: ...
 
     async def get_with_documents(
-            self, _id: UserId
+        self, _id: UserId
     ) -> Optional[Tuple[User, List[Document]]]: ...
 
     async def insert(self, user: User) -> None: ...
@@ -100,17 +100,17 @@ class UserRepository(Protocol):
 
 class DocumentRepository(Protocol):
     async def find_by_user(
-            self, user_id: UserId, limit: Optional[int] = None
+        self, user_id: UserId, limit: Optional[int] = None
     ) -> List[Document]: ...
 
     async def find_by_user_with_pager(
-            self, user_id: UserId, pager: Pager
+        self, user_id: UserId, pager: Pager
     ) -> tuple[list[Document], str]: ...
 
     async def get(self, _id: DocumentId) -> Optional[Document]: ...
 
     async def get_with_user_and_assistant(
-            self, _id: DocumentId
+        self, _id: DocumentId
     ) -> Optional[Tuple[Document, User, Optional[Assistant]]]: ...
 
     async def insert(self, document: Document) -> None: ...
@@ -124,7 +124,7 @@ class DocumentRepository(Protocol):
 
 class DocumentSummaryRepository(Protocol):
     async def find_by_document(
-            self, document_id: DocumentId
+        self, document_id: DocumentId
     ) -> List[DocumentSummary]: ...
 
     async def insert(self, summary: DocumentSummary) -> None: ...
@@ -140,7 +140,7 @@ class AssistantRepository(Protocol):
     async def insert(self, assistant: Assistant) -> None: ...
 
     async def insert_with_update_document(
-            self, assistant: Assistant, document: Document
+        self, assistant: Assistant, document: Document
     ) -> None: ...
 
     async def update(self, assistant: Assistant) -> None: ...
@@ -148,7 +148,7 @@ class AssistantRepository(Protocol):
     async def delete(self, _id: DocumentId) -> None: ...
 
     async def delete_with_update_document(
-            self, _id: DocumentId, document: Document
+        self, _id: DocumentId, document: Document
     ) -> None: ...
 
 

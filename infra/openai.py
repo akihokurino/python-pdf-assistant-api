@@ -28,8 +28,8 @@ MODEL: Final = "gpt-4o-2024-11-20"
 @final
 class OpenAIImpl:
     def __init__(
-            self,
-            cli: OpenAI,
+        self,
+        cli: OpenAI,
     ) -> None:
         self.cli: Final = cli
 
@@ -65,9 +65,9 @@ class OpenAIImpl:
         )
 
         if (
-                response.data
-                and response.data[0].content
-                and len(response.data[0].content) > 0
+            response.data
+            and response.data[0].content
+            and len(response.data[0].content) > 0
         ):
             content: MessageContent = response.data[0].content[0]
             if isinstance(content, TextContentBlock):
@@ -78,7 +78,7 @@ class OpenAIImpl:
             raise AppError(ErrorKind.INTERNAL)
 
     def create_assistant(
-            self, document_id: DocumentId, document_path: str
+        self, document_id: DocumentId, document_path: str
     ) -> tuple[AssistantId, ThreadId]:
         assistant = self.cli.beta.assistants.create(
             name=document_id,
@@ -157,15 +157,15 @@ class OpenAIImpl:
 @final
 class AsyncOpenAIImpl:
     def __init__(
-            self,
-            inner: OpenAIImpl,
+        self,
+        inner: OpenAIImpl,
     ) -> None:
         self.inner: Final = inner
 
     @classmethod
     def new(
-            cls,
-            inner: OpenAIImpl,
+        cls,
+        inner: OpenAIImpl,
     ) -> OpenAIAdapter:
         return cls(inner=inner)
 
@@ -176,20 +176,18 @@ class AsyncOpenAIImpl:
         return res
 
     async def create_assistant(
-            self, document_id: DocumentId, document_path: str
+        self, document_id: DocumentId, document_path: str
     ) -> tuple[AssistantId, ThreadId]:
         res = await asyncio.to_thread(
-            self.inner.create_assistant, document_id=document_id, document_path=document_path
+            self.inner.create_assistant,
+            document_id=document_id,
+            document_path=document_path,
         )
         return res
 
     async def delete_assistant(self, assistant_id: AssistantId) -> None:
-        await asyncio.to_thread(
-            self.inner.delete_assistant, assistant_id=assistant_id
-        )
+        await asyncio.to_thread(self.inner.delete_assistant, assistant_id=assistant_id)
 
     async def chat_completion(self, messages: list[ChatMessage]) -> str:
-        res = await asyncio.to_thread(
-            self.inner.chat_completion, messages=messages
-        )
+        res = await asyncio.to_thread(self.inner.chat_completion, messages=messages)
         return res

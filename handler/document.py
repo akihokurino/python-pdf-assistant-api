@@ -38,12 +38,12 @@ router: Final[APIRouter] = APIRouter()
 @router.get("/documents")
 @inject
 async def _list_document(
-        request: Request,
-        cursor: Optional[str] = None,
-        limit: int = 10,
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
+    request: Request,
+    cursor: Optional[str] = None,
+    limit: int = 10,
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
 ) -> WithPagerResp[DocumentResp]:
     uid: Final[UserId] = request.state.uid
     pager: Final = Pager(cursor=cursor, limit=limit)
@@ -61,10 +61,10 @@ async def _list_document(
 @router.get("/documents/{document_id}")
 @inject
 async def _get_document(
-        document_id: DocumentId,
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
+    document_id: DocumentId,
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
 ) -> DocumentWithUserAndAssistantResp:
     result: Final = await document_repository.get_with_user_and_assistant(document_id)
     if not result:
@@ -86,11 +86,11 @@ class _CreateDocumentPayload(BaseModel):
 @router.post("/documents")
 @inject
 async def _create_document(
-        request: Request,
-        payload: _CreateDocumentPayload,
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
+    request: Request,
+    payload: _CreateDocumentPayload,
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
 ) -> DocumentResp:
     uid: Final[UserId] = request.state.uid
     now: Final[datetime] = datetime.now(timezone.utc)
@@ -113,12 +113,12 @@ class _UpdateDocumentPayload(BaseModel):
 @router.put("/documents/{document_id}")
 @inject
 async def _update_document(
-        request: Request,
-        document_id: DocumentId,
-        payload: _UpdateDocumentPayload,
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
+    request: Request,
+    document_id: DocumentId,
+    payload: _UpdateDocumentPayload,
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
 ) -> DocumentResp:
     uid: Final[UserId] = request.state.uid
     now: Final = datetime.now(timezone.utc)
@@ -140,19 +140,19 @@ async def _update_document(
 @router.delete("/documents/{document_id}")
 @inject
 async def _delete_document(
-        request: Request,
-        document_id: DocumentId,
-        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
-        openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
-        assistant_repository: AssistantRepository = Depends(
-            Provide[AppContainer.assistant_repository]
-        ),
-        assistant_fs_repository: AssistantFSRepository = Depends(
-            Provide[AppContainer.assistant_fs_repository]
-        ),
+    request: Request,
+    document_id: DocumentId,
+    storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+    openai_adapter: OpenAIAdapter = Depends(Provide[AppContainer.openai_adapter]),
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
+    assistant_repository: AssistantRepository = Depends(
+        Provide[AppContainer.assistant_repository]
+    ),
+    assistant_fs_repository: AssistantFSRepository = Depends(
+        Provide[AppContainer.assistant_fs_repository]
+    ),
 ) -> EmptyResp:
     uid: Final[UserId] = request.state.uid
 
@@ -183,14 +183,14 @@ async def _delete_document(
 @router.post("/documents/{document_id}/assistants")
 @inject
 async def _create_assistant(
-        request: Request,
-        document_id: DocumentId,
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
-        task_queue_adapter: TaskQueueAdapter = Depends(
-            Provide[AppContainer.task_queue_adapter]
-        ),
+    request: Request,
+    document_id: DocumentId,
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
+    task_queue_adapter: TaskQueueAdapter = Depends(
+        Provide[AppContainer.task_queue_adapter]
+    ),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
@@ -214,17 +214,17 @@ async def _create_assistant(
 @router.get("/documents/{document_id}/messages")
 @inject
 async def _list_message(
-        request: Request,
-        document_id: DocumentId,
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
-        assistant_repository: AssistantRepository = Depends(
-            Provide[AppContainer.assistant_repository]
-        ),
-        message_fs_repository: MessageFSRepository = Depends(
-            Provide[AppContainer.message_fs_repository]
-        ),
+    request: Request,
+    document_id: DocumentId,
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
+    assistant_repository: AssistantRepository = Depends(
+        Provide[AppContainer.assistant_repository]
+    ),
+    message_fs_repository: MessageFSRepository = Depends(
+        Provide[AppContainer.message_fs_repository]
+    ),
 ) -> list[MessageResp]:
     uid: Final[UserId] = request.state.uid
 
@@ -256,15 +256,15 @@ class _CreateMessagePayload(BaseModel):
 @router.post("/documents/{document_id}/messages")
 @inject
 async def _create_message(
-        request: Request,
-        document_id: DocumentId,
-        payload: _CreateMessagePayload,
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
-        task_queue_adapter: TaskQueueAdapter = Depends(
-            Provide[AppContainer.task_queue_adapter]
-        ),
+    request: Request,
+    document_id: DocumentId,
+    payload: _CreateMessagePayload,
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
+    task_queue_adapter: TaskQueueAdapter = Depends(
+        Provide[AppContainer.task_queue_adapter]
+    ),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 
@@ -290,14 +290,14 @@ async def _create_message(
 @router.get("/documents/{document_id}/summaries")
 @inject
 async def _list_document_summary(
-        request: Request,
-        document_id: DocumentId,
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
-        document_summary_repository: DocumentSummaryRepository = Depends(
-            Provide[AppContainer.document_summary_repository]
-        ),
+    request: Request,
+    document_id: DocumentId,
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
+    document_summary_repository: DocumentSummaryRepository = Depends(
+        Provide[AppContainer.document_summary_repository]
+    ),
 ) -> list[TextResp]:
     uid: Final[UserId] = request.state.uid
 
@@ -317,14 +317,14 @@ async def _list_document_summary(
 @router.post("/documents/{document_id}/summaries")
 @inject
 async def _summarise_document(
-        request: Request,
-        document_id: DocumentId,
-        document_repository: DocumentRepository = Depends(
-            Provide[AppContainer.document_repository]
-        ),
-        task_queue_adapter: TaskQueueAdapter = Depends(
-            Provide[AppContainer.task_queue_adapter]
-        ),
+    request: Request,
+    document_id: DocumentId,
+    document_repository: DocumentRepository = Depends(
+        Provide[AppContainer.document_repository]
+    ),
+    task_queue_adapter: TaskQueueAdapter = Depends(
+        Provide[AppContainer.task_queue_adapter]
+    ),
 ) -> JSONResponse:
     uid: Final[UserId] = request.state.uid
 

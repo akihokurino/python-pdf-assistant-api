@@ -72,9 +72,9 @@ class _PreSignedUploadUrlPayload(BaseModel):
 @app.post("/pre_signed_upload_url")
 @inject
 async def _pre_signed_upload_url(
-        request: Request,
-        payload: _PreSignedUploadUrlPayload,
-        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+    request: Request,
+    payload: _PreSignedUploadUrlPayload,
+    storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
 ) -> PreSignUploadResp:
     uid: Final[UserId] = request.state.uid
 
@@ -101,8 +101,8 @@ class _PreSignedGetUrlPayload(BaseModel):
 @app.post("/pre_signed_get_url")
 @inject
 async def _pre_signed_get_url(
-        payload: _PreSignedGetUrlPayload,
-        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+    payload: _PreSignedGetUrlPayload,
+    storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
 ) -> PreSignGetResp:
     key: Final = extract_gs_key(payload.gs_url)
     if not key:

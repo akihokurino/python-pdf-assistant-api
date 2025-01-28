@@ -22,12 +22,15 @@ def decode_cursor(cursor: Optional[str]) -> Optional[tuple[datetime, str]]:
     return sk, pk
 
 
-def paging_result[T, U](
-        pager: Pager,
-        entities: Sequence[T],
-        conv: Callable[[T], U],
-        cursor: Callable[[T], str]) -> tuple[list[U], str]:
-    items = entities[:pager.limit]
+def paging_result[
+    T, U
+](
+    pager: Pager,
+    entities: Sequence[T],
+    conv: Callable[[T], U],
+    cursor: Callable[[T], str],
+) -> tuple[list[U], str]:
+    items = entities[: pager.limit]
     has_next = len(entities) > pager.limit
     next_cursor = ""
     if has_next:

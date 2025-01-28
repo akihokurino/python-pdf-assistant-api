@@ -35,27 +35,27 @@ def _credential() -> Credentials:
 @final
 class CloudStorageImpl:
     def __init__(
-            self,
-            cli: Client,
+        self,
+        cli: Client,
     ) -> None:
         self.cli: Final[Client] = cli
 
     def download_object(
-            self,
-            key: str,
-            destination_file_name: str,
-            bucket_name: str = DEFAULT_BUCKET_NAME,
+        self,
+        key: str,
+        destination_file_name: str,
+        bucket_name: str = DEFAULT_BUCKET_NAME,
     ) -> None:
         bucket: Final[Bucket] = self.cli.bucket(bucket_name)
         blob: Final[Blob] = bucket.blob(key)
         blob.download_to_filename(destination_file_name)
 
     def gen_pre_signed_upload_url(
-            self,
-            key: str,
-            content_type: str,
-            bucket_name: str = DEFAULT_BUCKET_NAME,
-            expiration_minutes: int = 15,
+        self,
+        key: str,
+        content_type: str,
+        bucket_name: str = DEFAULT_BUCKET_NAME,
+        expiration_minutes: int = 15,
     ) -> str:
         bucket: Final[Bucket] = self.cli.bucket(bucket_name)
         blob: Final[Blob] = bucket.blob(key)
@@ -82,10 +82,10 @@ class CloudStorageImpl:
         return url
 
     def gen_pre_signed_get_url(
-            self,
-            key: str,
-            bucket_name: str = DEFAULT_BUCKET_NAME,
-            expiration_minutes: int = 15,
+        self,
+        key: str,
+        bucket_name: str = DEFAULT_BUCKET_NAME,
+        expiration_minutes: int = 15,
     ) -> str:
         bucket: Final[Bucket] = self.cli.bucket(bucket_name)
         blob: Final[Blob] = bucket.blob(key)
@@ -125,16 +125,16 @@ class AsyncCloudStorageImpl:
 
     @classmethod
     def new(
-            cls,
-            inner: CloudStorageImpl,
+        cls,
+        inner: CloudStorageImpl,
     ) -> StorageAdapter:
         return cls(inner=inner)
 
     async def download_object(
-            self,
-            key: str,
-            destination_file_name: str,
-            bucket_name: str = DEFAULT_BUCKET_NAME,
+        self,
+        key: str,
+        destination_file_name: str,
+        bucket_name: str = DEFAULT_BUCKET_NAME,
     ) -> None:
         await asyncio.to_thread(
             self.inner.download_object,
@@ -144,11 +144,11 @@ class AsyncCloudStorageImpl:
         )
 
     async def gen_pre_signed_upload_url(
-            self,
-            key: str,
-            content_type: str,
-            bucket_name: str = DEFAULT_BUCKET_NAME,
-            expiration_minutes: int = 15,
+        self,
+        key: str,
+        content_type: str,
+        bucket_name: str = DEFAULT_BUCKET_NAME,
+        expiration_minutes: int = 15,
     ) -> str:
         url: str = await asyncio.to_thread(
             self.inner.gen_pre_signed_upload_url,
@@ -160,10 +160,10 @@ class AsyncCloudStorageImpl:
         return url
 
     async def gen_pre_signed_get_url(
-            self,
-            key: str,
-            bucket_name: str = DEFAULT_BUCKET_NAME,
-            expiration_minutes: int = 15,
+        self,
+        key: str,
+        bucket_name: str = DEFAULT_BUCKET_NAME,
+        expiration_minutes: int = 15,
     ) -> str:
         url: str = await asyncio.to_thread(
             self.inner.gen_pre_signed_get_url,
@@ -174,7 +174,7 @@ class AsyncCloudStorageImpl:
         return url
 
     async def delete_object(
-            self, key: str, bucket_name: str = DEFAULT_BUCKET_NAME
+        self, key: str, bucket_name: str = DEFAULT_BUCKET_NAME
     ) -> None:
         await asyncio.to_thread(
             self.inner.delete_object, key=key, bucket_name=bucket_name
