@@ -72,9 +72,9 @@ class _PreSignedUploadUrlPayload(BaseModel):
 @app.post("/pre_signed_upload_url")
 @inject
 async def _pre_signed_upload_url(
-    request: Request,
-    payload: _PreSignedUploadUrlPayload,
-    storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+        request: Request,
+        payload: _PreSignedUploadUrlPayload,
+        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
 ) -> PreSignUploadResp:
     uid: Final[UserId] = request.state.uid
 
@@ -88,7 +88,7 @@ async def _pre_signed_upload_url(
         content_type = "text/csv"
 
     key: Final = f"{payload.path}/{uid}/{uuid.uuid4()}.{ext}"
-    url: Final = storage_adapter.gen_pre_signed_upload_url(key, content_type)
+    url: Final = await storage_adapter.gen_pre_signed_upload_url(key, content_type)
 
     return PreSignUploadResp(url=url, key=key)
 
@@ -101,13 +101,13 @@ class _PreSignedGetUrlPayload(BaseModel):
 @app.post("/pre_signed_get_url")
 @inject
 async def _pre_signed_get_url(
-    payload: _PreSignedGetUrlPayload,
-    storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
+        payload: _PreSignedGetUrlPayload,
+        storage_adapter: StorageAdapter = Depends(Provide[AppContainer.storage_adapter]),
 ) -> PreSignGetResp:
     key: Final = extract_gs_key(payload.gs_url)
     if not key:
         raise AppError(ErrorKind.BAD_REQUEST, "gs_urlが不正です")
-    url: Final = storage_adapter.gen_pre_signed_get_url(key)
+    url: Final = await storage_adapter.gen_pre_signed_get_url(key)
 
     return PreSignGetResp(url=url)
 

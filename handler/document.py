@@ -14,7 +14,8 @@ from adapter.adapter import (
     OpenAIAdapter,
     AssistantFSRepository,
     MessageFSRepository,
-    DocumentSummaryRepository, Pager,
+    DocumentSummaryRepository,
+    Pager,
 )
 from config.envs import DEFAULT_BUCKET_NAME
 from di.di import AppContainer
@@ -26,7 +27,8 @@ from handler.response import (
     EmptyResp,
     DocumentWithUserAndAssistantResp,
     MessageResp,
-    TextResp, WithPagerResp,
+    TextResp,
+    WithPagerResp,
 )
 from handler.util import extract_gs_key
 
@@ -46,7 +48,9 @@ async def _list_document(
     uid: Final[UserId] = request.state.uid
     pager: Final = Pager(cursor=cursor, limit=limit)
 
-    documents, next_cursor = await document_repository.find_by_user_with_pager(uid, pager)
+    documents, next_cursor = await document_repository.find_by_user_with_pager(
+        uid, pager
+    )
 
     return WithPagerResp.from_model(
         [DocumentResp.from_model(d) for d in documents],
@@ -163,7 +167,7 @@ async def _delete_document(
     key: Final = extract_gs_key(document.gs_file_url)
     if not key:
         raise AppError(ErrorKind.INTERNAL, "gs_urlが不正です")
-    storage_adapter.delete_object(key)
+    await storage_adapter.delete_object(key)
 
     assistant: Final = await assistant_repository.get(document.id)
     if assistant is not None:
