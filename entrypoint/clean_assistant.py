@@ -15,13 +15,12 @@ async def _main() -> None:
     now: Final[datetime] = datetime.now(timezone.utc)
     target: Final[datetime] = now - timedelta(hours=3)
 
-    results = await assistant_repository.find_past(target)
+    results: Final = await assistant_repository.find_past(target)
     for result in results:
-        assistant = result[0]
-        document = result[1]
+        assistant, document = result
 
         document.update_status(Status.PREPARE_ASSISTANT, now)
-        openai_adapter.delete_assistant(assistant.id)
+        await openai_adapter.delete_assistant(assistant.id)
         await assistant_repository.delete_with_update_document(document.id, document)
         await assistant_fs_repository.delete(assistant.id)
 

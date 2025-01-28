@@ -1,3 +1,4 @@
+import asyncio
 import time
 from typing import Final, final
 
@@ -31,13 +32,6 @@ class OpenAIImpl:
             cli: OpenAI,
     ) -> None:
         self.cli: Final = cli
-
-    @classmethod
-    def new(
-            cls,
-            cli: OpenAI,
-    ) -> OpenAIAdapter:
-        return cls(cli)
 
     def __wait_on_run(self, run: Run, thread: Thread) -> Run:
         while run.status == "queued" or run.status == "in_progress":
@@ -158,3 +152,44 @@ class OpenAIImpl:
             return text
         except Exception as e:
             raise AppError(ErrorKind.INTERNAL, f"OpenAIでエラーが発生しました") from e
+
+
+@final
+class AsyncOpenAIImpl:
+    def __init__(
+            self,
+            inner: OpenAIImpl,
+    ) -> None:
+        self.inner: Final = inner
+
+    @classmethod
+    def new(
+            cls,
+            inner: OpenAIImpl,
+    ) -> OpenAIAdapter:
+        return cls(inner=inner)
+
+    async def chat_assistant(self, _assistant: AppAssistant, message: str) -> str:
+        res = await asyncio.to_thread(
+            self.inner.chat_assistant, _assistant=_assistant, message=message
+        )
+        return res
+
+    async def create_assistant(
+            self, document_id: DocumentId, document_path: str
+    ) -> tuple[AssistantId, ThreadId]:
+        res = await asyncio.to_thread(
+            self.inner.create_assistant, document_id=document_id, document_path=document_path
+        )
+        return res
+
+    async def delete_assistant(self, assistant_id: AssistantId) -> None:
+        await asyncio.to_thread(
+            self.inner.delete_assistant, assistant_id=assistant_id
+        )
+
+    async def chat_completion(self, messages: list[ChatMessage]) -> str:
+        res = await asyncio.to_thread(
+            self.inner.chat_completion, messages=messages
+        )
+        return res

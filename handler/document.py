@@ -171,7 +171,7 @@ async def _delete_document(
 
     assistant: Final = await assistant_repository.get(document.id)
     if assistant is not None:
-        openai_adapter.delete_assistant(assistant.id)
+        await openai_adapter.delete_assistant(assistant.id)
         await document_repository.delete_with_assistant(document.id)
         await assistant_fs_repository.delete(assistant.id)
     else:

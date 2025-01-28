@@ -29,7 +29,7 @@ from infra.cloud_tasks import CloudTasksImpl, AsyncCloudTasksImpl
 from infra.firestore.assistant_repo import AssistantFSRepoImpl
 from infra.firestore.message_repo import MessageFSRepoImpl
 from infra.logger import LoggerImpl
-from infra.openai import OpenAIImpl
+from infra.openai import OpenAIImpl, AsyncOpenAIImpl
 
 
 class AppContainer(containers.DeclarativeContainer):
@@ -55,6 +55,9 @@ class AppContainer(containers.DeclarativeContainer):
     __cloud_tasks_impl: Singleton[CloudTasksImpl] = providers.Singleton(
         CloudTasksImpl, cli=__cloud_tasks_client
     )
+    __openai_impl: Singleton[OpenAIImpl] = providers.Singleton(
+        OpenAIImpl, cli=__openai_client
+    )
 
     # Adapters
     log_adapter: Singleton[LogAdapter] = providers.Singleton(LoggerImpl.new)
@@ -65,7 +68,7 @@ class AppContainer(containers.DeclarativeContainer):
         AsyncCloudTasksImpl.new, inner=__cloud_tasks_impl
     )
     openai_adapter: Singleton[OpenAIAdapter] = providers.Singleton(
-        OpenAIImpl.new, __openai_client
+        AsyncOpenAIImpl.new, inner=__openai_impl
     )
 
     # Repositories

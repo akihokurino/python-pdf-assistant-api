@@ -74,12 +74,12 @@ async def _create_assistant(
     destination_file_name: Final = f"/tmp/{document.id}_downloaded.pdf"
     await storage_adapter.download_object(key, destination_file_name)
 
-    new_assistant: Final = openai_adapter.create_assistant(
+    assistant_id, thread_id = await openai_adapter.create_assistant(
         document.id,
         destination_file_name,
     )
     assistant: Final = Assistant.new(
-        new_assistant[0], document.id, new_assistant[1], now
+        assistant_id, document.id, thread_id, now
     )
     await assistant_repository.insert_with_update_document(assistant, document)
     await assistant_fs_repository.put(assistant)
@@ -128,7 +128,7 @@ async def _create_message(
     )
     await message_fs_repository.put(assistant, my_message)
 
-    answer: Final = openai_adapter.chat_assistant(assistant, payload.message)
+    answer: Final = await openai_adapter.chat_assistant(assistant, payload.message)
 
     assistant_message: Final = Message.new(
         assistant.thread_id, "assistant", answer, datetime.now(timezone.utc)
@@ -208,7 +208,7 @@ async def _summarise(
                 role="user", content=create_prompt(parted_text[i], len(parted_text))
             ),
         ]
-        resp = openai_adapter.chat_completion(messages)
+        resp = await openai_adapter.chat_completion(messages)
         summaries.append(DocumentSummary.new(document.id, resp, i, now))
 
     await document_summary_repository.delete_by_document(document.id)
