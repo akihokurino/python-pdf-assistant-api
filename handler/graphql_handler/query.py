@@ -8,7 +8,7 @@ from handler.graphql_handler.response import User
 @strawberry.type  # type: ignore
 class Query:
     @strawberry.field
-    async def user(self, info: strawberry.Info) -> User:
+    async def user(self, info: strawberry.Info[Context]) -> User:
         context: Context = info.context
         user = await context.user_repo.get(
             _id=UserId("yqkYZa7SJoaVEgBX3XKxzwaryg93gv7x@clients")
