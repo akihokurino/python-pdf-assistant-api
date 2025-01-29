@@ -22,7 +22,7 @@ from di.di import AppContainer
 from domain.document import Document, DocumentId, Status
 from domain.error import AppError, ErrorKind
 from domain.user import UserId
-from handler.response import (
+from handler.rest_api.response import (
     DocumentResp,
     EmptyResp,
     DocumentWithUserAndAssistantResp,
@@ -32,7 +32,7 @@ from handler.response import (
 )
 from handler.util import extract_gs_key
 
-router: Final[APIRouter] = APIRouter()
+router: Final = APIRouter()
 
 
 @router.get("/documents")
