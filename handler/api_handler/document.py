@@ -22,7 +22,7 @@ from di.di import AppContainer
 from domain.document import Document, DocumentId, Status
 from domain.error import AppError, ErrorKind
 from domain.user import UserId
-from handler.rest_api.response import (
+from handler.api_handler.response import (
     DocumentResp,
     EmptyResp,
     DocumentWithUserAndAssistantResp,

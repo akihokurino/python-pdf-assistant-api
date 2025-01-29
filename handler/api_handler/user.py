@@ -9,7 +9,7 @@ from adapter.adapter import UserRepository
 from di.di import AppContainer
 from domain.error import AppError, ErrorKind
 from domain.user import User, UserId
-from handler.rest_api.response import UserResp
+from handler.api_handler.response import UserResp
 
 router: Final = APIRouter()
 

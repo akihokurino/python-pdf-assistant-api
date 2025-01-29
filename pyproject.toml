@@ -55,7 +55,7 @@ dependencies = [
     "markupsafe (==3.0.2)",
     "mdurl (==0.1.2)",
     "multidict (==6.1.0)",
-    "mypy (==1.13.0)",
+    "mypy (==1.14.1)",
     "mypy-extensions (==1.0.0)",
     "openai (==1.58.1)",
     "orjson (==3.10.12)",
@@ -106,6 +106,7 @@ dependencies = [
     "pdfminer-six (>=20240706,<20240707)",
     "pandas (>=2.2.3,<3.0.0)",
     "pandas-stubs (>=2.2.3.241126,<3.0.0.0)",
+    "strawberry-graphql[fastapi] (>=0.258.0,<0.259.0)",
 ]
 
 
@@ -122,7 +123,7 @@ package-mode = false
 python_version = "3.13"
 strict = true
 namespace_packages = true
-plugins = ["sqlalchemy.ext.mypy.plugin"]
+plugins = ["sqlalchemy.ext.mypy.plugin", "strawberry.ext.mypy_plugin"]
 exclude = "(^|/|\\\\)venv($|/|\\\\)"
 [[tool.mypy.overrides]]
 module = "google.cloud.*"

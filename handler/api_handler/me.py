@@ -7,7 +7,7 @@ from adapter.adapter import UserRepository
 from di.di import AppContainer
 from domain.error import AppError, ErrorKind
 from domain.user import UserId
-from handler.rest_api.response import MeResp
+from handler.api_handler.response import MeResp
 
 router: Final = APIRouter()
 

@@ -18,6 +18,9 @@ test:
 run-api:
 	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) IS_LOCAL=true python -m entrypoint.api
 
+run-graphql:
+	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) IS_LOCAL=true python -m entrypoint.graphql
+
 run-clean-assistant:
 	source venv/bin/activate && PROJECT_ID=$(PROJECT_ID) IS_LOCAL=true python -m entrypoint.clean_assistant
 

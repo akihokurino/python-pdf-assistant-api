@@ -24,7 +24,7 @@ from domain.assistant import Assistant, Message
 from domain.document import DocumentId, Status, DocumentSummary, Document
 from domain.error import AppError, ErrorKind
 from domain.user import UserId
-from handler.rest_api.response import EmptyResp
+from handler.api_handler.response import EmptyResp
 from handler.util import extract_gs_key
 
 router: Final = APIRouter()

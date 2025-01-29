@@ -7,22 +7,23 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-import handler
 from di.di import container
+from handler import api_handler
+from handler.api_handler.document import router as document_router
+from handler.api_handler.me import router as me_router
+from handler.api_handler.pre_sign_url import router as pre_sign_url_router
+from handler.api_handler.subscriber import router as subscriber_router
+from handler.api_handler.user import router as user_router
 from handler.middleware.auth import AuthMiddleware
 from handler.middleware.error import ErrorMiddleware
 from handler.middleware.log import LogMiddleware
-from handler.rest_api.document import router as document_router
-from handler.rest_api.me import router as me_router
-from handler.rest_api.pre_sign_url import router as pre_sign_url_router
-from handler.rest_api.subscriber import router as subscriber_router
-from handler.rest_api.user import router as user_router
 
 
 @asynccontextmanager
 async def _lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
     modules = [
-        f"handler.{name}" for _, name, _ in pkgutil.iter_modules(handler.__path__)
+        f"handler.api_handler.{name}"
+        for _, name, _ in pkgutil.iter_modules(api_handler.__path__)
     ]
     container.wire(modules=modules)
     _app.container = container  # type: ignore
