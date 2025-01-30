@@ -11,12 +11,12 @@ from di.di import container
 from handler import api_handler
 from handler.api_handler.document import router as document_router
 from handler.api_handler.me import router as me_router
+from handler.api_handler.middleware.auth import AuthMiddleware
+from handler.api_handler.middleware.error import ErrorMiddleware
+from handler.api_handler.middleware.log import LogMiddleware
 from handler.api_handler.pre_sign_url import router as pre_sign_url_router
 from handler.api_handler.subscriber import router as subscriber_router
 from handler.api_handler.user import router as user_router
-from handler.middleware.auth import AuthMiddleware
-from handler.middleware.error import ErrorMiddleware
-from handler.middleware.log import LogMiddleware
 
 
 @asynccontextmanager

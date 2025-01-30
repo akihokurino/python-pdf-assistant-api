@@ -10,6 +10,7 @@ from strawberry.fastapi import GraphQLRouter
 from di.di import container
 from handler import graphql_handler
 from handler.graphql_handler.context import get_context
+from handler.graphql_handler.error import ErrorExtension
 from handler.graphql_handler.query import Query
 
 
@@ -25,7 +26,7 @@ async def _lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
 
 
 app: Final[FastAPI] = FastAPI(lifespan=_lifespan)
-schema: Final = strawberry.Schema(query=Query)
+schema: Final = strawberry.Schema(query=Query, extensions=[ErrorExtension])
 app.include_router(GraphQLRouter(schema, context_getter=get_context), prefix="/graphql")
 
 

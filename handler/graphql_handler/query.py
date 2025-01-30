@@ -1,19 +1,16 @@
 import strawberry
 
-from domain.user import UserId
+from domain.error import AppError, ErrorKind
 from handler.graphql_handler.context import Context
-from handler.graphql_handler.response import User
+from handler.graphql_handler.response import MeResp
 
 
 @strawberry.type  # type: ignore
 class Query:
     @strawberry.field
-    async def user(self, info: strawberry.Info[Context]) -> User:
+    async def me(self, info: strawberry.Info[Context]) -> MeResp:
         context: Context = info.context
-        user = await context.user_repo.get(
-            _id=UserId("yqkYZa7SJoaVEgBX3XKxzwaryg93gv7x@clients")
-        )
-        if user is None:
-            raise ValueError("User not found")
-        print(user.name)
-        return User(name=user.name, age=22)
+        me = await context.login_user
+        if me is None:
+            raise AppError(ErrorKind.UNAUTHORIZED)
+        return MeResp.from_model(me)
