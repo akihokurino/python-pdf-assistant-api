@@ -22,3 +22,4 @@
 - secret manager
 - auth0
 - pdfminer.six ( https://github.com/pdfminer/pdfminer.six )
+- strawberry ( https://github.com/strawberry-graphql/strawberry )

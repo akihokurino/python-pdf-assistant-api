@@ -6,6 +6,7 @@ import strawberry
 import uvicorn
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
+from strawberry.printer import print_schema
 
 from di.di import container
 from handler import graphql_handler
@@ -27,6 +28,7 @@ async def _lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
 
 app: Final[FastAPI] = FastAPI(lifespan=_lifespan)
 schema: Final = strawberry.Schema(query=Query, extensions=[ErrorExtension])
+print(print_schema(schema))
 app.include_router(GraphQLRouter(schema, context_getter=get_context), prefix="/graphql")
 
 
